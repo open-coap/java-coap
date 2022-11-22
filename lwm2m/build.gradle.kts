@@ -5,7 +5,7 @@ plugins {
 description = "lwm2m"
 
 dependencies {
-    api("com.google.code.gson:gson:2.9.1")
+    api("com.google.code.gson:gson:2.10")
     api("org.slf4j:slf4j-api:2.0.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
