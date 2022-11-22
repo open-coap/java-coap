@@ -8,7 +8,7 @@ description = "coap-core"
 dependencies {
     api("org.slf4j:slf4j-api:2.0.0")
 
-    testFixturesApi("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testFixturesApi("org.junit.jupiter:junit-jupiter-api:5.9.1")
     testFixturesApi("org.assertj:assertj-core:3.23.1")
     testFixturesApi("org.awaitility:awaitility:4.2.0")
 

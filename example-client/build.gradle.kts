@@ -13,7 +13,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.3.0")
 
     testImplementation("org.mockito:mockito-core:4.7.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
     testImplementation("org.awaitility:awaitility:4.2.0")
 }
