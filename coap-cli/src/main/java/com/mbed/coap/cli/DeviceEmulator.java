@@ -20,10 +20,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.client.RegistrationManager;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.server.observe.ObserversManager;
 import com.mbed.coap.utils.Service;
 import java.net.URI;
 import java.time.Instant;
@@ -50,6 +49,7 @@ public class DeviceEmulator implements Callable<Integer> {
     private TransportOptions transportOptions;
 
     protected CoapServer emulatorServer;
+    private final ObserversManager obsManager = new ObserversManager();
     protected final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     RegistrationManager registrationManager;
 
@@ -59,6 +59,7 @@ public class DeviceEmulator implements Callable<Integer> {
                 udpBuilder -> udpBuilder.route(createRouting()).build(),
                 tcpBuilder -> tcpBuilder.route(createRouting()).build()
         );
+        obsManager.init(emulatorServer);
         emulatorServer.start();
 
         //registration
@@ -76,9 +77,10 @@ public class DeviceEmulator implements Callable<Integer> {
     }
 
     protected Service<CoapRequest, CoapResponse> createRouting() {
-        ObservableResourceService timeResource = new ObservableResourceService(CoapResponse.ok(Instant.now().toString()));
+        Service<CoapRequest, CoapResponse> timeResource = __ -> completedFuture(CoapResponse.ok(Instant.now().toString()));
+
         scheduledExecutor.scheduleAtFixedRate(() ->
-                        timeResource.putPayload(Opaque.of(Instant.now().toString())),
+                        obsManager.sendObservation("/time", timeResource),
                 30, 30, TimeUnit.SECONDS
         );
 
@@ -91,7 +93,7 @@ public class DeviceEmulator implements Callable<Integer> {
                     scheduledExecutor.schedule(() -> promise.complete(CoapResponse.ok("OK")), 10, TimeUnit.SECONDS);
                     return promise;
                 })
-                .get("/time", timeResource)
+                .get("/time", obsManager.then(timeResource))
                 .build();
 
     }

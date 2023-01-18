@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,38 @@
  */
 package protocolTests.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.SeparateResponse;
+import com.mbed.coap.server.observe.NotificationsReceiver;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
-public class ObservationListener implements Function<CoapResponse, Boolean> {
+public class StubNotificationsReceiver implements NotificationsReceiver {
 
-    BlockingQueue<CoapResponse> queue = new LinkedBlockingQueue<>();
+    final BlockingQueue<SeparateResponse> queue = new LinkedBlockingQueue<>();
 
     @Override
-    public Boolean apply(CoapResponse obs) {
-
+    public boolean onObservation(String resourceUriPath, SeparateResponse obs) {
         queue.add(obs);
         return true;
     }
 
-    public CoapResponse take() throws InterruptedException {
+    public SeparateResponse take() throws InterruptedException {
         return queue.poll(5, TimeUnit.SECONDS);
     }
 
     public void verifyReceived(CoapResponse obs) throws InterruptedException {
-        CoapResponse received = queue.poll(1, TimeUnit.SECONDS);
+        CoapResponse received = queue.poll(1, TimeUnit.SECONDS).asResponse();
         assertEquals(obs, received);
     }
 
     public boolean noMoreReceived() {
         return queue.isEmpty();
+    }
+
+    public void clear() {
+        queue.clear();
     }
 }

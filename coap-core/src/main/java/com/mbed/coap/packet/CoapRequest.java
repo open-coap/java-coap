@@ -92,6 +92,10 @@ public final class CoapRequest {
         return new CoapRequest(peerAddress, transContext);
     }
 
+    public static CoapRequest observe(String uriPath) {
+        return observe(null, uriPath);
+    }
+
     public static CoapRequest observe(InetSocketAddress peerAddress, String uriPath) {
         CoapRequest obsRequest = new CoapRequest(Method.GET, Opaque.EMPTY, new HeaderOptions(), Opaque.EMPTY, peerAddress, TransportContext.EMPTY);
         obsRequest.options().setObserve(0);

@@ -33,6 +33,7 @@ public class UdpIntegrationTest extends IntegrationTestBase {
     protected CoapClient buildClient(int port) throws IOException {
         return CoapServer.builder()
                 .transport(udp())
+                .notificationsReceiver(receiver)
                 .blockSize(BlockSize.S_1024)
                 .outboundFilter(TokenGeneratorFilter.sequential(1))
                 .buildClient(localhost(port));

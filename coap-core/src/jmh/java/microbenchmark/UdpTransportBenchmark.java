@@ -59,7 +59,7 @@ public class UdpTransportBenchmark {
     public void setup() throws CoapException, IOException {
         ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.ERROR);
 
-        coapServer = new CoapServer(server, coapIn -> server.sendPacket(coapResp), null, () -> {
+        coapServer = new CoapServer(server, coapIn -> server.sendPacket(coapResp), null, null, () -> {
         });
         coapServer.start();
 

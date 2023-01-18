@@ -36,6 +36,8 @@ import com.mbed.coap.server.messaging.CapabilitiesStorageImpl;
 import com.mbed.coap.server.messaging.CoapTcpDispatcher;
 import com.mbed.coap.server.messaging.PayloadSizeVerifier;
 import com.mbed.coap.server.messaging.TcpExchangeFilter;
+import com.mbed.coap.server.observe.NotificationsReceiver;
+import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transport.CoapTcpTransport;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
@@ -54,6 +56,8 @@ public class CoapServerBuilderForTcp {
     private BlockSize blockSize;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
+    private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
+    private ObservationsStore observationsStore = ObservationsStore.ALWAYS_EMPTY;
 
     CoapServerBuilderForTcp() {
         csmStorage = new CapabilitiesStorageImpl();
@@ -112,6 +116,19 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
+    public CoapServerBuilderForTcp notificationsReceiver(NotificationsReceiver notificationsReceiver) {
+        this.notificationsReceiver = requireNonNull(notificationsReceiver);
+        if (observationsStore.equals(ObservationsStore.ALWAYS_EMPTY)) {
+            return observationsStore(ObservationsStore.inMemory());
+        }
+        return this;
+    }
+
+    public CoapServerBuilderForTcp observationsStore(ObservationsStore observationsStore) {
+        this.observationsStore = requireNonNull(observationsStore);
+        return this;
+    }
+
     public CoapClient buildClient(InetSocketAddress target) throws IOException {
         return CoapClient.create(target, build().start(), r -> r.getCode() == Code.C703_PONG);
     }
@@ -122,7 +139,6 @@ public class CoapServerBuilderForTcp {
                 .whenComplete((__, throwable) -> logSent(packet, throwable));
 
         // NOTIFICATION
-        ObservationHandler observationHandler = new ObservationHandler();
         Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThenMap(CoapTcpPacketConverter::toCoapPacket)
@@ -132,7 +148,6 @@ public class CoapServerBuilderForTcp {
         // INBOUND
         Service<CoapRequest, CoapResponse> inboundService = new RescueFilter()
                 .andThenIf(hasRoute(), new CriticalOptionVerifier())
-                .andThenIf(hasRoute(), new ObservationSenderFilter(sendNotification))
                 .andThenIf(hasRoute(), new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);
@@ -140,14 +155,16 @@ public class CoapServerBuilderForTcp {
         // OUTBOUND
         TcpExchangeFilter exchangeFilter = new TcpExchangeFilter();
         Service<CoapRequest, CoapResponse> outboundService = outboundFilter
-                .andThen(new ObserveRequestFilter(observationHandler))
+                .andThen(new ObserveRequestFilter(observationsStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(exchangeFilter)
                 .andThenMap(CoapTcpPacketConverter::toCoapPacket)
                 .then(sender);
 
-        Function<SeparateResponse, Boolean> inboundObservation = obs -> observationHandler.notify(obs, outboundService);
+        Function<SeparateResponse, Boolean> inboundObservation = new ObservationHandler(notificationsReceiver, observationsStore)
+                .andThen(it -> it.getNow(true));
+
         CoapTcpDispatcher dispatcher = new CoapTcpDispatcher(
                 sender,
                 csmStorage,
@@ -159,7 +176,7 @@ public class CoapServerBuilderForTcp {
 
         coapTransport.setListener(dispatcher);
 
-        return new CoapServer(coapTransport, dispatcher::handle, outboundService, Function::identity);
+        return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, Function::identity);
     }
 
     private boolean hasRoute() {

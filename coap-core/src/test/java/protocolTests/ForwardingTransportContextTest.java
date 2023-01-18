@@ -31,8 +31,8 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.server.observe.ObserversManager;
 import com.mbed.coap.transport.InMemoryCoapTransport;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 public class ForwardingTransportContextTest {
 
     private CoapServer server;
+    private ObserversManager observersManager = new ObserversManager();
     private final CoapResourceTest coapResourceTest = new CoapResourceTest();
     private final InMemoryCoapTransport srvTransport = spy(new InMemoryCoapTransport(5683));
     private final TransportContext.Key<String> MY_TEXT = new TransportContext.Key<>("");
@@ -56,10 +57,11 @@ public class ForwardingTransportContextTest {
                 .route(RouterService.builder()
                         .get("/test", coapResourceTest)
                         .put("/test", coapResourceTest)
-                        .get("/obs", new ObservableResourceService(CoapResponse.ok("A")))
+                        .get("/obs", observersManager.then(__ -> CoapResponse.ok("A").toFuture()))
                 )
                 .blockSize(BlockSize.S_16).transport(srvTransport).build();
 
+        observersManager.init(server);
         server.start();
     }
 

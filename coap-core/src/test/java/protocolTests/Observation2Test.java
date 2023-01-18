@@ -16,18 +16,18 @@
  */
 package protocolTests;
 
+import static com.mbed.coap.packet.CoapRequest.observe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
-import com.mbed.coap.utils.ObservationConsumer;
 import java.net.InetSocketAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
 
 
@@ -37,21 +37,23 @@ public class Observation2Test {
     private static final InetSocketAddress SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", 5683);
     private TransportConnectorMock transport;
     private CoapClient client;
-    private ObservationConsumer observationListener;
+    private final StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
 
     @BeforeEach
     public void setUp() throws Exception {
+        notifReceiver.clear();
+
         transport = new TransportConnectorMock();
 
         client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0))
+                .notificationsReceiver(notifReceiver)
                 .buildClient(SERVER_ADDRESS);
 
         //establish observation relation
         transport.when(newCoapPacket(1).get().uriPath("/path1").obs(0).token(1).build())
                 .then(newCoapPacket(1).ack(Code.C205_CONTENT).obs(0).token(1).payload("12345").build());
 
-        observationListener = new ObservationConsumer();
-        assertEquals("12345", client.observe("/path1", Opaque.ofBytes(1), observationListener).join().getPayloadString());
+        assertEquals("12345", client.sendSync(observe("/path1").token(1)).getPayloadString());
     }
 
     @AfterEach
@@ -66,6 +68,6 @@ public class Observation2Test {
 
         //important, no token included in response
         assertEquals(transport.getLastOutgoingMessage(), newCoapPacket(SERVER_ADDRESS).mid(3).ack(null).build());
-        assertEquals(observationListener.next().getPayloadString(), "perse perse");
+        assertEquals(notifReceiver.take().asResponse().getPayloadString(), "perse perse");
     }
 }

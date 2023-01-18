@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
- * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,31 +20,32 @@ import static com.mbed.coap.packet.CoapRequest.observe;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.ofBytes;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Opaque;
+import com.mbed.coap.server.observe.HashMapObservationsStore;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
 class ObserveRequestFilterTest {
 
-    private ObserveRequestFilter filter = new ObserveRequestFilter(new ObservationHandler());
-    private Service<CoapRequest, CoapResponse> service = filter.then(req -> completedFuture(ok(req.getToken())));
+    private HashMapObservationsStore obsMap = new HashMapObservationsStore();
+    private ObserveRequestFilter filter = new ObserveRequestFilter(obsMap::add);
+    private Service<CoapRequest, CoapResponse> service = filter.then(req -> ok(req.getToken()).toFuture());
 
     @Test
     void shouldAddTokenForObservationRequest() {
-        CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs"));
+        CompletableFuture<CoapResponse> resp = service.apply(observe("/obs"));
 
         assertEquals(ok(ofBytes(1)), resp.join());
     }
 
     @Test
     void shouldNotChangeTokenForObservationRequestWithExistingToken() {
-        CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs").token(100));
+        CompletableFuture<CoapResponse> resp = service.apply(observe("/obs").token(100));
 
         assertEquals(ok(ofBytes(100)), resp.join());
     }
@@ -58,20 +58,23 @@ class ObserveRequestFilterTest {
     }
 
     @Test
-    void shouldSetNextSupplierForSuccessfulObservationResponse() {
+    void shouldAddObservationRelationForSuccessfulObservationResponse() {
         service = filter.then(req -> ok("ok").observe(12).toFuture());
 
-        CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs"));
+        CompletableFuture<CoapResponse> resp = service.apply(observe("/obs"));
 
-        assertNotNull(resp.join().next);
+        assertTrue(obsMap.contains(Opaque.ofBytes(1)));
+        assertEquals(ok("ok").observe(12), resp.join());
     }
 
     @Test
-    void shouldNotSetNextSupplierForFailedObservationResponse() {
+    void shouldNotAddObservationRelationForFailedObservationResponse() {
         service = filter.then(req -> ok("ok").toFuture());
 
-        CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs"));
+        CompletableFuture<CoapResponse> resp = service.apply(observe("/obs"));
 
-        assertNull(resp.join().next);
+        // then
+        assertTrue(obsMap.isEmpty());
+        assertEquals(ok("ok"), resp.join());
     }
 }

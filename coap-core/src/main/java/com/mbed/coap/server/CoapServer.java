@@ -20,6 +20,7 @@ import static com.mbed.coap.utils.Validations.assume;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
@@ -35,13 +36,15 @@ public class CoapServer {
     private final CoapTransport transport;
     private final Consumer<CoapPacket> dispatcher;
     private final Service<CoapRequest, CoapResponse> outboundService;
+    private final Service<SeparateResponse, Boolean> outboundResponseService;
     private final Runnable stopAll;
 
     public CoapServer(CoapTransport transport, Consumer<CoapPacket> dispatcher, Service<CoapRequest, CoapResponse> outboundService,
-            Runnable stopAll) {
+            Service<SeparateResponse, Boolean> outboundResponseService, Runnable stopAll) {
         this.transport = transport;
         this.dispatcher = dispatcher;
         this.outboundService = outboundService;
+        this.outboundResponseService = outboundResponseService;
         this.stopAll = stopAll;
     }
 
@@ -123,4 +126,7 @@ public class CoapServer {
         return outboundService;
     }
 
+    public Service<SeparateResponse, Boolean> outboundResponseService() {
+        return outboundResponseService;
+    }
 }

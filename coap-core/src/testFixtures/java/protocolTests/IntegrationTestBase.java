@@ -19,12 +19,14 @@ package protocolTests;
 import static com.mbed.coap.packet.CoapRequest.fetch;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.iPatch;
+import static com.mbed.coap.packet.CoapRequest.observe;
 import static com.mbed.coap.packet.CoapRequest.patch;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
+import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -45,9 +47,10 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
 import com.mbed.coap.packet.Opaque;
+import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.server.observe.ObserversManager;
 import com.mbed.coap.utils.Bytes;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
@@ -58,7 +61,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import protocolTests.utils.ObservationListener;
+import protocolTests.utils.StubNotificationsReceiver;
 
 
 abstract class IntegrationTestBase {
@@ -66,14 +69,15 @@ abstract class IntegrationTestBase {
     CoapServer server = null;
     CoapClient client;
 
-    private ObservableResourceService obsResource;
     private final Opaque largePayload = Bytes.opaqueOfRandom(3000);
-    private final ObservationListener listener = new ObservationListener();
+    protected final StubNotificationsReceiver receiver = new StubNotificationsReceiver();
     private CompletableFuture<CoapResponse> slowResourcePromise;
+    private ObserversManager observersManager;
+    private CoapResponse obsResource = CoapResponse.ok("");
 
     @BeforeEach
     public void setUp() throws IOException {
-        obsResource = new ObservableResourceService(CoapResponse.ok(""));
+        observersManager = new ObserversManager();
         slowResourcePromise = new CompletableFuture<>();
         TestResource testResource = new TestResource();
         final Service<CoapRequest, CoapResponse> route = RouterService.builder()
@@ -100,13 +104,16 @@ abstract class IntegrationTestBase {
                 .get("/exception", __ -> {
                     throw new IllegalArgumentException();
                 })
-                .get("/obs", obsResource)
+                .get("/obs", req -> observersManager.apply(req, __ -> obsResource.toFuture()))
+                .fetch("/obs", req -> observersManager.apply(req, __ -> obsResource.toFuture()))
                 .get("/slow", __ -> slowResourcePromise)
                 .get(CoapConstants.WELL_KNOWN_CORE, req ->
                         ok("<test/1>,<test2>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
                 ).build();
 
-        server = buildServer(0, IntegrationTestBase::routeFilter, route).start();
+        server = buildServer(0, IntegrationTestBase::routeFilter, route);
+        observersManager.init(server);
+        server.start();
 
         int port = server.getLocalSocketAddress().getPort();
         client = buildClient(port);
@@ -122,7 +129,7 @@ abstract class IntegrationTestBase {
             client.close();
         }
         server.stop();
-        assertTrue(listener.noMoreReceived());
+        assertTrue(receiver.noMoreReceived());
     }
 
     @Test
@@ -251,31 +258,50 @@ abstract class IntegrationTestBase {
 
 
     @Test
-    void observeResource() throws InterruptedException {
+    void observeResource() throws Exception {
         // given
-        CoapResponse observe = client.observe("/obs", listener).join();
+        CoapResponse observe = client.sendSync(observe("/obs"));
         assertEquals(CoapResponse.ok("").observe(0), observe);
 
         // when
-        assertTrue(obsResource.putPayload(Opaque.of("obs1")));
-        await().until(() -> obsResource.putPayload(Opaque.of("obs2")));
+        observersManager.sendObservation("/obs", __ -> ok("obs1").toFuture());
+        observersManager.sendObservation("/obs", __ -> ok("obs2").toFuture());
 
         // then
-        listener.verifyReceived(CoapResponse.ok("obs1").observe(1));
-        listener.verifyReceived(CoapResponse.ok("obs2").observe(2));
+        receiver.verifyReceived(ok("obs1").observe(1));
+        receiver.verifyReceived(ok("obs2").observe(2));
     }
 
     @Test
-    void observeLargeResource() throws InterruptedException {
+    void observeResource_with_FETCH() throws Exception {
         // given
-        CoapResponse observe = client.observe("/obs", listener).join();
+        CoapResponse observe = client.sendSync(fetch("/obs").observe(0));
         assertEquals(CoapResponse.ok("").observe(0), observe);
 
         // when
-        assertTrue(obsResource.putPayload(largePayload));
+        observersManager.sendObservation("/obs", __ -> ok("obs1").toFuture());
+        observersManager.sendObservation("/obs", __ -> ok("obs2").toFuture());
 
         // then
-        assertEquals(CoapResponse.ok(largePayload), listener.take().options(CoapOptionsBuilder::unsetBlock2Res));
+        receiver.verifyReceived(ok("obs1").observe(1));
+        receiver.verifyReceived(ok("obs2").observe(2));
+    }
+
+    @Test
+    void observeLargeResource() throws Exception {
+        // given
+        CoapResponse observe = client.sendSync(observe("/obs"));
+        assertEquals(ok("").observe(0), observe);
+
+        // when
+        obsResource = ok(largePayload);
+        observersManager.sendObservation("/obs", __ -> obsResource.toFuture());
+
+        // then
+        SeparateResponse obs = receiver.take();
+        assertEquals(Code.C205_CONTENT, obs.asResponse().getCode());
+        assertEquals(3000, obs.asResponse().options().getSize2Res());
+        assertEquals(largePayload, retrieveRemainingBlocks("/obs", obs, client::send).join());
     }
 
     @Test

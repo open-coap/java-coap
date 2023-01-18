@@ -16,6 +16,7 @@
 package protocolTests;
 
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
@@ -28,6 +29,8 @@ import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
+import com.mbed.coap.server.observe.HashMapObservationsStore;
+import com.mbed.coap.server.observe.ObserversManager;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.transport.udp.DatagramSocketTransport;
 import java.io.IOException;
@@ -58,6 +61,9 @@ public class UsageTest {
     }
 
     void serverUsage() throws IOException {
+        // define subscription manager for observable resources
+        ObserversManager observersManager = new ObserversManager();
+
         server = CoapServer.builder()
                 // configure with plain text UDP transport, listening on port 5683
                 .transport(new DatagramSocketTransport(5683))
@@ -72,20 +78,13 @@ public class UsageTest {
                             return coapResponse(Code.C204_CHANGED).toFuture();
                         })
                         // observable resource
-                        .get("/sensors/temperature", req -> {
-                            CoapResponse resp = CoapResponse.ok("21C").nextSupplier(() -> {
-                                        // we need to define a promise for next value
-                                        CompletableFuture<CoapResponse> promise = new CompletableFuture();
-                                        // ... complete once resource value changes
-                                        return promise;
-                                    }
-                            );
-
-                            return resp.toFuture();
-                        })
+                        .get("/sensors/temperature", observersManager.then(req ->
+                                CoapResponse.ok("21C").toFuture()
+                        ))
                 )
                 .build();
 
+        observersManager.init(server);
         server.start();
     }
 
@@ -103,12 +102,23 @@ public class UsageTest {
         client.close();
     }
 
+    private CoapClient client;
+
     @Test
-    void completeClientUsage() throws IOException, CoapException {
+    void completeClientUsage() throws Exception {
         // build CoapClient that connects to coap server which is running on port 5683
-        CoapClient client = CoapServer.builder()
+        client = CoapServer.builder()
                 // define transport, plain text UDP listening on random port
                 .transport(udp())
+                // (optional) register observation listener to handle incoming observations
+                .notificationsReceiver((resourceUriPath, observation) -> {
+                    LOGGER.info("Observation: {}", observation);
+                    // in case of block transfer, call to retrieve rest of payload
+                    CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
+                    return true; // return false to terminate observation
+                })
+                // (optional) set custom observation relation store, for example one that will use external storage
+                .observationsStore(new HashMapObservationsStore())
                 // (optional) define maximum block size
                 .blockSize(BlockSize.S_1024)
                 // (optional) set maximum response timeout, default for every request
@@ -150,11 +160,8 @@ public class UsageTest {
                 LOGGER.info(resp.toString())
         );
 
-        // observe resource (subscribe), observations will be handled to provided callback
-        CompletableFuture<CoapResponse> resp3 = client.observe("/sensors/temperature", coapResponse -> {
-            LOGGER.info(coapResponse.toString());
-            return true; // return false to terminate observation
-        });
+        // observe (subscribe) to a resource, observations will be handled by observation listener
+        CompletableFuture<CoapResponse> resp3 = client.send(CoapRequest.observe("/sensors/temperature"));
         LOGGER.info(resp3.join().toString());
 
         client.close();
