@@ -21,7 +21,6 @@ import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
 import static com.mbed.coap.utils.Timer.toTimer;
 import static com.mbed.coap.utils.Validations.require;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapPacket;
@@ -44,6 +43,8 @@ import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
 import com.mbed.coap.server.messaging.ObservationMapper;
 import com.mbed.coap.server.messaging.PiggybackedExchangeFilter;
 import com.mbed.coap.server.messaging.RetransmissionFilter;
+import com.mbed.coap.server.observe.NotificationsReceiver;
+import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transmission.RetransmissionBackOff;
 import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.utils.Filter;
@@ -73,6 +74,8 @@ public final class CoapServerBuilder {
     private int maxQueueSize = 100;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
+    private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
+    private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
 
     CoapServerBuilder() {
     }
@@ -105,6 +108,19 @@ public final class CoapServerBuilder {
 
     public CoapServerBuilder outboundFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter) {
         this.outboundFilter = requireNonNull(outboundFilter);
+        return this;
+    }
+
+    public CoapServerBuilder notificationsReceiver(NotificationsReceiver notificationsReceiver) {
+        this.notificationsReceiver = requireNonNull(notificationsReceiver);
+        if (observationStore.equals(ObservationsStore.ALWAYS_EMPTY)) {
+            return observationsStore(ObservationsStore.inMemory());
+        }
+        return this;
+    }
+
+    public CoapServerBuilder observationsStore(ObservationsStore observationsStore) {
+        this.observationStore = requireNonNull(observationsStore);
         return this;
     }
 
@@ -194,15 +210,13 @@ public final class CoapServerBuilder {
         Service<CoapPacket, Boolean> sender = packet -> coapTransport.sendPacket(packet)
                 .whenComplete((__, throwable) -> logSent(packet, throwable));
 
-        ObservationHandler observationHandler = new ObservationHandler();
-
         // OUTBOUND
         ExchangeFilter exchangeFilter = new ExchangeFilter();
         RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(timer, retransmissionBackOff, CoapPacket::isConfirmable);
         PiggybackedExchangeFilter piggybackedExchangeFilter = new PiggybackedExchangeFilter();
 
         Service<CoapRequest, CoapResponse> outboundService = outboundFilter
-                .andThen(new ObserveRequestFilter(observationHandler))
+                .andThen(new ObserveRequestFilter(observationStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
@@ -231,7 +245,6 @@ public final class CoapServerBuilder {
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(new RescueFilter())
                 .andThen(new CriticalOptionVerifier())
-                .andThen(new ObservationSenderFilter(sendNotification))
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);
@@ -239,13 +252,13 @@ public final class CoapServerBuilder {
 
         Service<CoapPacket, CoapPacket> inboundObservation = duplicateDetector
                 .andThen(new ObservationMapper())
-                .then(obs -> completedFuture(observationHandler.notify(obs, outboundService)));
+                .then(new ObservationHandler(notificationsReceiver, observationStore));
 
         CoapDispatcher dispatcher = new CoapDispatcher(sender, inboundObservation, inboundService,
                 piggybackedExchangeFilter::handleResponse, exchangeFilter::handleResponse
         );
 
-        return new CoapServer(coapTransport, dispatcher::handle, outboundService, () -> {
+        return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, () -> {
             piggybackedExchangeFilter.stop();
             duplicateDetectorCache.stop();
             if (stopExecutor) {

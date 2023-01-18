@@ -21,23 +21,16 @@ import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class CoapResponse {
     private final Code code;
     private final HeaderOptions options;
     private final Opaque payload;
-    public transient final Supplier<CompletableFuture<CoapResponse>> next;
 
-    private CoapResponse(Code code, Opaque payload, HeaderOptions options, Supplier<CompletableFuture<CoapResponse>> next) {
+    private CoapResponse(Code code, Opaque payload, HeaderOptions options) {
         this.code = code;
         this.payload = Objects.requireNonNull(payload);
         this.options = Objects.requireNonNull(options);
-        this.next = next;
-    }
-
-    public CoapResponse(Code code, Opaque payload, HeaderOptions options) {
-        this(code, payload, options, null);
     }
 
     // --- STATIC CONSTRUCTORS ---
@@ -163,10 +156,6 @@ public class CoapResponse {
     }
 
     // ---  MODIFIERS ---
-
-    public CoapResponse nextSupplier(Supplier<CompletableFuture<CoapResponse>> next) {
-        return new CoapResponse(code, payload, options, next);
-    }
 
     public CoapResponse payload(Opaque newPayload) {
         return new CoapResponse(code, newPayload, options);

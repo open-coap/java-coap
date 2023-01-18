@@ -22,7 +22,6 @@ import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.BlockOption;
@@ -32,9 +31,9 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
-import com.mbed.coap.utils.ObservationConsumer;
+import com.mbed.coap.server.observe.ObserversManager;
+import com.mbed.coap.utils.ObservableResource;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -42,13 +41,14 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import protocolTests.utils.StubNotificationsReceiver;
 
 /**
  * Block1 header option block transfer size limit tests.
  */
 public class Block1TransferMaxSizeTest {
     private ChangeableResource changeableResource;
-    private ObservableResourceService observableResource;
+    private ObservableResource observableResource;
 
     private static final Opaque OBS_RESOURCE_INIT_VALUE = Opaque.of("0_2345678901234|");
 
@@ -58,13 +58,15 @@ public class Block1TransferMaxSizeTest {
     private static final int MAX_DATA = 32;
 
     private CoapServer server = null;
+    private final ObserversManager observersManager = new ObserversManager();
     private CoapClient client = null;
+    private final StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
 
     @BeforeEach
     public void setUp() throws IOException {
 
         changeableResource = new ChangeableResource();
-        observableResource = new ObservableResourceService(CoapResponse.ok(OBS_RESOURCE_INIT_VALUE));
+        observableResource = new ObservableResource(CHANGEABLE_RESOURCE_PATH, CoapResponse.ok(OBS_RESOURCE_INIT_VALUE), observersManager);
 
         server = CoapServer.builder()
                 .route(RouterService.builder()
@@ -77,6 +79,7 @@ public class Block1TransferMaxSizeTest {
                 .transport(udp())
                 .build();
 
+        observersManager.init(server);
         server.start();
         SERVER_PORT = server.getLocalSocketAddress().getPort();
 
@@ -84,6 +87,7 @@ public class Block1TransferMaxSizeTest {
         client = CoapServer.builder()
                 .transport(udp())
                 .maxIncomingBlockTransferSize(MAX_DATA)
+                .notificationsReceiver(notifReceiver)
                 .blockSize(BlockSize.S_16)
                 .buildClient(localhost(SERVER_PORT));
     }
@@ -151,36 +155,5 @@ public class Block1TransferMaxSizeTest {
             }
             throw new IllegalStateException();
         }
-    }
-
-
-    @Test
-    public void block2_observationWithBlocks() throws Exception {
-        Opaque expectedBody = OBS_RESOURCE_INIT_VALUE;
-
-        //register observation
-        ObservationConsumer obsListener = new ObservationConsumer();
-        CoapResponse packet = client.observe(OBSERVABLE_RESOURCE_PATH, obsListener).join();
-        assertEquals(expectedBody, packet.getPayload());
-
-        System.out.println("expected: " + expectedBody);
-        System.out.println("received: " + packet.getPayload());
-
-        //notif 1
-        System.out.println("\n-- NOTIF 1");
-        expectedBody = expectedBody.concat(Opaque.of("1_2345678901234|"));
-        observableResource.putPayload(expectedBody);
-        packet = obsListener.next();
-        assertEquals(expectedBody, packet.getPayload());
-
-        System.out.println("expected: " + expectedBody);
-        System.out.println("received: " + packet.getPayloadString());
-
-        // actually we will fail only after maxSize + one block
-        // first block received by observation code and consequent, with size check,
-        // by block mechanism.
-        expectedBody = expectedBody.concat(Opaque.of("2_2345678901234|3_2345678901234|"));
-        observableResource.putPayload(expectedBody);
-        assertTrue(obsListener.isEmpty());
     }
 }

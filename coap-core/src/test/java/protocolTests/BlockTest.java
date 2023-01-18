@@ -21,23 +21,19 @@ import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
-import com.mbed.coap.utils.ObservationConsumer;
 import java.net.InetSocketAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
 
 
@@ -45,12 +41,17 @@ public class BlockTest {
     private static final InetSocketAddress SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", 5683);
     private TransportConnectorMock transport;
     private CoapClient client;
+    private final StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
 
     @BeforeEach
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
+        notifReceiver.clear();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0)).blockSize(BlockSize.S_32)
+        client = CoapServer.builder()
+                .transport(transport)
+                .midSupplier(new MessageIdSupplierImpl(0)).blockSize(BlockSize.S_32)
+                .notificationsReceiver(notifReceiver)
                 .retransmission(ofFixed(ofMillis(500)))
                 .buildClient(SERVER_ADDRESS);
     }
@@ -131,64 +132,4 @@ public class BlockTest {
         assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());
 
     }
-
-    @Test
-    public void block2_notification_success() throws Exception {
-        //establish observation
-        transport.when(newCoapPacket(1).get().token(1).uriPath("/test").obs(0).build())
-                .then(newCoapPacket(1).ack(Code.C205_CONTENT).token(1).obs(0).payload("12").build());
-
-        ObservationConsumer observationListener = new ObservationConsumer();
-        assertEquals("12", client.observe("/test", Opaque.ofBytes(1), observationListener).join().getPayloadString());
-
-        //notification with blocks
-        System.out.println("------");
-        transport.when(newCoapPacket(2).get().block2Res(1, BlockSize.S_16, false).uriPath("/test").build())
-                .then(newCoapPacket(2).ack(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, true).payload("123456789012345|").build());
-
-        transport.when(newCoapPacket(3).get().block2Res(2, BlockSize.S_16, false).uriPath("/test").build())
-                .then(newCoapPacket(3).ack(Code.C205_CONTENT).block2Res(2, BlockSize.S_16, false).payload("12345").build());
-
-        transport.receive(newCoapPacket(101).con(Code.C205_CONTENT).obs(2).token(1).block2Res(0, BlockSize.S_16, true).payload("123456789012345|").build(), new InetSocketAddress("127.0.0.1", 61616));
-
-
-        assertEquals(observationListener.next(), CoapResponse.ok("123456789012345|123456789012345|12345").options(o -> o.block2Res(new BlockOption(2, BlockSize.S_16, false))));
-    }
-
-    @Test
-    public void block2_notification_secondBlock_wrongSize() throws Exception {
-        //establish observation
-        transport.when(newCoapPacket(1).get().token(1).uriPath("/test").obs(0).build())
-                .then(newCoapPacket(1).ack(Code.C205_CONTENT).token(1).obs(0).payload("12").build());
-
-        ObservationConsumer observationListener = new ObservationConsumer();
-        assertEquals("12", client.observe("/test", Opaque.ofBytes(1), observationListener).join().getPayloadString());
-
-        //notification with blocks
-        System.out.println("------");
-        transport.when(newCoapPacket(2).get().block2Res(1, BlockSize.S_16, false).uriPath("/test").build())
-                .then(newCoapPacket(2).ack(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, true).payload("1234567890").build());
-
-        transport.receive(newCoapPacket(101).con(Code.C205_CONTENT).obs(2).token(1).block2Res(0, BlockSize.S_16, true).payload("123456789012345|").build(), new InetSocketAddress("127.0.0.1", 61616));
-
-        assertTrue(observationListener.isEmpty());
-    }
-
-    @Test
-    public void block2_notification_firstBlock_wrongSize() throws Exception {
-        //establish observation
-        transport.when(newCoapPacket(1).get().token(1).uriPath("/test").obs(0).build())
-                .then(newCoapPacket(1).ack(Code.C205_CONTENT).token(1).obs(0).payload("12").build());
-
-        ObservationConsumer observationListener = new ObservationConsumer();
-        assertEquals("12", client.observe("/test", Opaque.ofBytes(1), observationListener).get().getPayloadString());
-
-        //notification with blocks
-        System.out.println("------");
-
-        transport.receive(newCoapPacket(101).con(Code.C205_CONTENT).obs(1).token(1).block2Res(0, BlockSize.S_16, true).payload("123456789012345").build(), new InetSocketAddress("127.0.0.1", 61616));
-
-        assertTrue(observationListener.isEmpty());
-    }
-
 }

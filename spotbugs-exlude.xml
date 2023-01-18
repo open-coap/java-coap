@@ -50,5 +50,9 @@
         <Class name="com.mbed.coap.linkformat.LinkFormat"/>
         <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
     </Match>
+    <Match>
+        <Class name="com.mbed.coap.server.observe.ObserversManager"/>
+        <Bug pattern="WMI_WRONG_MAP_ITERATOR"/>
+    </Match>
 
 </FindBugsFilter>

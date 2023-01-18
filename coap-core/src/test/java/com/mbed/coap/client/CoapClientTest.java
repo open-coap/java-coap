@@ -17,11 +17,11 @@
 package com.mbed.coap.client;
 
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.observe;
 import static com.mbed.coap.packet.CoapRequest.ping;
 import static com.mbed.coap.packet.MediaTypes.CT_TEXT_PLAIN;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -32,8 +32,6 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.transport.TransportContext;
-import com.mbed.coap.utils.FutureQueue;
-import com.mbed.coap.utils.ObservationConsumer;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +40,6 @@ import org.junit.jupiter.api.Test;
 public class CoapClientTest {
     private CoapClient client;
     private final Service<CoapRequest, CoapResponse> clientService = mock(Service.class);
-    private FutureQueue<CoapResponse> next = null;
     private final Opaque token1001 = Opaque.ofBytes(0x03, 0xE9);
 
 
@@ -51,7 +48,6 @@ public class CoapClientTest {
         reset(clientService);
         client = new CoapClient(LOCAL_5683, clientService, () -> {
         }, CoapClient.defaultResolvePingResponse);
-        next = new FutureQueue<>();
     }
 
     @Test
@@ -94,37 +90,13 @@ public class CoapClientTest {
     @Test
     public void observationTest() throws Exception {
         given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).nextSupplier(next).toFuture());
+                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).toFuture());
 
-        ObservationConsumer obsConsumer = new ObservationConsumer();
         // when
-        CompletableFuture<CoapResponse> resp = client.observe("/test", token1001, obsConsumer);
+        CompletableFuture<CoapResponse> resp = client.send(observe("/test").token(token1001));
 
         // then
         assertEquals("1", resp.get().getPayloadString());
-
-        // and then observation
-        next.put(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.observe(2)));
-        assertEquals(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.observe(2)), obsConsumer.next());
-
-    }
-
-    @Test
-    public void shouldTerminateObservation() {
-        given(clientService.apply(get("/test").token(token1001).observe(0).from(LOCAL_5683)))
-                .willReturn(completedFuture(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).nextSupplier(next)));
-        ObservationConsumer obsConsumer = new ObservationConsumer();
-
-        // given, established observation relation
-        CompletableFuture<CoapResponse> resp = client.observe("/test", token1001, obsConsumer);
-        assertEquals("1", resp.join().getPayloadString());
-
-        // when
-        next.put(CoapResponse.notFound());
-
-        // then
-        assertEquals(CoapResponse.notFound(), obsConsumer.next());
-        assertNull(next.promise);
     }
 
 }

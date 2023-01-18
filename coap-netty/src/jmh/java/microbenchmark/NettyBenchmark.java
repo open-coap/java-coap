@@ -70,7 +70,7 @@ public class NettyBenchmark {
     public void setup() throws Exception {
         ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.ERROR);
 
-        coapServer = new CoapServer(serverTransport, coapIn -> serverTransport.sendPacket(coapResp), null, () -> {
+        coapServer = new CoapServer(serverTransport, coapIn -> serverTransport.sendPacket(coapResp), null, null, () -> {
         });
         coapServer.start();
         clientTransport.start();

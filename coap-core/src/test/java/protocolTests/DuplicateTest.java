@@ -16,8 +16,10 @@
  */
 package protocolTests;
 
+import static com.mbed.coap.packet.CoapRequest.observe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -30,14 +32,13 @@ import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ public class DuplicateTest {
     private final AtomicInteger duplicated = new AtomicInteger(0);
     private MockCoapTransport.MockClient client;
     private final CompletableFuture<CoapResponse> delayResource = new CompletableFuture<>();
-    private Function<CoapResponse, Boolean> consumer = mock(Function.class);
+    private final NotificationsReceiver notifReceiver = mock(NotificationsReceiver.class);
 
     private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
             .put("/test", req ->
@@ -67,8 +68,8 @@ public class DuplicateTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        reset(consumer);
-        given(consumer.apply(any())).willReturn(true);
+        reset(notifReceiver);
+        given(notifReceiver.onObservation(any(), any())).willReturn(true);
 
         duplicated.set(0);
         MockCoapTransport serverTransport = new MockCoapTransport();
@@ -76,6 +77,7 @@ public class DuplicateTest {
 
         server = CoapServer.builder()
                 .transport(serverTransport)
+                .notificationsReceiver(notifReceiver)
                 .duplicateMsgCacheSize(100)
                 .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
                 .midSupplier(mid::incrementAndGet)
@@ -139,7 +141,7 @@ public class DuplicateTest {
         CoapClient outbound = CoapClient.create(LOCAL_5683, server);
 
         // given, observation established
-        outbound.observe("/obs", Opaque.variableUInt(1), consumer);
+        outbound.send(observe("/obs").token(1));
         client.verifyReceived(coap(1).token(1).get().uriPath("/obs").obs(0));
         client.send(coap(1).token(1).ack(Code.C205_CONTENT).payload("01").obs(1));
 
@@ -153,7 +155,7 @@ public class DuplicateTest {
         client.verifyReceived(coap(133).ack(null));
         client.verifyReceived(coap(133).ack(null));
         assertEquals(2, duplicated.get());
-        verify(consumer, times(1)).apply(any());
+        verify(notifReceiver, times(1)).onObservation(eq("/obs"), any());
     }
 
     @Test
@@ -161,7 +163,7 @@ public class DuplicateTest {
         CoapClient outbound = CoapClient.create(LOCAL_5683, server);
 
         // given
-        outbound.observe("/obs", Opaque.variableUInt(1), consumer);
+        outbound.send(observe("/obs").token(1));
         client.verifyReceived(coap(1).token(1).get().uriPath("/obs").obs(0));
 
         // when
@@ -169,12 +171,12 @@ public class DuplicateTest {
         client.send(coap(1).token(1).ack(Code.C205_CONTENT).payload("01").obs(1));
 
         // then
-        verify(consumer, times(0)).apply(any());
+        verify(notifReceiver, times(0)).onObservation(any(), any());
 
         // and
         client.send(coap(133).token(1).con(Code.C205_CONTENT).payload("02").obs(2));
         client.verifyReceived(coap(133).ack(null));
-        verify(consumer, times(1)).apply(any());
+        verify(notifReceiver, times(1)).onObservation(any(), any());
     }
 
     private static CoapPacketBuilder coap(int mid) {

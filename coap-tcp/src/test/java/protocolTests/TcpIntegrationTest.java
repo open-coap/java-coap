@@ -55,6 +55,7 @@ public class TcpIntegrationTest extends IntegrationTestBase {
 
         return TcpCoapServer.builder()
                 .transport(new SocketClientTransport(serverAddress, SocketFactory.getDefault(), true))
+                .notificationsReceiver(receiver)
                 .blockSize(BlockSize.S_1024_BERT)
                 .maxIncomingBlockTransferSize(4000)
                 .maxMessageSize(2100)

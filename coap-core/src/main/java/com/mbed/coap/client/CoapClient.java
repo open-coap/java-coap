@@ -16,12 +16,10 @@
  */
 package com.mbed.coap.client;
 
-import static com.mbed.coap.client.ObservationConsumer.consumeFrom;
 import static com.mbed.coap.utils.Validations.require;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
@@ -76,21 +74,6 @@ public class CoapClient implements Closeable {
             throw CoapException.wrap(ex);
         }
     }
-
-    public CompletableFuture<CoapResponse> observe(String uriPath, Function<CoapResponse, Boolean> consumer) {
-        return observe(uriPath, Opaque.variableUInt(uriPath.hashCode()), consumer);
-    }
-
-    public CompletableFuture<CoapResponse> observe(String uriPath, Opaque token, Function<CoapResponse, Boolean> consumer) {
-        CompletableFuture<CoapResponse> resp = clientService.apply(
-                CoapRequest.observe(destination, uriPath).token(token)
-        );
-
-        resp.thenAccept(r -> consumeFrom(r.next, consumer));
-
-        return resp;
-    }
-
 
     public CompletableFuture<Boolean> ping() throws CoapException {
         return clientService.apply(CoapRequest.ping(destination, TransportContext.EMPTY))

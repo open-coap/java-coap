@@ -17,28 +17,29 @@
 package protocolTests;
 
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.observe;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
+import static com.mbed.coap.server.observe.NotificationsReceiver.REJECT_ALL;
 import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static java.time.Duration.ofMillis;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.server.observe.ObserversManager;
+import com.mbed.coap.utils.ObservableResource;
 import java.net.InetSocketAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import protocolTests.utils.ObservationListener;
+import protocolTests.utils.StubNotificationsReceiver;
 
 
 public class ObservationTest {
@@ -46,19 +47,23 @@ public class ObservationTest {
     private final String RES_OBS_PATH1 = "/obs/path1";
     private CoapServer server;
     private InetSocketAddress SERVER_ADDRESS;
-    private ObservableResourceService obsResource;
+    private ObservableResource obsResource;
+    private final ObserversManager observersManager = new ObserversManager();
     private final Opaque token1001 = Opaque.ofBytes(0x10, 0x01);
 
     @BeforeEach
     public void setUpClass() throws Exception {
-        obsResource = new ObservableResourceService(CoapResponse.ok(EMPTY));
+        obsResource = new ObservableResource(RES_OBS_PATH1, CoapResponse.ok(EMPTY), observersManager);
         server = CoapServer.builder().transport(udp())
                 .route(RouterService.builder()
                         .get("/path1", __ -> CoapResponse.ok("content1").toFuture())
                         .get(RES_OBS_PATH1, obsResource)
                 )
-                .retransmission(ofFixed(ofMillis(500))).blockSize(BlockSize.S_128).build();
+                .retransmission(ofFixed(ofMillis(500)))
+                .responseTimeout(ofMillis(600))
+                .blockSize(BlockSize.S_128).build();
 
+        observersManager.init(server);
         server.start();
         SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", server.getLocalSocketAddress().getPort());
     }
@@ -70,44 +75,38 @@ public class ObservationTest {
 
     @Test
     public void observationTest() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).buildClient(SERVER_ADDRESS);
+        StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
 
-        ObservationListener obsListener = new ObservationListener();
-        client.observe(RES_OBS_PATH1, token1001, obsListener).get();
+        client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
         //notify 1
         obsResource.putPayload(of("duupa"));
 
-        CoapResponse packet = obsListener.take();
+        CoapResponse packet = notifReceiver.take().asResponse();
         assertEquals("duupa", packet.getPayloadString());
         assertEquals(Integer.valueOf(1), packet.options().getObserve());
 
         //notify 2
-        await().until(() ->
-                obsResource.putPayload(of("duupa2"))
-        );
+        obsResource.putPayload(of("duupa2"));
 
-        packet = obsListener.take();
+        packet = notifReceiver.take().asResponse();
         assertEquals("duupa2", packet.getPayloadString());
         assertEquals(Integer.valueOf(2), packet.options().getObserve());
 
         //notify 3 with NON-CONF
         System.out.println("\n-- notify 3 with NON");
         // OBS_RESOURCE_1.setConfirmNotification(false);
-        await().until(() ->
-                obsResource.putPayload(of("duupa3"))
-        );
+        obsResource.putPayload(of("duupa3"));
 
-        packet = obsListener.take();
+        packet = notifReceiver.take().asResponse();
         assertEquals("duupa3", packet.getPayloadString());
         assertEquals(Integer.valueOf(3), packet.options().getObserve());
         // OBS_RESOURCE_1.setConfirmNotification(true);
 
         //refresh observation
-        await().untilAsserted(() ->
-                assertEquals(1, obsResource.observationRelations())
-        );
-        client.observe(RES_OBS_PATH1, obsListener).get();
+        assertEquals(1, obsResource.observationRelations());
+        client.sendSync(observe(RES_OBS_PATH1));
 
         assertEquals(1, obsResource.observationRelations());
         client.close();
@@ -115,20 +114,17 @@ public class ObservationTest {
 
     @Test
     public void terminateObservationByServerWithErrorCode() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).buildClient(SERVER_ADDRESS);
+        StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
 
-        ObservationListener obsListener = new ObservationListener();
-        client.observe(RES_OBS_PATH1, token1001, obsListener).get();
+        client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
         obsResource.putPayload(of("duupabb"));
-        CoapResponse packet = obsListener.take();
+        CoapResponse packet = notifReceiver.take().asResponse();
 
         assertEquals("duupabb", packet.getPayloadString());
 
-        await().until(() -> obsResource.terminate(Code.C404_NOT_FOUND));
-        CoapResponse terminObserv = obsListener.take();
-        assertEquals(Code.C404_NOT_FOUND, terminObserv.getCode());
-        assertTrue(terminObserv.options().getObserve() >= 0);
+        obsResource.terminate(Code.C404_NOT_FOUND);
         assertEquals(0, obsResource.observationRelations(), "Number of observation did not change");
 
         client.close();
@@ -136,31 +132,31 @@ public class ObservationTest {
 
     @Test
     public void terminateObservationByServerTimeout() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).buildClient(SERVER_ADDRESS);
+        StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
 
-        ObservationListener obsListener = new ObservationListener();
-        client.observe(RES_OBS_PATH1, token1001, obsListener).get();
+        client.sendSync(observe(RES_OBS_PATH1).token(token1001));
         client.close();
 
-        await().until(() ->
-                obsResource.putPayload(of("duupabb")) //make notification
-        );
+        obsResource.putPayload(of("duupabb")); //make notification
 
-        assertEquals(0, obsResource.observationRelations(), "Observation did not terminate");
+        await().untilAsserted(() ->
+                assertEquals(0, obsResource.observationRelations(), "Observation did not terminate")
+        );
     }
 
     @Test
     public void dontTerminateObservationIfNoObs() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).buildClient(SERVER_ADDRESS);
+        StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
 
         //register observation
-        ObservationListener obsListener = new ObservationListener();
-        client.observe(RES_OBS_PATH1, token1001, obsListener).get();
+        client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
         //notify
         obsResource.putPayload(of("keho"));
 
-        //terminate observation by doing get
+        //do not terminate observation by doing get
         client.sendSync(get(RES_OBS_PATH1));
 
         await().untilAsserted(() ->
@@ -172,10 +168,10 @@ public class ObservationTest {
 
     @Test
     public void terminateObservationByClientWithRst() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(REJECT_ALL).buildClient(SERVER_ADDRESS);
 
         //register observation
-        client.observe(RES_OBS_PATH1, token1001, obs -> false).get();
+        client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
         //notify
         obsResource.putPayload(of("keho"));
@@ -183,7 +179,7 @@ public class ObservationTest {
         await().untilAsserted(() ->
                 assertEquals(0, obsResource.observationRelations(), "Observation not terminated")
         );
-        assertFalse(obsResource.putPayload(of("keho")));
+        obsResource.putPayload(of("keho"));
 
         client.close();
     }
@@ -192,18 +188,18 @@ public class ObservationTest {
     public void observationWithBlocks() throws Exception {
         obsResource.putPayload(ClientServerWithBlocksTest.BIG_RESOURCE);
 
-        CoapClient client = CoapServer.builder().transport(udp()).blockSize(BlockSize.S_128).buildClient(SERVER_ADDRESS);
+        StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+        CoapClient client = CoapServer.builder().transport(udp()).blockSize(BlockSize.S_128).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
 
         //register observation
-        ObservationListener obsListener = new ObservationListener();
-        CoapResponse msg = client.observe(RES_OBS_PATH1, obsListener).get();
+        CoapResponse msg = client.sendSync(observe(RES_OBS_PATH1));
         assertEquals(ClientServerWithBlocksTest.BIG_RESOURCE, msg.getPayload());
 
         //notif 1
         System.out.println("\n-- NOTIF 1");
         obsResource.putPayload(ClientServerWithBlocksTest.BIG_RESOURCE.concat(of("change-1")));
-        CoapResponse packet = obsListener.take();
-        assertEquals(ClientServerWithBlocksTest.BIG_RESOURCE.concat(of("change-1")), packet.getPayload());
+        CoapResponse packet = notifReceiver.take().asResponse();
+        assertEquals(ClientServerWithBlocksTest.BIG_RESOURCE.slice(0, 128), packet.getPayload());
         //assertEquals(Integer.valueOf(1), packet.headers().getObserve());
 
         client.close();

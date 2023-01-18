@@ -24,14 +24,14 @@ The following features are supported by the library:
 * CoAP server mode
 * CoAP client mode
 * Coap over tcp, tls [RFC 8323](https://tools.ietf.org/html/rfc8323)
-  - excluding: websockets, observations with BERT blocks
+    - excluding: websockets, observations with BERT blocks
 * Network transports:
-  - UDP (plain text)
-  - TCP (plain text)
-  - DTLS 1.2 with CID (using mbedtls)
-    - X509 Certificate
-    - PSK
-  - TLS
+    - UDP (plain text)
+    - TCP (plain text)
+    - DTLS 1.2 with CID (using mbedtls)
+        - X509 Certificate
+        - PSK
+    - TLS
 * LwM2M TLV and JSON data formats
 
 ### Fork
@@ -97,9 +97,18 @@ client.close();
 
 ```java
 // build CoapClient that connects to coap server which is running on port 5683
-CoapClient client = CoapServer.builder()
+client = CoapServer.builder()
         // define transport, plain text UDP listening on random port
         .transport(udp())
+        // (optional) register observation listener to handle incoming observations
+        .notificationsReceiver((resourceUriPath, observation) -> {
+            LOGGER.info("Observation: {}", observation);
+            // in case of block transfer, call to retrieve rest of payload
+            CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
+            return true; // return false to terminate observation
+        })
+        // (optional) set custom observation relation store, for example one that will use external storage
+        .observationRelationsStore(new HashMapObservationRelations())
         // (optional) define maximum block size
         .blockSize(BlockSize.S_1024)
         // (optional) set maximum response timeout, default for every request
@@ -141,11 +150,8 @@ futureResponse2.thenAccept(resp ->
         LOGGER.info(resp.toString())
 );
 
-// observe resource (subscribe), observations will be handled to provided callback
-CompletableFuture<CoapResponse> resp3 = client.observe("/sensors/temperature", coapResponse -> {
-    LOGGER.info(coapResponse.toString());
-    return true; // return false to terminate observation
-});
+// observe (subscribe) to a resource, observations will be handled by observation listener
+CompletableFuture<CoapResponse> resp3 = client.send(CoapRequest.observe("/sensors/temperature"));
 LOGGER.info(resp3.join().toString());
 
 client.close();
@@ -154,6 +160,9 @@ client.close();
 ### Server usage
 
 ```java
+// define subscription manager for observable resources
+InboundSubscriptionManager subscriptionManager = new InboundSubscriptionManager();
+
 server = CoapServer.builder()
         // configure with plain text UDP transport, listening on port 5683
         .transport(new DatagramSocketTransport(5683))
@@ -168,20 +177,13 @@ server = CoapServer.builder()
                     return coapResponse(Code.C204_CHANGED).toFuture();
                 })
                 // observable resource
-                .get("/sensors/temperature", req -> {
-                    CoapResponse resp = CoapResponse.ok("21C").nextSupplier(() -> {
-                                // we need to define a promise for next value
-                                CompletableFuture<CoapResponse> promise = new CompletableFuture();
-                                // ... complete once resource value changes
-                                return promise;
-                            }
-                    );
-
-                    return resp.toFuture();
-                })
+                .get("/sensors/temperature", subscriptionManager.then(req ->
+                        completedFuture(CoapResponse.ok("21C"))
+                ))
         )
         .build();
 
+subscriptionManager.init(server);
 server.start();
 ```
 

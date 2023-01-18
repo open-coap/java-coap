@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
- * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +22,15 @@ import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final AtomicLong nextToken = new AtomicLong(0);
-    private final ObservationHandler observationHandler;
+    private final Consumer<CoapRequest> registerRelation;
     private final static Integer INIT_OBSERVE = 0;
 
-    ObserveRequestFilter(ObservationHandler observationHandler) {
-        this.observationHandler = observationHandler;
+    ObserveRequestFilter(Consumer<CoapRequest> registerRelation) {
+        this.registerRelation = registerRelation;
     }
 
     @Override
@@ -48,12 +48,15 @@ class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapRespo
 
         return service.apply(obsReq)
                 .thenApply(resp -> {
-                            if (resp.options().getObserve() != null) {
-                                return resp.nextSupplier(observationHandler.nextSupplier(obsReq.getToken(), obsReq.options().getUriPath()));
-                            } else {
-                                return resp;
+                            if (isSuccessfulObservationSubscription(resp)) {
+                                registerRelation.accept(obsReq);
                             }
+                            return resp;
                         }
                 );
+    }
+
+    private static boolean isSuccessfulObservationSubscription(CoapResponse resp) {
+        return resp.options().getObserve() != null;
     }
 }

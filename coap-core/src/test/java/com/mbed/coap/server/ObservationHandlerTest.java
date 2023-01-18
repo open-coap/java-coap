@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,143 +15,79 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.BlockSize.*;
-import static com.mbed.coap.packet.CoapRequest.*;
-import static com.mbed.coap.packet.CoapResponse.*;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapResponse.notFound;
+import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.of;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.reset;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Opaque;
+import com.mbed.coap.packet.SeparateResponse;
+import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.utils.Service;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import protocolTests.utils.StubNotificationsReceiver;
 
 class ObservationHandlerTest {
 
-    private final ObservationHandler obs = new ObservationHandler();
+    private final StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
+    private final ObservationsStore obsMap = ObservationsStore.inMemory();
+    private final ObservationHandler obs = new ObservationHandler(notifReceiver, obsMap);
     private final Service<CoapRequest, CoapResponse> service = mock(Service.class);
 
 
     @BeforeEach
     void setUp() {
         reset(service);
+        notifReceiver.clear();
+
+        obsMap.add(get("/obs").token(of("100")));
     }
 
     @Test
     void missingObservationRelation() {
-        assertFalse(obs.hasObservation(of("100")));
-
-        assertFalse(obs.notify(ok("OK").observe(2).toSeparate(of("100"), null), service));
+        assertFalse(notif(ok("OK").observe(2).toSeparate(of("999"), null)));
     }
 
     @Test
-    void shouldTerminate() {
-        // given
-        CompletableFuture<CoapResponse> promise = obs.nextSupplier(of("100"), "/obs").get();
-        assertTrue(obs.hasObservation(of("100")));
-
+    void shouldTerminate() throws InterruptedException {
         // when
-        obs.notify(notFound().toSeparate(of("100"), null), null);
+        assertTrue(notif(notFound().toSeparate(of("100"), null)));
 
         // then
-        assertFalse(obs.hasObservation(of("100")));
-        assertEquals(notFound(), promise.join());
+        verifyNoObservationRelation(of("100"));
     }
 
     @Test
-    void shouldTerminateWhenMissingObsOption() {
-        // given
-        CompletableFuture<CoapResponse> promise = obs.nextSupplier(of("100"), "/obs").get();
-        assertTrue(obs.hasObservation(of("100")));
-
+    void shouldTerminateWhenMissingObsOption() throws InterruptedException {
         // when
-        obs.notify(ok("123").toSeparate(of("100"), null), null);
+        assertTrue(notif(ok("123").toSeparate(of("100"), null)));
 
         // then
-        assertFalse(obs.hasObservation(of("100")));
-        assertEquals(ok("123"), promise.join());
+        verifyNoObservationRelation(of("100"));
     }
 
     @Test
-    void shouldNotify() {
-        // given
-        Supplier<CompletableFuture<CoapResponse>> supplier = obs.nextSupplier(of("100"), "/obs");
-        CompletableFuture<CoapResponse> promise = supplier.get();
-        promise.thenRun(supplier::get);
-        assertTrue(obs.hasObservation(of("100")));
-
+    void shouldNotify() throws InterruptedException {
         // when
-        assertTrue(obs.notify(ok("21C").observe(3).toSeparate(of("100"), null), service));
+        assertTrue(notif(ok("21C").observe(3).toSeparate(of("100"), null)));
 
         // then
-        assertEquals(ok("21C").observe(3), promise.join());
+        notifReceiver.verifyReceived(ok("21C").observe(3));
     }
 
-
-    @Test
-    void shouldNotifyAndRetrieveBlocks() {
-        // given
-        Supplier<CompletableFuture<CoapResponse>> supplier = obs.nextSupplier(of("100"), "/obs");
-        CompletableFuture<CoapResponse> promise = supplier.get();
-        promise.thenRun(supplier::get);
-        given(service.apply(get("/obs").block2Res(1, S_16, false))).willReturn(completedFuture(ok("bbb")));
-
-        // when
-        assertTrue(obs.notify(ok("aaaaaaaaaaaaaaaa").observe(2).block2Res(0, S_16, true).toSeparate(of("100"), null), service));
-
-        // then
-        assertEquals(ok("aaaaaaaaaaaaaaaabbb"), promise.join());
+    private Boolean notif(SeparateResponse observationResp) {
+        return obs.apply(observationResp).join();
     }
 
-    @Test
-    void shouldFailWhenUnexpectedBlockRetrieving() {
-        // given
-        Supplier<CompletableFuture<CoapResponse>> supplier = obs.nextSupplier(of("100"), "/obs");
-        CompletableFuture<CoapResponse> promise = supplier.get();
-        promise.thenRun(supplier::get);
-        given(service.apply(get("/obs").block2Res(1, S_16, false))).willReturn(completedFuture(notFound()));
-
-        // when
-        assertTrue(obs.notify(ok("aaaaaaaaaaaaaaaa").observe(2).block2Res(0, S_16, true).toSeparate(of("100"), null), service));
-
-        // then
-        assertFalse(promise.isDone());
+    private void verifyNoObservationRelation(Opaque token) {
+        assertFalse(obsMap.resolveUriPath(ok("21C").observe(3).toSeparate(token, null)).isPresent());
+        assertFalse(notif(ok("21C").observe(3).toSeparate(token, null)));
     }
 
-    @Test
-    void shouldFailWhenMalformedBlockSize() {
-        // given
-        Supplier<CompletableFuture<CoapResponse>> supplier = obs.nextSupplier(of("100"), "/obs");
-        CompletableFuture<CoapResponse> promise = supplier.get();
-        promise.thenRun(supplier::get);
-
-        // when
-        assertFalse(obs.notify(ok("aaa").observe(2).block2Res(0, S_16, true).toSeparate(of("100"), null), service));
-
-        // then
-        assertThrows(CancellationException.class, promise::join);
-    }
-
-    @Test
-    void shouldCancelPreviousPromiseIfNotCompleted() {
-        // given
-        Supplier<CompletableFuture<CoapResponse>> supplier = obs.nextSupplier(of("100"), "/obs");
-        CompletableFuture<CoapResponse> promise = supplier.get();
-
-        // when
-        assertFalse(supplier.get().isDone());
-
-        // then
-        assertTrue(promise.isCancelled());
-    }
-
-    @Test
-    void skipWhenNoObservationOption() {
-        assertFalse(obs.notify(ok("bbb").toSeparate(of("100"), null), service));
-    }
 }
