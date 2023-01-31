@@ -29,5 +29,13 @@ jobs:
         with:
           arguments: build jacocoTestReport -i
           cache-read-only: false
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Junit Tests
+          path: "**/test-results/test/*.xml"
+          only-summary: 'true'
+          reporter: java-junit
       - uses: codecov/codecov-action@v3
         if: matrix.java == '11'
