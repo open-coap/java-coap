@@ -99,6 +99,11 @@ subprojects {
         excludeFilter.set(rootProject.file("spotbugs-exlude.xml"))
     }
 
+    testlogger {
+        showPassed = false
+        showSkipped = false
+    }
+
     publishing {
         publications {
             create<MavenPublication>("OSSRH") {
