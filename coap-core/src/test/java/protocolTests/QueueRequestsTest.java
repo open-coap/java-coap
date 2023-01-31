@@ -180,7 +180,7 @@ public class QueueRequestsTest {
         //second request should be send
         server.verifyReceived();
 
-        assertTrue(futResp1.isDone());
+        assertFalse(futResp1.isDone());
         assertFalse(futResp2.isDone());
 
         //send response for queued inactive transaction
