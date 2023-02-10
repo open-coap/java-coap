@@ -12,20 +12,13 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import java.util.concurrent.ExecutionException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.validateMockitoUsage;
 
 class MicrometerMetricsFilterTest {
     private final MeterRegistry registry = new LoggingMeterRegistry();
     private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
     private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> completedFuture(ok("OK")));
     private final Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
-
-    @AfterEach
-    public void validate() {
-        validateMockitoUsage();
-    }
 
     @Test
     public void shouldBuildFilter() {
