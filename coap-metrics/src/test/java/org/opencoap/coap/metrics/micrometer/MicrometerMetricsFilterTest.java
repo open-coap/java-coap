@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mbed.coap.metrics.micrometer;
+package org.opencoap.coap.metrics.micrometer;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
