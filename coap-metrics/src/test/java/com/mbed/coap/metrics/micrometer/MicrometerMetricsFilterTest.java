@@ -9,6 +9,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.utils.Service;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.AfterEach;
@@ -16,14 +17,23 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.validateMockitoUsage;
 
 class MicrometerMetricsFilterTest {
-    private MeterRegistry registry = new LoggingMeterRegistry();
-    private MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
-    private Service<CoapRequest, CoapResponse> okService = filter.then(__ -> completedFuture(ok("OK")));
-    private Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
+    private final MeterRegistry registry = new LoggingMeterRegistry();
+    private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
+    private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> completedFuture(ok("OK")));
+    private final Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
 
     @AfterEach
     public void validate() {
         validateMockitoUsage();
+    }
+
+    @Test
+    public void shouldBuildFilter() {
+        MicrometerMetricsFilter.builder()
+                .metricName("test")
+                .registry(registry)
+                .distributionStatisticConfig(DistributionStatisticConfig.builder().percentiles(0.5, 0.95).build())
+                .build();
     }
 
     @Test
@@ -34,7 +44,7 @@ class MicrometerMetricsFilterTest {
     }
 
     @Test
-    public void shouldRegisterTimerMetric() throws ExecutionException, InterruptedException {
+    public void shouldRegisterTimerMetric() {
         okService.apply(get("/test/1")).join();
         assertNotNull(
                 registry.find("coap.server.requests")

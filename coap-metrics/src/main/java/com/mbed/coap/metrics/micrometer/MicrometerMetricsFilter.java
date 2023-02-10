@@ -20,7 +20,6 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     private final MeterRegistry registry;
     private final AtomicInteger activeRequests;
     private final String metricName;
-    private final DistributionStatisticConfig distributionStatisticConfig;
 
     public static MicrometerMetricsFilterBuilder builder() {
         return new MicrometerMetricsFilterBuilder();
@@ -29,7 +28,6 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig) {
         this.registry = registry;
         this.metricName = metricName;
-        this.distributionStatisticConfig = distributionStatisticConfig;
         this.activeRequests = registry.gauge(metricName + ".active", new AtomicInteger(0));
 
         registry.config().meterFilter(new MeterFilter() {
