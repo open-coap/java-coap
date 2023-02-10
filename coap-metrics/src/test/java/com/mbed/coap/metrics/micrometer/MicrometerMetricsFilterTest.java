@@ -27,6 +27,8 @@ class MicrometerMetricsFilterTest {
                 .registry(registry)
                 .distributionStatisticConfig(DistributionStatisticConfig.builder().percentiles(0.5, 0.95).build())
                 .build();
+
+        MicrometerMetricsFilter.builder().build();
     }
 
     @Test
