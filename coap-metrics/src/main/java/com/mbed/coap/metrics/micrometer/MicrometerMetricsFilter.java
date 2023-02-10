@@ -14,11 +14,9 @@ import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final MeterRegistry registry;
-    private final AtomicInteger activeRequests;
     private final String metricName;
 
     public static MicrometerMetricsFilterBuilder builder() {
@@ -28,7 +26,6 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig) {
         this.registry = registry;
         this.metricName = metricName;
-        this.activeRequests = registry.gauge(metricName + ".active", new AtomicInteger(0));
 
         registry.config().meterFilter(new MeterFilter() {
             @Override
@@ -45,12 +42,10 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest req, Service<CoapRequest, CoapResponse> service) {
         Timer.Sample timer = Timer.start();
-        activeRequests.incrementAndGet();
 
         return service.apply(req).whenComplete((resp, err) -> {
             Timer metric = registry.timer(metricName, requestTags(req, resp, err));
             timer.stop(metric);
-            activeRequests.decrementAndGet();
         });
     }
 
