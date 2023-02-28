@@ -84,7 +84,7 @@ public class SendCommand implements Callable<Integer> {
                     .options(o -> {
                         o.setContentFormat(contentFormat);
                         o.setProxyUri(proxyUri);
-                        o.setAccept(accept);
+                        if (accept != null) o.setAccept(accept);
                     });
             CoapResponse resp = cli.sendSync(request);
 
