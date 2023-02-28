@@ -59,6 +59,9 @@ public class SendCommand implements Callable<Integer> {
     @Option(names = {"--content-format", "-c"}, paramLabel = "<content-format>", description = "Content format, for example: 50 (json), 40 (link-format), 0 (text-plain)")
     private Short contentFormat;
 
+    @Option(names = {"--accept", "-a"}, paramLabel = "<accept>", description = "Content format we want to receive, for example: 60 (cbor), 50 (json), 0 (text-plain)")
+    private Short accept;
+
     @Mixin
     private TransportOptions transportOptions;
 
@@ -81,6 +84,7 @@ public class SendCommand implements Callable<Integer> {
                     .options(o -> {
                         o.setContentFormat(contentFormat);
                         o.setProxyUri(proxyUri);
+                        o.setAccept(accept);
                     });
             CoapResponse resp = cli.sendSync(request);
 
