@@ -93,7 +93,7 @@ public class SendCommand implements Callable<Integer> {
 
             if (resp.getPayload().nonEmpty()) {
                 spec.commandLine().getOut().println();
-                if (resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_CBOR || resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_OCTET__STREAM) {
+                if (resp.options().getContentFormat() != null && (resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_CBOR || resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_OCTET__STREAM)) {
                     spec.commandLine().getOut().println(resp.getPayload().toHex());
                 } else {
                     spec.commandLine().getOut().println(resp.getPayloadString());
