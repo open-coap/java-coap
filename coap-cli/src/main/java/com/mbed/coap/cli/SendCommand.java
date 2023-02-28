@@ -22,6 +22,7 @@ import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.MediaTypes;
 import com.mbed.coap.packet.Method;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
@@ -84,13 +85,19 @@ public class SendCommand implements Callable<Integer> {
                     .options(o -> {
                         o.setContentFormat(contentFormat);
                         o.setProxyUri(proxyUri);
-                        if (accept != null) o.setAccept(accept);
+                        if (accept != null) {
+                            o.setAccept(accept);
+                        }
                     });
             CoapResponse resp = cli.sendSync(request);
 
             if (resp.getPayload().nonEmpty()) {
                 spec.commandLine().getOut().println();
-                spec.commandLine().getOut().println(resp.getPayloadString());
+                if (resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_CBOR || resp.options().getContentFormat() == MediaTypes.CT_APPLICATION_OCTET__STREAM) {
+                    spec.commandLine().getOut().println(resp.getPayload().toHex());
+                } else {
+                    spec.commandLine().getOut().println(resp.getPayloadString());
+                }
             }
         }
         return 0;
