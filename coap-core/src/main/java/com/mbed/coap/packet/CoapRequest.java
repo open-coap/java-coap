@@ -294,10 +294,10 @@ public final class CoapRequest {
         if (size == null) {
             return this;
         }
-        if (method == Method.GET) { // TODO FETCH HERE?
+        if (method == Method.GET) {
             options.setBlock2Res(new BlockOption(0, size, false));
         }
-        if (method == Method.PUT || method == Method.POST) { // TODO FETCH HERE?
+        if (method == Method.PUT || method == Method.POST || method == Method.FETCH || method == Method.PATCH || method == Method.iPATCH) {
             options.setBlock1Req(new BlockOption(0, size, true));
         }
         return this;
