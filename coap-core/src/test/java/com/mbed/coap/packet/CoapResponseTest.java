@@ -28,6 +28,12 @@ import org.junit.jupiter.api.Test;
 class CoapResponseTest {
 
     @Test
+    void build_bad_request() {
+        assertEquals(new CoapResponse(Code.C400_BAD_REQUEST, Opaque.EMPTY), CoapResponse.badRequest());
+        assertEquals(new CoapResponse(Code.C400_BAD_REQUEST, Opaque.of("really bad")), CoapResponse.badRequest("really bad"));
+    }
+
+    @Test
     public void equalsAndHashTest() {
         EqualsVerifier.forClass(CoapResponse.class)
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)

@@ -91,7 +91,7 @@ public class CoapResponse {
         return new CoapResponse(Code.C400_BAD_REQUEST, Opaque.EMPTY);
     }
 
-    static CoapResponse badRequest(String errorDescription) {
+    public static CoapResponse badRequest(String errorDescription) {
         return new CoapResponse(Code.C400_BAD_REQUEST, Opaque.of(errorDescription));
     }
 
