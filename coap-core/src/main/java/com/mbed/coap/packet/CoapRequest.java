@@ -153,6 +153,14 @@ public final class CoapRequest {
         return transContext;
     }
 
+    public <T> T getTransContext(TransportContext.Key<T> key) {
+        return transContext.get(key);
+    }
+
+    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
+        return transContext.getOrDefault(key, defaultValue);
+    }
+
     public boolean isPing() {
         return method == null && token.isEmpty() && payload.isEmpty();
     }

@@ -75,7 +75,7 @@ public class CoapPacket {
 
     public static CoapPacket from(CoapRequest req) {
         CoapPacket packet = new CoapPacket(Objects.requireNonNull(req.getPeerAddress()));
-        packet.setMessageType(req.getTransContext().get(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable);
+        packet.setMessageType(req.getTransContext(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable);
         packet.setMethod(req.getMethod());
         packet.setTransportContext(req.getTransContext());
         packet.setToken(req.getToken());
@@ -86,7 +86,7 @@ public class CoapPacket {
     }
 
     public static CoapPacket from(SeparateResponse resp) {
-        MessageType messageType = resp.getTransContext().get(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable;
+        MessageType messageType = resp.getTransContext(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable;
         CoapPacket packet = new CoapPacket(resp.getCode(), messageType, resp.getPeerAddress());
         packet.setTransportContext(resp.getTransContext());
         packet.setToken(resp.getToken());

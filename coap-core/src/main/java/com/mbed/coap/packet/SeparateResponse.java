@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,14 @@ public class SeparateResponse {
 
     public TransportContext getTransContext() {
         return transContext;
+    }
+
+    public <T> T getTransContext(TransportContext.Key<T> key) {
+        return transContext.get(key);
+    }
+
+    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
+        return transContext.getOrDefault(key, defaultValue);
     }
 
     public Code getCode() {

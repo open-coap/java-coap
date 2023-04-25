@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.opencoap.ssl.transport.DtlsSessionContext;
 import org.opencoap.ssl.transport.DtlsTransmitter;
@@ -36,7 +38,8 @@ import org.slf4j.LoggerFactory;
 
 public class MbedtlsCoapTransport implements CoapTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(MbedtlsCoapTransport.class);
-    public static final TransportContext.Key<DtlsSessionContext> DTLS_CONTEXT = new TransportContext.Key<>(DtlsSessionContext.EMPTY);
+    public static final TransportContext.Key<Map<String, String>> DTLS_AUTHENTICATION = new TransportContext.Key<>(Collections.emptyMap());
+    public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
     private final Transport<Packet<ByteBuffer>> dtlsTransport;
 
     public MbedtlsCoapTransport(Transport<Packet<ByteBuffer>> dtlsTransport) {
@@ -92,7 +95,7 @@ public class MbedtlsCoapTransport implements CoapTransport {
             try {
                 ByteArrayInputStream bufInput = toInputStream(packet.getBuffer());
                 CoapPacket coapPacket = CoapSerializer.deserialize(packet.getPeerAddress(), bufInput);
-                coapPacket.setTransportContext(TransportContext.of(DTLS_CONTEXT, packet.getSessionContext()));
+                coapPacket.setTransportContext(toTransportContext(packet.getSessionContext()));
                 return coapPacket;
             } catch (CoapException e) {
                 LOGGER.warn("[{}] Received malformed coap. {}", packet.getPeerAddress(), e.toString());
@@ -103,6 +106,19 @@ public class MbedtlsCoapTransport implements CoapTransport {
 
     private static ByteArrayInputStream toInputStream(ByteBuffer byteBuffer) {
         return new ByteArrayInputStream(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
+    }
+
+    private static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {
+        if (dtlsSessionContext.equals(DtlsSessionContext.EMPTY)) {
+            return TransportContext.EMPTY;
+        }
+
+        TransportContext dtlsContext = TransportContext.of(DTLS_AUTHENTICATION, dtlsSessionContext.getAuthenticationContext());
+        if (dtlsSessionContext.getPeerCertificateSubject() != null) {
+            dtlsContext = dtlsContext.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
+        }
+
+        return dtlsContext;
     }
 
     @Override

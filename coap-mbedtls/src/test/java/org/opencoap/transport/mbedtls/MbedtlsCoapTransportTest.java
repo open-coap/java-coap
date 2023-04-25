@@ -23,7 +23,7 @@ import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.opencoap.transport.mbedtls.MbedtlsCoapTransport.DTLS_CONTEXT;
+import static org.opencoap.transport.mbedtls.MbedtlsCoapTransport.DTLS_AUTHENTICATION;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.CoapPacket;
@@ -42,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.opencoap.ssl.PskAuth;
 import org.opencoap.ssl.SslConfig;
 import org.opencoap.ssl.transport.DtlsServerTransport;
-import org.opencoap.ssl.transport.DtlsSessionContext;
 import org.opencoap.ssl.transport.DtlsTransmitter;
 import org.opencoap.ssl.transport.Packet;
 import protocolTests.utils.CoapPacketBuilder;
@@ -73,7 +72,7 @@ class MbedtlsCoapTransportTest {
                             return completedFuture(CoapResponse.of(Code.C201_CREATED));
                         })
                         .get("/auth", it -> {
-                            String name = it.getTransContext().get(DTLS_CONTEXT).getAuthenticationContext().get("auth");
+                            String name = it.getTransContext(DTLS_AUTHENTICATION).get("auth");
                             if (name != null) {
                                 return completedFuture(CoapResponse.ok(name));
                             } else {
@@ -150,7 +149,7 @@ class MbedtlsCoapTransportTest {
     @Test
     void deserialize_coap_from_bytebuffer_packet_with_offset() {
         // given
-        CoapPacket coap = CoapPacketBuilder.newCoapPacket(localhost(5684)).mid(13).get().uriPath("/test").context(TransportContext.of(DTLS_CONTEXT, DtlsSessionContext.EMPTY)).build();
+        CoapPacket coap = CoapPacketBuilder.newCoapPacket(localhost(5684)).mid(13).get().uriPath("/test").context(TransportContext.EMPTY).build();
         // buffer with offset
         ByteBuffer buffer = ByteBuffer.allocate(200);
         buffer.position(10);

@@ -53,12 +53,12 @@ public class NonConfirmableTransactionsTest {
 
     private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
             .get("/test", req -> {
-                        require(req.getTransContext().get(NON_CONFIRMABLE));
+                        require(req.getTransContext(NON_CONFIRMABLE));
                         return completedFuture(ok("OK"));
                     }
             )
             .get("/large", req -> {
-                        require(req.getTransContext().get(NON_CONFIRMABLE));
+                require(req.getTransContext(NON_CONFIRMABLE));
                         return completedFuture(ok("aaaaaaaaaaaaaaa|bbbbbb"));
                     }
             )

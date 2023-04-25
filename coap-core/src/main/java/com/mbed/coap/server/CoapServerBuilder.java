@@ -199,7 +199,7 @@ public final class CoapServerBuilder {
                 .andThen(new ObserveRequestFilter(observationHandler))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext().getOrDefault(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
                 .andThen(Filter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
                 .andThenMap(midSupplier::update)
@@ -211,7 +211,7 @@ public final class CoapServerBuilder {
         // OBSERVATION
         Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext().getOrDefault(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(Filter.of(CoapPacket::from, CoapPacket::isAck))
                 .andThenMap(midSupplier::update)
                 .andThen(retransmissionFilter)

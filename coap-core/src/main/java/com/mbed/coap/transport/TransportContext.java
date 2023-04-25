@@ -44,12 +44,13 @@ public final class TransportContext {
     }
 
     public <T> T getOrDefault(Key<T> key, T defaultValue) {
-        T value = get0(key);
+        T value = get0(requireNonNull(key));
         return value == null ? defaultValue : value;
     }
 
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private <T> T get0(Key<T> key) {
-        if (this.key == requireNonNull(key)) {
+        if (this.key == key) {
             return (T) value;
         } else if (next != null) {
             return next.get0(key);
