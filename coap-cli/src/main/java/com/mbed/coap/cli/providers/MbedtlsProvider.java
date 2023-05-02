@@ -24,14 +24,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
+import kotlin.jvm.functions.Function1;
 import org.opencoap.ssl.CertificateAuth;
 import org.opencoap.ssl.PskAuth;
 import org.opencoap.ssl.SslConfig;
 import org.opencoap.ssl.SslSession;
 import org.opencoap.ssl.transport.DtlsTransmitter;
+import org.opencoap.ssl.transport.Transport;
 import org.opencoap.transport.mbedtls.MbedtlsCoapTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,21 +75,7 @@ public class MbedtlsProvider implements TransportProvider {
             transport = DtlsTransmitter.connect(destAdr, config, bindPort).join();
         }
 
-        return new MbedtlsCoapTransport(transport) {
-            @Override
-            public void stop() {
-                try {
-                    if (transport.getPeerCid() != null) {
-                        writeBytes(fileSession, transport.saveSession());
-                        LOGGER.info("Stored DTLS session into: {}", fileSession);
-                    }
-                } catch (IOException e) {
-                    LOGGER.error("Failed to store DTLS session");
-                }
-
-                super.stop();
-            }
-        };
+        return MbedtlsCoapTransport.of(new PersistOnStopDtlsTransport(transport, fileSession), transport.getRemoteAddress());
     }
 
     private static void writeBytes(File fileSession, byte[] bytes) throws IOException {
@@ -105,4 +96,41 @@ public class MbedtlsProvider implements TransportProvider {
         }
     }
 
+    private static class PersistOnStopDtlsTransport implements Transport<ByteBuffer> {
+        private final DtlsTransmitter underlying;
+        private final File fileSession;
+
+        private PersistOnStopDtlsTransport(DtlsTransmitter underlying, File fileSession) {
+            this.underlying = underlying;
+            this.fileSession = fileSession;
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (underlying.getPeerCid() != null) {
+                writeBytes(fileSession, underlying.saveSession());
+                LOGGER.info("Stored DTLS session into: {}", fileSession);
+            }
+        }
+
+        @Override
+        public int localPort() {
+            return underlying.localPort();
+        }
+
+        @Override
+        public <P2> Transport<P2> map(Function1<? super ByteBuffer, ? extends P2> function1, Function1<? super P2, ? extends ByteBuffer> function2) {
+            return underlying.map(function1, function2);
+        }
+
+        @Override
+        public CompletableFuture<ByteBuffer> receive(Duration duration) {
+            return underlying.receive(duration);
+        }
+
+        @Override
+        public CompletableFuture<Boolean> send(ByteBuffer byteBuffer) {
+            return underlying.send(byteBuffer);
+        }
+    }
 }

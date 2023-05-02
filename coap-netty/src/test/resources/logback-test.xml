@@ -2,14 +2,13 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss} %.-1level %m %n</pattern>
+            <!--<pattern>%d{HH:mm:ss,SSS} %-5p | %16t | %32c{1}:%4L | %m%n</pattern>-->
+            <pattern>%d{HH:mm:ss} %.-1level %m [%10.10thread]%n</pattern>
         </encoder>
     </appender>
 
     <root level="TRACE">
         <appender-ref ref="STDOUT"/>
     </root>
-    <logger name="org.opencoap.ssl.MbedtlsApi" level="info"/>
     <logger name="io.netty" level="info"/>
-
 </configuration>

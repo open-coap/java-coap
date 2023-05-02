@@ -16,20 +16,17 @@
 package org.opencoap.transport.mbedtls;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.opencoap.transport.mbedtls.DtlsTransportContext.toTransportContext;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapSerializer;
 import com.mbed.coap.transport.CoapTransport;
-import com.mbed.coap.transport.TransportContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.opencoap.ssl.transport.DtlsSessionContext;
 import org.opencoap.ssl.transport.DtlsTransmitter;
 import org.opencoap.ssl.transport.Packet;
 import org.opencoap.ssl.transport.Transport;
@@ -38,21 +35,26 @@ import org.slf4j.LoggerFactory;
 
 public class MbedtlsCoapTransport implements CoapTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(MbedtlsCoapTransport.class);
-    public static final TransportContext.Key<Map<String, String>> DTLS_AUTHENTICATION = new TransportContext.Key<>(Collections.emptyMap());
-    public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
     private final Transport<Packet<ByteBuffer>> dtlsTransport;
 
     public MbedtlsCoapTransport(Transport<Packet<ByteBuffer>> dtlsTransport) {
         this.dtlsTransport = dtlsTransport;
     }
 
-    public MbedtlsCoapTransport(DtlsTransmitter dtlsTransmitter) {
+    public static MbedtlsCoapTransport of(DtlsTransmitter dtlsTransmitter) {
         InetSocketAddress adr = dtlsTransmitter.getRemoteAddress();
 
-        this.dtlsTransport = dtlsTransmitter.map(
+        return new MbedtlsCoapTransport(dtlsTransmitter.map(
                 bytes -> new Packet<>(bytes, adr),
                 Packet<ByteBuffer>::getBuffer
-        );
+        ));
+    }
+
+    public static MbedtlsCoapTransport of(Transport<ByteBuffer> transport, InetSocketAddress adr) {
+        return new MbedtlsCoapTransport(transport.map(
+                bytes -> new Packet<>(bytes, adr),
+                Packet<ByteBuffer>::getBuffer
+        ));
     }
 
     @Override
@@ -106,19 +108,6 @@ public class MbedtlsCoapTransport implements CoapTransport {
 
     private static ByteArrayInputStream toInputStream(ByteBuffer byteBuffer) {
         return new ByteArrayInputStream(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
-    }
-
-    private static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {
-        if (dtlsSessionContext.equals(DtlsSessionContext.EMPTY)) {
-            return TransportContext.EMPTY;
-        }
-
-        TransportContext dtlsContext = TransportContext.of(DTLS_AUTHENTICATION, dtlsSessionContext.getAuthenticationContext());
-        if (dtlsSessionContext.getPeerCertificateSubject() != null) {
-            dtlsContext = dtlsContext.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
-        }
-
-        return dtlsContext;
     }
 
     @Override
