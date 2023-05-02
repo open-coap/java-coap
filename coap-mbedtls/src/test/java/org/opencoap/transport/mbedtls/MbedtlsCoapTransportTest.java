@@ -23,7 +23,7 @@ import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.opencoap.transport.mbedtls.MbedtlsCoapTransport.DTLS_AUTHENTICATION;
+import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_AUTHENTICATION;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.CoapPacket;
@@ -94,7 +94,7 @@ class MbedtlsCoapTransportTest {
     @Test
     void shouldConnectUsingMbedtlsTransport() throws IOException, CoapException {
         // given
-        MbedtlsCoapTransport clientTrans = new MbedtlsCoapTransport(DtlsTransmitter.connect(srvAddress, clientConf).join());
+        MbedtlsCoapTransport clientTrans = MbedtlsCoapTransport.of(DtlsTransmitter.connect(srvAddress, clientConf).join());
         CoapClient coapClient = CoapServer.builder()
                 .transport(clientTrans)
                 .buildClient(srvAddress);
@@ -112,7 +112,7 @@ class MbedtlsCoapTransportTest {
     @Test
     void shouldIgnoreMalformedCoapPacket() throws IOException, CoapException {
         // given
-        MbedtlsCoapTransport clientTrans = new MbedtlsCoapTransport(DtlsTransmitter.connect(srvAddress, clientConf).join());
+        MbedtlsCoapTransport clientTrans = MbedtlsCoapTransport.of(DtlsTransmitter.connect(srvAddress, clientConf).join());
         CoapClient coapClient = CoapServer.builder()
                 .transport(clientTrans)
                 .buildClient(srvAddress);
@@ -129,7 +129,7 @@ class MbedtlsCoapTransportTest {
     @Test
     void shouldUpdateAndPassDtlsContext() throws IOException, CoapException {
         // given
-        MbedtlsCoapTransport clientTrans = new MbedtlsCoapTransport(DtlsTransmitter.connect(srvAddress, clientConf).join());
+        MbedtlsCoapTransport clientTrans = MbedtlsCoapTransport.of(DtlsTransmitter.connect(srvAddress, clientConf).join());
         CoapClient coapClient = CoapServer.builder()
                 .transport(clientTrans)
                 .buildClient(srvAddress);

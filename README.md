@@ -24,7 +24,7 @@ The following features are supported by the library:
 * CoAP server mode
 * CoAP client mode
 * Coap over tcp, tls [RFC 8323](https://tools.ietf.org/html/rfc8323)
-    - excluding: websockets, observations with BERT blocks
+  - excluding: websockets, observations with BERT blocks
 * Network transports:
   - UDP (plain text)
   - TCP (plain text)
@@ -33,6 +33,12 @@ The following features are supported by the library:
     - PSK
   - TLS
 * LwM2M TLV and JSON data formats
+
+### Integrations:
+
+- micrometer: metrics
+- mbedtls: DTLS transport
+- netty: UDP and DTLS only
 
 Runtime requirements
 ------------
