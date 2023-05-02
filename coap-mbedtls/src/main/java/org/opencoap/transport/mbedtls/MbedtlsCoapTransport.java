@@ -21,8 +21,10 @@ import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapSerializer;
 import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.TransportContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import org.opencoap.ssl.transport.DtlsSessionContext;
@@ -35,9 +37,9 @@ import org.slf4j.LoggerFactory;
 public class MbedtlsCoapTransport implements CoapTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(MbedtlsCoapTransport.class);
     public static final TransportContext.Key<DtlsSessionContext> DTLS_CONTEXT = new TransportContext.Key<>(DtlsSessionContext.EMPTY);
-    private final Transport<Packet<byte[]>> dtlsTransport;
+    private final Transport<Packet<ByteBuffer>> dtlsTransport;
 
-    public MbedtlsCoapTransport(Transport<Packet<byte[]>> dtlsTransport) {
+    public MbedtlsCoapTransport(Transport<Packet<ByteBuffer>> dtlsTransport) {
         this.dtlsTransport = dtlsTransport;
     }
 
@@ -46,7 +48,7 @@ public class MbedtlsCoapTransport implements CoapTransport {
 
         this.dtlsTransport = dtlsTransmitter.map(
                 bytes -> new Packet<>(bytes, adr),
-                Packet<byte[]>::getBuffer
+                Packet<ByteBuffer>::getBuffer
         );
     }
 
@@ -66,7 +68,8 @@ public class MbedtlsCoapTransport implements CoapTransport {
 
     @Override
     public CompletableFuture<Boolean> sendPacket(CoapPacket coapPacket) {
-        return dtlsTransport.send(new Packet<>(CoapSerializer.serialize(coapPacket), coapPacket.getRemoteAddress()));
+        ByteBuffer buf = ByteBuffer.wrap(CoapSerializer.serialize(coapPacket));
+        return dtlsTransport.send(new Packet<>(buf, coapPacket.getRemoteAddress()));
     }
 
     @Override
@@ -74,19 +77,32 @@ public class MbedtlsCoapTransport implements CoapTransport {
         return dtlsTransport.receive(Duration.ofSeconds(1)).thenCompose(this::deserialize);
     }
 
-    private CompletableFuture<CoapPacket> deserialize(Packet<byte[]> packet) {
-        if (packet.getBuffer().length > 0) {
-            try {
-                CoapPacket coapPacket = CoapSerializer.deserialize(packet.getPeerAddress(), packet.getBuffer());
-                coapPacket.setTransportContext(TransportContext.of(DTLS_CONTEXT, packet.getSessionContext()));
-                return completedFuture(coapPacket);
-            } catch (CoapException e) {
-                LOGGER.warn("[{}] Received malformed coap. {}", packet.getPeerAddress(), e.toString());
-            }
+    private CompletableFuture<CoapPacket> deserialize(Packet<ByteBuffer> packet) {
+        CoapPacket coapPacket = deserializeCoap(packet);
+        if (coapPacket != null) {
+            return completedFuture(coapPacket);
         }
 
         // keep waiting
         return receive();
+    }
+
+    static CoapPacket deserializeCoap(Packet<ByteBuffer> packet) {
+        if (packet.getBuffer().remaining() > 0) {
+            try {
+                ByteArrayInputStream bufInput = toInputStream(packet.getBuffer());
+                CoapPacket coapPacket = CoapSerializer.deserialize(packet.getPeerAddress(), bufInput);
+                coapPacket.setTransportContext(TransportContext.of(DTLS_CONTEXT, packet.getSessionContext()));
+                return coapPacket;
+            } catch (CoapException e) {
+                LOGGER.warn("[{}] Received malformed coap. {}", packet.getPeerAddress(), e.toString());
+            }
+        }
+        return null;
+    }
+
+    private static ByteArrayInputStream toInputStream(ByteBuffer byteBuffer) {
+        return new ByteArrayInputStream(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
     }
 
     @Override

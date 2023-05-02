@@ -19,44 +19,52 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.of;
+import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.opencoap.transport.mbedtls.MbedtlsCoapTransport.DTLS_CONTEXT;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
+import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.CoapSerializer;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
+import com.mbed.coap.transport.TransportContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencoap.ssl.PskAuth;
 import org.opencoap.ssl.SslConfig;
-import org.opencoap.ssl.transport.DtlsServer;
+import org.opencoap.ssl.transport.DtlsServerTransport;
+import org.opencoap.ssl.transport.DtlsSessionContext;
 import org.opencoap.ssl.transport.DtlsTransmitter;
 import org.opencoap.ssl.transport.Packet;
+import protocolTests.utils.CoapPacketBuilder;
 
 class MbedtlsCoapTransportTest {
 
     private final SslConfig clientConf = SslConfig.client(new PskAuth("test", of("secret").getBytes()));
     private final SslConfig serverConf = SslConfig.server(new PskAuth("test", of("secret").getBytes()));
 
-    private DtlsServer dtlsServer;
+    private DtlsServerTransport dtlsServer;
     private CoapServer coapServer;
     private InetSocketAddress srvAddress;
 
     @BeforeEach
     void setUp() throws IOException {
-        dtlsServer = DtlsServer.create(serverConf);
+        dtlsServer = DtlsServerTransport.create(serverConf);
         coapServer = CoapServer.builder()
                 .transport(new MbedtlsCoapTransport(dtlsServer))
                 .route(new RouterService.RouteBuilder()
                         .get("/test", it -> completedFuture(ok("OK!")))
                         .post("/send-malformed", it -> {
-                            dtlsServer.send(new Packet<>("acghfh", it.getPeerAddress()).map(String::getBytes));
+                            dtlsServer.send(new Packet<>("acghfh", it.getPeerAddress()).map(MbedtlsCoapTransportTest::toByteBuffer));
                             return completedFuture(CoapResponse.of(Code.C201_CREATED));
                         })
                         .post("/auth", it -> {
@@ -65,7 +73,7 @@ class MbedtlsCoapTransportTest {
                             return completedFuture(CoapResponse.of(Code.C201_CREATED));
                         })
                         .get("/auth", it -> {
-                            String name = it.getTransContext().get(MbedtlsCoapTransport.DTLS_CONTEXT).getAuthenticationContext().get("auth");
+                            String name = it.getTransContext().get(DTLS_CONTEXT).getAuthenticationContext().get("auth");
                             if (name != null) {
                                 return completedFuture(CoapResponse.ok(name));
                             } else {
@@ -137,6 +145,29 @@ class MbedtlsCoapTransportTest {
 
         assertNotNull(clientTrans.getLocalSocketAddress());
         coapClient.close();
+    }
+
+    @Test
+    void deserialize_coap_from_bytebuffer_packet_with_offset() {
+        // given
+        CoapPacket coap = CoapPacketBuilder.newCoapPacket(localhost(5684)).mid(13).get().uriPath("/test").context(TransportContext.of(DTLS_CONTEXT, DtlsSessionContext.EMPTY)).build();
+        // buffer with offset
+        ByteBuffer buffer = ByteBuffer.allocate(200);
+        buffer.position(10);
+        buffer.put(CoapSerializer.serialize(coap));
+        buffer.flip();
+        buffer.position(10);
+        Packet<ByteBuffer> packet = new Packet<>(buffer, localhost(5684));
+
+        // when
+        CoapPacket coap2 = MbedtlsCoapTransport.deserializeCoap(packet);
+
+        //then
+        assertEquals(coap, coap2);
+    }
+
+    private static ByteBuffer toByteBuffer(String s) {
+        return ByteBuffer.wrap(s.getBytes());
     }
 
 }
