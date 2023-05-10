@@ -33,6 +33,8 @@ import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -43,6 +45,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
+import kotlin.Unit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -122,7 +125,9 @@ public class MbedtlsNettyTest {
     @Test
     void handshake_and_exchange_messages_with_NettyTransportAdapter() throws Exception {
         // given
-        Transport<ByteBuffer> clientTrans = NettyTransportAdapter.Companion.connect(clientConf, srvAddress, eventLoopGroup).map(ByteBuffer::wrap, ByteBuffer::array);
+        Transport<ByteBuffer> clientTrans = NettyTransportAdapter.connect(clientConf, srvAddress, eventLoopGroup)
+                .map(MbedtlsNettyTest::copyAndRelease, Unpooled::wrappedBuffer);
+
         CoapClient coapClient = CoapServer.builder()
                 .transport(MbedtlsCoapTransport.of(clientTrans, srvAddress))
                 .buildClient(srvAddress);
@@ -179,8 +184,15 @@ public class MbedtlsNettyTest {
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
-                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress));
+                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress, __ -> Unit.INSTANCE));
                     }
                 });
     }
+
+    public static ByteBuffer copyAndRelease(ByteBuf buf) {
+        ByteBuffer byteBuffer = Unpooled.copiedBuffer(buf).nioBuffer();
+        buf.release();
+        return byteBuffer;
+    }
+
 }
