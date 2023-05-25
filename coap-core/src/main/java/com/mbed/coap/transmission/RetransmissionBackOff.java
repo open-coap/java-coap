@@ -33,11 +33,18 @@ public interface RetransmissionBackOff {
      */
     Duration next(int attempt);
 
-    static RetransmissionBackOff ofFixed(Duration interval) {
+    static RetransmissionBackOff ofFixed(Duration interval, int maxAttempts) {
         return attempt -> {
             require(attempt > 0);
-            return (attempt == 1) ? interval : Duration.ZERO;
+            if (attempt > maxAttempts + 1) {
+                return Duration.ZERO;
+            }
+            return interval;
         };
+    }
+
+    static RetransmissionBackOff ofFixed(Duration interval) {
+        return ofFixed(interval, 0);
     }
 
     static RetransmissionBackOff ofExponential(Duration first, int maxAttempts) {

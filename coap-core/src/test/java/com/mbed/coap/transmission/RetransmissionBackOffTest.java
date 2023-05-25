@@ -112,6 +112,18 @@ public class RetransmissionBackOffTest {
         assertThrows(IllegalArgumentException.class, () -> singleTimeout.next(-1));
     }
 
+    @Test()
+    public void fixedBackoffWithMultipleAttempts() {
+        RetransmissionBackOff backOff = RetransmissionBackOff.ofFixed(ofSeconds(10), 2);
+
+        assertEquals(ofSeconds(10), backOff.next(1));
+        assertEquals(ofSeconds(10), backOff.next(2));
+        assertEquals(ofSeconds(10), backOff.next(3));
+        assertEquals(ZERO, backOff.next(4));
+        assertEquals(ZERO, backOff.next(5));
+        assertEquals(ZERO, backOff.next(20));
+    }
+
     @Test
     public void retransmission_with_custom_random_factor() {
         RetransmissionBackOff backOff = RetransmissionBackOff.ofExponential(ofSeconds(2), 2, 1.0f);
