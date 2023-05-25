@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
-import kotlin.Unit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -58,6 +57,7 @@ import org.opencoap.ssl.netty.DtlsChannelHandler;
 import org.opencoap.ssl.netty.DtlsClientHandshakeChannelHandler;
 import org.opencoap.ssl.netty.NettyTransportAdapter;
 import org.opencoap.ssl.netty.SessionAuthenticationContext;
+import org.opencoap.ssl.transport.SessionWriter;
 import org.opencoap.ssl.transport.Transport;
 
 
@@ -74,7 +74,7 @@ public class MbedtlsNettyTest {
     @BeforeAll
     void beforeAll() throws IOException {
         serverTransport = new NettyCoapTransport(createBootstrap(0), dgram ->
-                toTransportContext(DatagramPacketWithContext.Companion.contextFrom(dgram))
+                toTransportContext(DatagramPacketWithContext.contextFrom(dgram))
         );
 
         server = CoapServer.builder()
@@ -184,7 +184,7 @@ public class MbedtlsNettyTest {
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
-                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress, __ -> Unit.INSTANCE));
+                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress, SessionWriter.NO_OPS));
                     }
                 });
     }
