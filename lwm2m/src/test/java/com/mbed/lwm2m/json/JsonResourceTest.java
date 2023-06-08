@@ -80,7 +80,7 @@ public class JsonResourceTest {
         assertNull (resource.getTime());
 
         resource.setTime(42);
-        assertEquals(new Integer(42), resource.getTime());
+        assertEquals(42, resource.getTime().intValue());
     }
 
 }

@@ -31,7 +31,7 @@ public class JsonResourceArrayTest {
         assertNull(array.getBaseTime());
         assertEquals("", array.toString());
         array.setBaseTime(bt);
-        assertEquals(new Integer(bt), array.getBaseTime());
+        assertEquals(bt, array.getBaseTime().intValue());
 
         System.out.println(array);
         assertTrue(array.toString().indexOf(String.valueOf(bt)) > 0);

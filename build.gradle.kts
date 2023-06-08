@@ -100,6 +100,14 @@ subprojects {
         effort.set(Effort.MAX)
         excludeFilter.set(rootProject.file("spotbugs-exlude.xml"))
     }
+    configurations.named("spotbugs").configure {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.ow2.asm") {
+                useVersion("9.5")
+                because("Asm 9.5 is required for JDK 21 support")
+            }
+        }
+    }
 
     publishing {
         publications {

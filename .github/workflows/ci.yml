@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11', '17' ]
+        java: [ '8', '17', '21' ]
     permissions:
       contents: read
       packages: write
@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
+          distribution: 'corretto'
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
