@@ -41,7 +41,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
         return new RouteBuilder();
     }
 
-    RouterService(Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers) {
+    private RouterService(Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers) {
 
         this.handlers = unmodifiableMap(
                 handlers.entrySet().stream()

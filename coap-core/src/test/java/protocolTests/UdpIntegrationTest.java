@@ -23,6 +23,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
+import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 
@@ -38,10 +39,11 @@ public class UdpIntegrationTest extends IntegrationTestBase {
     }
 
     @Override
-    protected CoapServer buildServer(int port, Service<CoapRequest, CoapResponse> route) {
+    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) {
         return CoapServer.builder()
                 .blockSize(BlockSize.S_1024)
                 .transport(udp(port))
+                .routeFilter(routeFilter)
                 .route(route)
                 .build();
     }

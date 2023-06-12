@@ -46,6 +46,7 @@ import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.ObservableResourceService;
 import com.mbed.coap.server.RouterService;
 import com.mbed.coap.utils.Bytes;
+import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.text.ParseException;
@@ -102,7 +103,7 @@ abstract class IntegrationTestBase {
                         completedFuture(CoapResponse.ok("<test/1>,<test2>", MediaTypes.CT_APPLICATION_LINK__FORMAT))
                 ).build();
 
-        server = buildServer(0, route).start();
+        server = buildServer(0, IntegrationTestBase::routeFilter, route).start();
 
         int port = server.getLocalSocketAddress().getPort();
         client = buildClient(port);
@@ -110,7 +111,7 @@ abstract class IntegrationTestBase {
 
     abstract protected CoapClient buildClient(int port) throws IOException;
 
-    abstract protected CoapServer buildServer(int port, Service<CoapRequest, CoapResponse> route) throws IOException;
+    abstract protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) throws IOException;
 
     @AfterEach
     public void tearDown() throws IOException {
@@ -288,6 +289,21 @@ abstract class IntegrationTestBase {
     public void should_handle_exception() throws Exception {
         assertEquals(CoapResponse.of(Code.C500_INTERNAL_SERVER_ERROR), client.sendSync(get("/exception")));
         assertEquals(CoapResponse.of(Code.C500_INTERNAL_SERVER_ERROR), client.sendSync(get("/exception")));
+    }
+
+    @Test
+    public void should_return_by_route_filter() throws Exception {
+        CoapResponse resp = client.sendSync(get("/route-filter"));
+
+        assertEquals(CoapResponse.ok("Intercepted"), resp);
+    }
+
+
+    static CompletableFuture<CoapResponse> routeFilter(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+        if ("/route-filter".equals(request.options().getUriPath())) {
+            return CompletableFuture.completedFuture(CoapResponse.ok("Intercepted"));
+        }
+        return service.apply(request);
     }
 
     private static class TestResource implements Service<CoapRequest, CoapResponse> {

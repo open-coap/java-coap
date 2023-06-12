@@ -53,6 +53,7 @@ public class CoapServerBuilderForTcp {
     private int maxQueueSize = 100;
     private BlockSize blockSize;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
+    private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
 
     CoapServerBuilderForTcp() {
         csmStorage = new CapabilitiesStorageImpl();
@@ -79,6 +80,11 @@ public class CoapServerBuilderForTcp {
 
     public CoapServerBuilderForTcp route(RouterService.RouteBuilder routeBuilder) {
         return route(routeBuilder.build());
+    }
+
+    public CoapServerBuilderForTcp routeFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter) {
+        this.routeFilter = requireNonNull(routeFilter);
+        return this;
     }
 
     public CoapServerBuilderForTcp csmStorage(CapabilitiesStorage csmStorage) {
@@ -128,6 +134,7 @@ public class CoapServerBuilderForTcp {
                 .andThenIf(hasRoute(), new CriticalOptionVerifier())
                 .andThenIf(hasRoute(), new ObservationSenderFilter(sendNotification))
                 .andThenIf(hasRoute(), new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(routeFilter)
                 .then(route);
 
         // OUTBOUND

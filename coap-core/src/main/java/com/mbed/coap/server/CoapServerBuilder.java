@@ -72,6 +72,7 @@ public final class CoapServerBuilder {
     private Service<CoapRequest, CoapResponse> route = RouterService.NOT_FOUND_SERVICE;
     private int maxQueueSize = 100;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
+    private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
 
     CoapServerBuilder() {
     }
@@ -95,6 +96,11 @@ public final class CoapServerBuilder {
 
     public CoapServerBuilder route(RouterService.RouteBuilder routeBuilder) {
         return route(routeBuilder.build());
+    }
+
+    public CoapServerBuilder routeFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter) {
+        this.routeFilter = requireNonNull(routeFilter);
+        return this;
     }
 
     public CoapServerBuilder outboundFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter) {
@@ -227,6 +233,7 @@ public final class CoapServerBuilder {
                 .andThen(new CriticalOptionVerifier())
                 .andThen(new ObservationSenderFilter(sendNotification))
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(routeFilter)
                 .then(route);
 
 

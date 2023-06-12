@@ -27,6 +27,7 @@ import com.mbed.coap.server.RouterService;
 import com.mbed.coap.server.TcpCoapServer;
 import com.mbed.coap.transport.javassl.SingleConnectionSocketServerTransport;
 import com.mbed.coap.transport.javassl.SocketClientTransport;
+import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,11 +39,12 @@ import org.junit.jupiter.api.Test;
 public class TcpIntegrationTest extends IntegrationTestBase {
 
     @Override
-    protected CoapServer buildServer(int port, Service<CoapRequest, CoapResponse> route) throws IOException {
+    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) throws IOException {
         return TcpCoapServer.builder()
                 .transport(new SingleConnectionSocketServerTransport(port))
                 .blockSize(BlockSize.S_1024_BERT)
                 .maxMessageSize(100_000)
+                .routeFilter(routeFilter)
                 .route(route)
                 .build();
     }
@@ -73,7 +75,7 @@ public class TcpIntegrationTest extends IntegrationTestBase {
 
         server.stop();
 
-        server = buildServer(port, RouterService.builder().build()).start();
+        server = buildServer(port, Filter.identity(), RouterService.builder().build()).start();
 
         await().ignoreExceptions().untilAsserted(() ->
                 assertTrue(client.ping().get())

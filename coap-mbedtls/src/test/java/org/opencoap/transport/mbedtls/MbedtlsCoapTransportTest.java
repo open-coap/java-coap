@@ -60,7 +60,7 @@ class MbedtlsCoapTransportTest {
         dtlsServer = DtlsServerTransport.create(serverConf);
         coapServer = CoapServer.builder()
                 .transport(new MbedtlsCoapTransport(dtlsServer))
-                .route(new RouterService.RouteBuilder()
+                .route(RouterService.builder()
                         .get("/test", it -> completedFuture(ok("OK!")))
                         .post("/send-malformed", it -> {
                             dtlsServer.send(new Packet<>("acghfh", it.getPeerAddress()).map(MbedtlsCoapTransportTest::toByteBuffer));
