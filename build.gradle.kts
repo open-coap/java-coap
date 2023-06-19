@@ -6,7 +6,7 @@ plugins {
     id("maven-publish")
     id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
-    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
     id("pmd")
     id("com.github.spotbugs") version "5.0.14"
     id("org.gradle.signing")
@@ -33,8 +33,12 @@ allprojects {
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
+            val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { candidate.version.toUpperCase().contains(it) }
+            val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+            val isNonStable = !(stableKeyword || regex.matches(candidate.version))
+
             // newer version of logback-classic is not java8 compatible
-            listOf("logback-classic", "mockito-core").contains(candidate.module)
+            isNonStable || listOf("logback-classic", "mockito-core").contains(candidate.module)
         }
     }
 
