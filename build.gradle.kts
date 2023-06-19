@@ -4,7 +4,7 @@ import com.github.spotbugs.snom.Effort
 plugins {
     id("java")
     id("maven-publish")
-    id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
+    id("pl.allegro.tech.build.axion-release") version "1.15.3"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
     id("com.github.ben-manes.versions") version "0.47.0"
     id("pmd")
@@ -14,9 +14,13 @@ plugins {
     id("com.adarshr.test-logger") version "3.2.0"
 }
 
+scmVersion {
+    versionIncrementer("incrementMinor")
+}
+
 allprojects {
     apply {
-        plugin("com.github.mfarsikov.kewt-versioning")
+        plugin("pl.allegro.tech.build.axion-release")
         plugin("se.patrikerdes.use-latest-versions")
         plugin("com.github.ben-manes.versions")
     }
@@ -25,10 +29,7 @@ allprojects {
         mavenCentral()
     }
 
-    kewtVersioning.configuration {
-        separator = ""
-    }
-    version = kewtVersioning.version
+    version = scmVersion.version
     group = "io.github.open-coap"
 
     tasks.withType<DependencyUpdatesTask> {
