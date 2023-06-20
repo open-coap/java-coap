@@ -58,7 +58,7 @@ public class ObservableResourceService implements Service<CoapRequest, CoapRespo
             cancelPromise(req.getPeerAddress());
         }
 
-        return completedFuture(current.options(opts -> opts.setObserve(null)));
+        return completedFuture(current.options(opts -> opts.unsetObserve()));
     }
 
     private void cancelPromise(InetSocketAddress adr) {
@@ -74,7 +74,7 @@ public class ObservableResourceService implements Service<CoapRequest, CoapRespo
 
     public boolean terminate(Code code) {
         Objects.requireNonNull(code);
-        return put(CoapResponse.of(code, Opaque.EMPTY, opts -> opts.setObserve(current.options().getObserve())));
+        return put(CoapResponse.of(code, Opaque.EMPTY, opts -> opts.observe(current.options().getObserve())));
     }
 
     public boolean put(CoapResponse obs) {

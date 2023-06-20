@@ -54,7 +54,7 @@ class CoapCliTest {
                 .route(RouterService.builder()
                         .post("/rd", req -> {
                             String epName = req.options().getUriQueryMap().get("ep");
-                            return completedFuture(CoapResponse.of(Code.C201_CREATED, Opaque.EMPTY, o -> o.setLocationPath("/rd/" + epName)));
+                            return completedFuture(CoapResponse.of(Code.C201_CREATED, Opaque.EMPTY, o -> o.locationPath("/rd/" + epName)));
                         })
                         .get("/test", __ -> completedFuture(ok("Dziala!")))
                         .post("/test", req -> completedFuture(ok("Received " + req.getPayload().size())))

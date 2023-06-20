@@ -86,13 +86,11 @@ public class SendCommand implements Callable<Integer> {
                     .query(uri.getQuery() == null ? "" : uri.getQuery())
                     .blockSize(blockSize)
                     .payload(hexPayload ? Opaque.decodeHex(payload) : Opaque.of(payload))
-                    .options(o -> {
-                        o.setContentFormat(contentFormat);
-                        o.setProxyUri(proxyUri);
-                        if (accept != null) {
-                            o.setAccept(accept);
-                        }
-                    });
+                    .options(o -> o
+                            .contentFormat(contentFormat)
+                            .proxyUri(proxyUri)
+                            .accept(accept)
+                    );
             CoapResponse resp = cli.sendSync(request);
 
             if (resp.getPayload().nonEmpty()) {

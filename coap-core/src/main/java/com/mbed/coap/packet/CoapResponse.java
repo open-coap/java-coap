@@ -58,14 +58,14 @@ public class CoapResponse {
         return new CoapResponse(code, payload, options);
     }
 
-    public static CoapResponse of(Code code, Opaque payload, Consumer<HeaderOptions> optionsFunc) {
-        HeaderOptions options = new HeaderOptions();
+    public static CoapResponse of(Code code, Opaque payload, Consumer<CoapOptionsBuilder> optionsFunc) {
+        CoapOptionsBuilder options = CoapOptionsBuilder.options();
         optionsFunc.accept(options);
-        return new CoapResponse(code, payload, options);
+        return new CoapResponse(code, payload, options.build());
     }
 
     public static CoapResponse of(Code code, Opaque payload, short contentFormat) {
-        return CoapResponse.of(code, payload, opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(code, payload, opts -> opts.contentFormat(contentFormat));
     }
 
     public static CoapResponse of(Code code, String description) {
@@ -81,11 +81,11 @@ public class CoapResponse {
     }
 
     public static CoapResponse ok(Opaque payload, short contentFormat) {
-        return CoapResponse.of(Code.C205_CONTENT, payload, opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(Code.C205_CONTENT, payload, opts -> opts.contentFormat(contentFormat));
     }
 
     public static CoapResponse ok(String payload, short contentFormat) {
-        return CoapResponse.of(Code.C205_CONTENT, Opaque.of(payload), opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(Code.C205_CONTENT, Opaque.of(payload), opts -> opts.contentFormat(contentFormat));
     }
 
     public static CoapResponse notFound() {
@@ -185,10 +185,10 @@ public class CoapResponse {
         return payload(newPayload);
     }
 
-    public CoapResponse options(Consumer<HeaderOptions> optionsFunc) {
-        HeaderOptions newOpts = options.duplicate();
-        optionsFunc.accept(newOpts);
-        return new CoapResponse(code, payload, newOpts);
+    public CoapResponse options(Consumer<CoapOptionsBuilder> optionsFunc) {
+        CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
+        optionsFunc.accept(optionsBuilder);
+        return new CoapResponse(code, payload, optionsBuilder.build());
     }
 
     public CoapResponse etag(Opaque etag) {

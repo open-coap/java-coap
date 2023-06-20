@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.CoapRequest.*;
+import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.of;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -31,7 +31,7 @@ class CriticalOptionVerifierTest {
 
     @Test
     void shouldReturnBadOptionWhenUnrecognizedCriticalOption() {
-        CoapRequest req = get("/test").options(o -> o.put(1001, Opaque.of("foo")));
+        CoapRequest req = get("/test").options(o -> o.custom(1001, Opaque.of("foo")));
 
         CompletableFuture<CoapResponse> resp = filter.apply(req, null);
 

@@ -39,6 +39,7 @@ import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.linkformat.LinkFormat;
 import com.mbed.coap.linkformat.LinkFormatBuilder;
+import com.mbed.coap.packet.CoapOptionsBuilder;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -149,7 +150,7 @@ abstract class IntegrationTestBase {
     @Test
     public void simpleRequestWithCustomHeader() throws Exception {
         CoapRequest request = get("/test/1")
-                .options(o -> o.put(74, Opaque.variableUInt(0x010203L)));
+                .options(o -> o.custom(74, Opaque.variableUInt(0x010203L)));
 
         assertEquals("Dziala", client.sendSync(request).getPayloadString());
     }
@@ -157,7 +158,7 @@ abstract class IntegrationTestBase {
     @Test
     public void simpleRequestWithCriticalCustomHeader() throws Exception {
         CoapRequest request = get("/test/1")
-                .options(o -> o.put(71, Opaque.variableUInt(0x010203L)));
+                .options(o -> o.custom(71, Opaque.variableUInt(0x010203L)));
 
         assertEquals(Code.C402_BAD_OPTION, client.sendSync(request).getCode());
     }
@@ -165,7 +166,7 @@ abstract class IntegrationTestBase {
     @Test
     public void simpleRequestWithNonCriticalCustomHeader() throws Exception {
         CoapRequest request = get("/test/1")
-                .options(o -> o.put(72, Opaque.ofBytes(1, 2, 3)));
+                .options(o -> o.custom(72, Opaque.ofBytes(1, 2, 3)));
 
         assertEquals("Dziala", client.sendSync(request).getPayloadString());
     }
@@ -211,14 +212,14 @@ abstract class IntegrationTestBase {
     void readLargePayload() {
         CoapResponse resp = client.send(get("/large").token(101)).join();
 
-        assertEquals(CoapResponse.ok(largePayload), resp.options(it -> it.setBlock2Res(null)));
+        assertEquals(CoapResponse.ok(largePayload), resp.options(CoapOptionsBuilder::unsetBlock2Res));
     }
 
     @Test
     void readLargePayloadFetch() {
         CoapResponse resp = client.send(fetch("/large").token(103)).join();
 
-        assertEquals(CoapResponse.ok(largePayload), resp.options(it -> it.setBlock2Res(null)));
+        assertEquals(CoapResponse.ok(largePayload), resp.options(CoapOptionsBuilder::unsetBlock2Res));
     }
 
     @Test
@@ -226,7 +227,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(post("/large").token(102).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(it -> it.setBlock1Req(null)));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -235,7 +236,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(patch("/large").token(105).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(it -> it.setBlock1Req(null)));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -244,7 +245,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(iPatch("/large").token(106).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(it -> it.setBlock1Req(null)));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -274,7 +275,7 @@ abstract class IntegrationTestBase {
         assertTrue(obsResource.putPayload(largePayload));
 
         // then
-        assertEquals(CoapResponse.ok(largePayload), listener.take().options(it -> it.setBlock2Res(null)));
+        assertEquals(CoapResponse.ok(largePayload), listener.take().options(CoapOptionsBuilder::unsetBlock2Res));
     }
 
     @Test

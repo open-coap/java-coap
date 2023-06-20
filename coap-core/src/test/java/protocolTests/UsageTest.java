@@ -136,12 +136,12 @@ public class UsageTest {
         // send request with payload and header options
         CompletableFuture<CoapResponse> futureResponse2 = client.send(CoapRequest
                 .post("/actuator/switch")
-                .options(opt -> {
-                    // set header options, for example:
-                    opt.setEtag(Opaque.decodeHex("0a8120"));
-                    opt.setAccept(MediaTypes.CT_APPLICATION_JSON);
-                    opt.setMaxAge(3600L);
-                })
+                // set header options, for example:
+                .options(opt -> opt
+                        .etag(Opaque.decodeHex("0a8120"))
+                        .accept(MediaTypes.CT_APPLICATION_JSON)
+                        .maxAge(Duration.ofHours(1))
+                )
                 .payload("{\"power\": \"on\"}", MediaTypes.CT_APPLICATION_JSON)
                 .context(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
         );

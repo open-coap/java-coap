@@ -83,8 +83,8 @@ public class ObservationSenderFilterTest {
         inServiceResponse(CoapResponse.ok("test").nextSupplier(next));
 
         // when
-        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
-        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.observe(3))));
         assertTrue(next.put(null));
 
         // then
@@ -105,10 +105,10 @@ public class ObservationSenderFilterTest {
 
 
         // when
-        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(2))));
 
         // then
-        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.observe(3))));
         // and
         SeparateResponse notif1 = ok("test2").observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));
@@ -123,10 +123,10 @@ public class ObservationSenderFilterTest {
 
 
         // when
-        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(2))));
 
         // then
-        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.observe(3))));
         // and
         SeparateResponse notif1 = ok("test2").observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));
@@ -139,10 +139,10 @@ public class ObservationSenderFilterTest {
         inServiceResponse(CoapResponse.ok("test").nextSupplier(next));
 
         // when
-        assertTrue(next.put(CoapResponse.of(Code.C404_NOT_FOUND, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C404_NOT_FOUND, of("test2"), opts -> opts.observe(2))));
 
         // then
-        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.observe(3))));
         // and
         SeparateResponse notif1 = notFound().payload(Opaque.of("test2")).observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));

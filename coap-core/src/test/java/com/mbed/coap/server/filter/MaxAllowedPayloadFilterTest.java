@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class MaxAllowedPayloadFilterTest {
 
     @Test
     void shouldFailWhenPayloadAboveLimit() {
-        CoapResponse expected = CoapResponse.of(C413_REQUEST_ENTITY_TOO_LARGE, Opaque.of("too much"), o -> o.setSize1(50));
+        CoapResponse expected = CoapResponse.of(C413_REQUEST_ENTITY_TOO_LARGE, Opaque.of("too much"), o -> o.size1(50));
 
         assertEquals(expected, service.apply(post("/t").payload(opaqueOfSize(51))).join());
         assertEquals(expected, service.apply(post("/t").payload(opaqueOfSize(10021))).join());

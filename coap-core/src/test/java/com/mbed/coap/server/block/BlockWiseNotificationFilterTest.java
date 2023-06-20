@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package com.mbed.coap.server.block;
 
-import static com.mbed.coap.packet.BlockSize.*;
-import static com.mbed.coap.packet.CoapResponse.*;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
-import static protocolTests.utils.CoapPacketBuilder.*;
+import static com.mbed.coap.packet.BlockSize.S_16;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.reset;
+import static org.mockito.BDDMockito.verify;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.server.messaging.Capabilities;
@@ -62,7 +65,7 @@ class BlockWiseNotificationFilterTest {
 
         // then
         assertTrue(resp.join());
-        SeparateResponse expected = ok("aaaaaaaaaaaaaaab").options(o -> o.setSize2Res(27)).block2Res(0, S_16, true).toSeparate(token, LOCAL_1_5683);
+        SeparateResponse expected = ok("aaaaaaaaaaaaaaab").options(o -> o.size2Res(27)).block2Res(0, S_16, true).toSeparate(token, LOCAL_1_5683);
         verify(service).apply(expected);
     }
 }
