@@ -123,7 +123,7 @@ class CoapTcpDispatcherTest {
         receive(req);
 
         assertSent(newCoapPacket(LOCAL_1_5683).ack(Code.C205_CONTENT).token(2002).payload("OK"));
-        verify(inboundService).apply(eq(get(LOCAL_1_5683, "/some/request").token(2002)));
+        verify(inboundService).apply(eq(get("/some/request").token(2002).from(LOCAL_1_5683)));
     }
 
     @Test

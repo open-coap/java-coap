@@ -39,7 +39,7 @@ class CoapRequestConverterTest {
     @Test
     void shouldConvertConRequestAndResponse() {
         given(service.apply(eq(
-                post(LOCAL_5683, "/test2").token(13).payload("test"))
+                post("/test2").token(13).payload("test").to(LOCAL_5683))
         )).willReturn(
                 ok("ok").toFuture()
         );
@@ -54,7 +54,7 @@ class CoapRequestConverterTest {
     @Test
     void shouldConvertNonRequestAndResponse() {
         given(service.apply(eq(
-                post(LOCAL_5683, "/test2").token(13).payload("test").context(NON_CONFIRMABLE, true))
+                post("/test2").token(13).payload("test").context(NON_CONFIRMABLE, true).to(LOCAL_5683))
         )).willReturn(
                 ok("ok").toFuture()
         );

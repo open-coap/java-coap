@@ -94,7 +94,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundSimpleRequest() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put(LOCAL_5683, "/test2").token(120).context(NON_CONFIRMABLE, true));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).context(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(120).uriPath("/test2"));
 
         // when
@@ -116,7 +116,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundRequestWithBlocks() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put(LOCAL_5683, "/large2").token(32).context(NON_CONFIRMABLE, true));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).context(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(32).uriPath("/large2"));
 
         // when

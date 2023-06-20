@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,18 @@
  */
 package com.mbed.coap.server.block;
 
-import static com.mbed.coap.packet.BlockSize.*;
-import static com.mbed.coap.server.block.BlockWiseTransfer.*;
-import static com.mbed.coap.utils.Bytes.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static protocolTests.utils.CoapPacketBuilder.*;
+import static com.mbed.coap.packet.BlockSize.S_1024_BERT;
+import static com.mbed.coap.packet.BlockSize.S_16;
+import static com.mbed.coap.packet.CoapRequest.post;
+import static com.mbed.coap.server.block.BlockWiseTransfer.createBlockPart;
+import static com.mbed.coap.server.block.BlockWiseTransfer.isBlockPacketValid;
+import static com.mbed.coap.server.block.BlockWiseTransfer.updateWithFirstBlock;
+import static com.mbed.coap.utils.Bytes.opaqueOfSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
@@ -36,7 +43,7 @@ public class BlockWiseTransferTest {
     @Test
     public void should_set_first_block_header_for_request() {
         Capabilities csm = new Capabilities(512, true);
-        CoapRequest req = CoapRequest.post(LOCAL_5683, "/").payload(opaqueOfSize(2000));
+        CoapRequest req = post("/").payload(opaqueOfSize(2000)).to(LOCAL_5683);
 
         assertEquals(512, BlockWiseTransfer.updateWithFirstBlock(req, csm).size());
 
@@ -49,7 +56,7 @@ public class BlockWiseTransferTest {
     @Test
     public void should_set_first_block_header_for_request_bert() {
         Capabilities csm = new Capabilities(3300, true);
-        CoapRequest req = CoapRequest.post(LOCAL_5683, "/").payload(opaqueOfSize(5000));
+        CoapRequest req = post("/").payload(opaqueOfSize(5000)).to(LOCAL_5683);
 
         assertEquals(2048, BlockWiseTransfer.updateWithFirstBlock(req, csm).size());
 

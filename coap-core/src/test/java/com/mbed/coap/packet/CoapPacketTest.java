@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.CoapSerializer.deserialize;
@@ -399,11 +400,11 @@ public class CoapPacketTest {
         InetSocketAddress addr = new InetSocketAddress("localhost", 5683);
 
         CoapPacket coap = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", addr);
-        assertEquals(CoapRequest.put(addr, "/test"), coap.toCoapRequest());
+        assertEquals(put("/test").to(addr), coap.toCoapRequest());
 
         coap.setToken(Opaque.ofBytes(123));
         coap.setPayload(Opaque.of("dupa"));
-        assertEquals(CoapRequest.put(addr, "/test").token(123).payload("dupa"), coap.toCoapRequest());
+        assertEquals(put("/test").token(123).payload("dupa").to(addr), coap.toCoapRequest());
     }
 
     @Test

@@ -15,6 +15,7 @@
  */
 package com.mbed.coap.server.messaging;
 
+import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,7 +58,7 @@ class ExchangeFilterTest {
     @Test
     void piggybackedExchange() {
         // given
-        CoapRequest req = CoapRequest.get(LOCAL_5683, "/13");
+        CoapRequest req = get("/13").from(LOCAL_5683);
         resp = service.apply(req);
         assertEquals(1, exchangeFilter.transactions());
 
@@ -74,7 +75,7 @@ class ExchangeFilterTest {
     @Test
     void shouldHandleSeparateResponse() {
         // given
-        resp = service.apply(CoapRequest.get(LOCAL_5683, "/13").token(19));
+        resp = service.apply(get("/13").token(19).from(LOCAL_5683));
         verify(outbound).apply(any());
 
         // when
@@ -93,7 +94,7 @@ class ExchangeFilterTest {
     @Test
     void shouldHandleSeparateResponse_whenEmptyAckComesLater() {
         // given
-        resp = service.apply(CoapRequest.get(LOCAL_5683, "/13").token(19));
+        resp = service.apply(get("/13").token(19).from(LOCAL_5683));
         verify(outbound).apply(any());
 
         // when
@@ -109,7 +110,7 @@ class ExchangeFilterTest {
     @Test
     void nonConfirmableExchange() {
         // given
-        CoapRequest req = CoapRequest.get(LOCAL_5683, "/13").token(19).context(NON_CONFIRMABLE, true);
+        CoapRequest req = get("/13").token(19).context(NON_CONFIRMABLE, true).from(LOCAL_5683);
         resp = service.apply(req);
         assertEquals(1, exchangeFilter.transactions());
 
@@ -127,7 +128,7 @@ class ExchangeFilterTest {
     @Test
     void failExchange() {
         // given
-        CoapRequest req = CoapRequest.get(LOCAL_5683, "/13");
+        CoapRequest req = get("/13").from(LOCAL_5683);
         resp = service.apply(req);
 
         // when
@@ -141,7 +142,7 @@ class ExchangeFilterTest {
     @Test
     void cancelledPromise() {
         // given
-        CoapRequest req = CoapRequest.get(LOCAL_5683, "/13");
+        CoapRequest req = get("/13").from(LOCAL_5683);
         resp = service.apply(req);
         assertEquals(1, exchangeFilter.transactions());
 

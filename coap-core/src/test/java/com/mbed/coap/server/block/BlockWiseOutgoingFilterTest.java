@@ -17,6 +17,7 @@
 package com.mbed.coap.server.block;
 
 import static com.mbed.coap.packet.BlockSize.S_1024_BERT;
+import static com.mbed.coap.packet.BlockSize.S_16;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapRequest.put;
@@ -59,9 +60,9 @@ class BlockWiseOutgoingFilterTest {
 
     @Test
     public void shouldMakeNonBlockingRequest() throws Exception {
-        CoapRequest req = get(LOCAL_5683, "/test");
+        CoapRequest req = get("/test").from(LOCAL_5683);
 
-        CompletableFuture<CoapResponse> resp = service.apply(get(LOCAL_5683, "/test"));
+        CompletableFuture<CoapResponse> resp = service.apply(get("/test").from(LOCAL_5683));
 
         assertEquals(req, lastReq);
         assertFalse(resp.isDone());
@@ -69,7 +70,7 @@ class BlockWiseOutgoingFilterTest {
 
     @Test
     public void shouldReceiveNonBlockingResponse() throws Exception {
-        CompletableFuture<CoapResponse> respFut = service.apply(get(LOCAL_5683, "/test"));
+        CompletableFuture<CoapResponse> respFut = service.apply(get("/test").from(LOCAL_5683));
 
         assertFalse(respFut.isDone());
 
@@ -82,25 +83,25 @@ class BlockWiseOutgoingFilterTest {
 
     @Test
     public void shouldMakeBlockingRequest_maxMsgSz20() throws Exception {
-        CoapRequest req = post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_LARGE___PAYLOAD_");
+        CoapRequest req = post("/test").payload("LARGE___PAYLOAD_LARGE___PAYLOAD_").to(LOCAL_5683);
         capability = new Capabilities(20, true);
 
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
         assertMakeRequest(
-                post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_").size1(32).block1Req(0, BlockSize.S_16, true)
+                post("/test").size1(32).block1Req(0, S_16, true).payload("LARGE___PAYLOAD_").to(LOCAL_5683)
         );
 
         //response
-        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, S_16, false));
 
 
         //BLOCK 1
         assertMakeRequest(
-                post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_").block1Req(1, BlockSize.S_16, false)
+                post("/test").block1Req(1, S_16, false).payload("LARGE___PAYLOAD_").to(LOCAL_5683)
         );
-        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(1, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(1, S_16, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -112,19 +113,19 @@ class BlockWiseOutgoingFilterTest {
     public void shoudFail_toReceive_responseWithIncorrectLastBlockSize() {
         capability = new Capabilities(20, true);
 
-        CoapRequest req = get(LOCAL_5683, "/test");
+        CoapRequest req = get("/test").from(LOCAL_5683);
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
-        assertMakeRequest(get(LOCAL_5683, "/test"));
+        assertMakeRequest(get("/test").from(LOCAL_5683));
 
         //response
-        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload(Opaque.of("0123456789ABCDEF")));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, S_16, true).payload(Opaque.of("0123456789ABCDEF")));
 
         //BLOCK 1
-        assertMakeRequest(get(LOCAL_5683, "/test").block2Res(1, BlockSize.S_16, false));
+        assertMakeRequest(get("/test").block2Res(1, S_16, false).from(LOCAL_5683));
 
-        promise.complete(ok("0123456789abcdef_").block2Res(1, BlockSize.S_16, false));
+        promise.complete(ok("0123456789abcdef_").block2Res(1, S_16, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -136,18 +137,18 @@ class BlockWiseOutgoingFilterTest {
     @Test
     public void shouldFail_toReceive_tooLarge_blockingResponse() throws Exception {
         service = new BlockWiseOutgoingFilter(__ -> capability, 2000).then(this::newPromise);
-        CoapRequest req = get(LOCAL_5683, "/test");
+        CoapRequest req = get("/test").from(LOCAL_5683);
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
         assertMakeRequestAndReceive(
-                get(LOCAL_5683, "/test"),
+                get("/test").from(LOCAL_5683),
                 coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_1024, true).payload(opaqueOfSize(1024))
         );
 
         //BLOCK 1
         assertMakeRequestAndReceive(
-                get(LOCAL_5683, "/test").block2Res(1, BlockSize.S_1024, false),
+                get("/test").block2Res(1, BlockSize.S_1024, false).from(LOCAL_5683),
                 ok(opaqueOfSize(1000)).block2Res(1, BlockSize.S_1024, false)
         );
 
@@ -158,19 +159,19 @@ class BlockWiseOutgoingFilterTest {
 
     @Test
     public void shouldReceiveBlockingResponse() throws Exception {
-        CoapRequest req = get(LOCAL_5683, "/test");
+        CoapRequest req = get("/test").from(LOCAL_5683);
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
-        assertMakeRequest(get(LOCAL_5683, "/test"));
+        assertMakeRequest(get("/test").from(LOCAL_5683));
 
         //response
-        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload("LARGE___PAYLOAD_"));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, S_16, true).payload("LARGE___PAYLOAD_"));
 
         //BLOCK 1
-        assertMakeRequest(get(LOCAL_5683, "/test").block2Res(1, BlockSize.S_16, false));
+        assertMakeRequest(get("/test").block2Res(1, S_16, false).from(LOCAL_5683));
 
-        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload("LARGE___PAYLOAD_"));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(1, S_16, false).payload("LARGE___PAYLOAD_"));
 
         //verify
         assertTrue(respFut.isDone());
@@ -181,23 +182,23 @@ class BlockWiseOutgoingFilterTest {
     @Test
     public void shouldReceiveBlockingResponse_with_BERT() throws Exception {
         //based on https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09#section-6.1
-        CoapRequest req = get(LOCAL_5683, "/status");
+        CoapRequest req = get("/status").from(LOCAL_5683);
 
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
-        assertMakeRequest(get(LOCAL_5683, "/status"));
+        assertMakeRequest(get("/status").from(LOCAL_5683));
 
         //response
         promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, S_1024_BERT, true).payload(opaqueOfSize(3072)));
 
         //BLOCK 1
-        assertMakeRequest(get(LOCAL_5683, "/status").block2Res(3, S_1024_BERT, false));
+        assertMakeRequest(get("/status").block2Res(3, S_1024_BERT, false).from(LOCAL_5683));
 
         promise.complete(coapResponse(Code.C205_CONTENT).block2Res(3, S_1024_BERT, true).payload(opaqueOfSize(5120)));
 
         //BLOCK 2
-        assertMakeRequest(get(LOCAL_5683, "/status").block2Res(8, S_1024_BERT, false));
+        assertMakeRequest(get("/status").block2Res(8, S_1024_BERT, false).from(LOCAL_5683));
 
         promise.complete(coapResponse(Code.C205_CONTENT).block2Res(8, S_1024_BERT, false).payload(opaqueOfSize(4711)));
 
@@ -213,22 +214,22 @@ class BlockWiseOutgoingFilterTest {
         //based on https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09#section-6.2
         capability = new Capabilities(10000, true);
 
-        CoapRequest req = put(LOCAL_5683, "/options").payload(opaqueOfSize(8192 + 8192 + 5683));
+        CoapRequest req = put("/options").payload(opaqueOfSize(8192 + 8192 + 5683)).to(LOCAL_5683);
 
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
-        assertMakeRequest(put(LOCAL_5683, "/options").block1Req(0, S_1024_BERT, true).payload(opaqueOfSize(8192)).size1(22067));
+        assertMakeRequest(put("/options").block1Req(0, S_1024_BERT, true).size1(22067).payload(opaqueOfSize(8192)).to(LOCAL_5683));
 
         promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, S_1024_BERT, true));
 
         //BLOCK 1
-        assertMakeRequest(put(LOCAL_5683, "/options").block1Req(8, S_1024_BERT, true).payload(opaqueOfSize(8192)));
+        assertMakeRequest(put("/options").block1Req(8, S_1024_BERT, true).payload(opaqueOfSize(8192)).to(LOCAL_5683));
 
         promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(8, S_1024_BERT, true));
 
         //BLOCK 2
-        assertMakeRequest(put(LOCAL_5683, "/options").block1Req(16, S_1024_BERT, false).payload(opaqueOfSize(5683)));
+        assertMakeRequest(put("/options").block1Req(16, S_1024_BERT, false).payload(opaqueOfSize(5683)).to(LOCAL_5683));
 
         promise.complete(coapResponse(Code.C204_CHANGED).block1Req(16, S_1024_BERT, false));
 
@@ -242,7 +243,7 @@ class BlockWiseOutgoingFilterTest {
     public void shouldFailSendBlockingRequest_when_blockTransferIsDisabled() throws Exception {
         //based on https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09#section-6.2
 
-        CoapRequest req = put(LOCAL_5683, "/options").payload(opaqueOfSize(8192 + 8192 + 5683));
+        CoapRequest req = put("/options").payload(opaqueOfSize(8192 + 8192 + 5683)).to(LOCAL_5683);
 
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
@@ -256,31 +257,31 @@ class BlockWiseOutgoingFilterTest {
 
     @Test
     public void should_continue_block_transfer_after_block_size_change() throws ExecutionException, InterruptedException {
-        CoapRequest req = post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_LARGE___PAYLOAD_LARGE___PAYLOAD");
+        CoapRequest req = post("/test").payload("LARGE___PAYLOAD_LARGE___PAYLOAD_LARGE___PAYLOAD").to(LOCAL_5683);
         capability = new Capabilities(40, true);
 
         CompletableFuture<CoapResponse> respFut = service.apply(req);
 
         //BLOCK 0
         assertMakeRequest(
-                post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_LARGE___PAYLOAD_").size1(47).block1Req(0, BlockSize.S_32, true)
+                post("/test").size1(47).block1Req(0, BlockSize.S_32, true).payload("LARGE___PAYLOAD_LARGE___PAYLOAD_").to(LOCAL_5683)
         );
 
         //response new size=16
-        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, S_16, false));
 
 
         //BLOCK 1
         assertMakeRequest(
-                post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_").block1Req(1, BlockSize.S_16, true)
+                post("/test").block1Req(1, S_16, true).payload("LARGE___PAYLOAD_").to(LOCAL_5683)
         );
-        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(1, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(1, S_16, false));
 
         //BLOCK 2
         assertMakeRequest(
-                post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD").block1Req(2, BlockSize.S_16, false)
+                post("/test").block1Req(2, S_16, false).payload("LARGE___PAYLOAD").to(LOCAL_5683)
         );
-        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(2, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(2, S_16, false));
 
         //verify
         assertTrue(respFut.isDone());

@@ -53,7 +53,7 @@ public class TimeoutTest {
         CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).retransmission(ofFixed(ofMillis(100))).build();
         cnn.start();
 
-        CoapRequest request = get(InMemoryCoapTransport.createAddress(0), "/test/1");
+        CoapRequest request = get("/test/1").from(InMemoryCoapTransport.createAddress(0));
 
         CompletableFuture<CoapResponse> callback = cnn.clientService().apply(request);
 
