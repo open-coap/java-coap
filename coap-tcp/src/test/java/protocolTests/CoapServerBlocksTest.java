@@ -293,7 +293,7 @@ public class CoapServerBlocksTest {
     }
 
     private Service<CoapRequest, CoapResponse> newResource(final String payload) {
-        return req -> completedFuture(CoapResponse.ok(payload));
+        return req -> CoapResponse.ok(payload).toFuture();
     }
 
 }

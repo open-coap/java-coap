@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +16,26 @@
  */
 package com.mbed.coap.server.block;
 
-import static com.mbed.coap.packet.BlockSize.*;
-import static com.mbed.coap.packet.CoapRequest.*;
+import static com.mbed.coap.packet.BlockSize.S_1024;
+import static com.mbed.coap.packet.BlockSize.S_1024_BERT;
+import static com.mbed.coap.packet.BlockSize.S_256;
+import static com.mbed.coap.packet.BlockSize.S_512;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.put;
+import static com.mbed.coap.packet.CoapResponse.badRequest;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.of;
-import static com.mbed.coap.packet.CoapResponse.*;
-import static com.mbed.coap.packet.Code.*;
-import static com.mbed.coap.utils.Bytes.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Code.C204_CHANGED;
+import static com.mbed.coap.packet.Code.C231_CONTINUE;
+import static com.mbed.coap.packet.Code.C413_REQUEST_ENTITY_TOO_LARGE;
+import static com.mbed.coap.utils.Bytes.opaqueOfSize;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.mbed.coap.exception.CoapBlockException;
 import com.mbed.coap.exception.CoapBlockTooLargeEntityException;
 import com.mbed.coap.exception.CoapException;
@@ -63,20 +75,20 @@ public class BlockWiseCallbackTest {
         assertEquals(put("/9").block1Req(0, S_512, true).size1(1500).payload(opaqueOfSize(512)), bwc.request);
 
         //when
-        receiveFirst(of(C231_CONTINUE).block1Req(0, S_512, false));
+        receiveFirst(coapResponse(C231_CONTINUE).block1Req(0, S_512, false));
         //then
         assertSent(put("/9").block1Req(1, S_512, true).payload(opaqueOfSize(512)));
 
         //BLOCK 2
         //when
-        receive(of(C231_CONTINUE).block1Req(1, S_512, false));
+        receive(coapResponse(C231_CONTINUE).block1Req(1, S_512, false));
         //then
         assertSent(put("/9").block1Req(2, S_512, false).payload(opaqueOfSize(476)));
 
         //when
-        receive(of(C204_CHANGED).block1Req(2, S_512, false));
+        receive(coapResponse(C204_CHANGED).block1Req(2, S_512, false));
         //then
-        assertEquals(of(C204_CHANGED).block1Req(2, S_512, false), response.join());
+        assertEquals(coapResponse(C204_CHANGED).block1Req(2, S_512, false), response.join());
     }
 
     @Test
@@ -85,10 +97,10 @@ public class BlockWiseCallbackTest {
         assertEquals(put("/9").payload(opaqueOfSize(100)), bwc.request);
 
         //when
-        receiveFirst(of(C204_CHANGED).payload(opaqueOfSize(200)));
+        receiveFirst(coapResponse(C204_CHANGED).payload(opaqueOfSize(200)));
 
         //then
-        assertEquals(of(C204_CHANGED).payload(opaqueOfSize(200)), response.join());
+        assertEquals(coapResponse(C204_CHANGED).payload(opaqueOfSize(200)), response.join());
     }
 
     @Test
@@ -120,20 +132,20 @@ public class BlockWiseCallbackTest {
         assertEquals(put("/9").block1Req(0, S_1024_BERT, true).size1(4196).payload(opaqueOfSize(2048)), bwc.request);
 
         //when
-        receiveFirst(of(C231_CONTINUE).block1Req(0, S_1024_BERT, false));
+        receiveFirst(coapResponse(C231_CONTINUE).block1Req(0, S_1024_BERT, false));
         //then
         assertSent(put("/9").block1Req(2, S_1024_BERT, true).payload(opaqueOfSize(2048)));
 
         //BLOCK 2
         //when
-        receive(of(C231_CONTINUE).block1Req(2, S_1024_BERT, false));
+        receive(coapResponse(C231_CONTINUE).block1Req(2, S_1024_BERT, false));
         //then
         assertSent(put("/9").block1Req(4, S_1024_BERT, false).payload(opaqueOfSize(100)));
 
         //when
-        receive(of(C204_CHANGED).block1Req(4, S_1024_BERT, false));
+        receive(coapResponse(C204_CHANGED).block1Req(4, S_1024_BERT, false));
         //then
-        assertEquals(of(C204_CHANGED).block1Req(4, S_1024_BERT, false), response.join());
+        assertEquals(coapResponse(C204_CHANGED).block1Req(4, S_1024_BERT, false), response.join());
     }
 
     @Test
@@ -154,7 +166,7 @@ public class BlockWiseCallbackTest {
         assertSent(get("/9").block2Res(4, S_1024_BERT, false));
 
         //when
-        receive(ok(opaqueOfSize(100)).block2Res(4, S_1024_BERT, false).payload(opaqueOfSize(100)));
+        receive(ok(opaqueOfSize(100)).block2Res(4, S_1024_BERT, false));
         //then
         assertEquals(ok(opaqueOfSize(4196)).block2Res(4, S_1024_BERT, false), response.join());
     }
@@ -281,7 +293,7 @@ public class BlockWiseCallbackTest {
         assertEquals(put("/9").block1Req(0, S_1024, true).size1(1500).payload(opaqueOfSize(1024)), bwc.request);
 
         //when, received ACK with smaller block size
-        receiveFirst(of(C231_CONTINUE).block1Req(0, S_256, false));
+        receiveFirst(coapResponse(C231_CONTINUE).block1Req(0, S_256, false));
         //then
         assertSent(put("/9").block1Req(1, S_256, true).payload(opaqueOfSize(256)));
     }
@@ -291,12 +303,12 @@ public class BlockWiseCallbackTest {
         givenPutRequest(1500);
 
         //when, received ACK 4.13 with a new size hint
-        receiveFirst(of(C413_REQUEST_ENTITY_TOO_LARGE).block1Req(0, S_256, true));
+        receiveFirst(coapResponse(C413_REQUEST_ENTITY_TOO_LARGE).block1Req(0, S_256, true));
         //then, restart with new size
         assertSent(put("/9").block1Req(0, S_256, true).size1(1500).payload(opaqueOfSize(256)));
 
         //and continue
-        receive(of(C231_CONTINUE).block1Req(0, S_256, true));
+        receive(coapResponse(C231_CONTINUE).block1Req(0, S_256, true));
         assertSent(put("/9").block1Req(1, S_256, true).payload(opaqueOfSize(256)));
     }
 

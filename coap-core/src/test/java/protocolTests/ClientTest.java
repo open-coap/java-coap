@@ -17,7 +17,6 @@ package protocolTests;
 
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.decodeHex;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
@@ -41,7 +40,7 @@ public class ClientTest {
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
                 .route(RouterService.builder()
-                        .get("/test", req -> completedFuture(ok("OK!"))))
+                        .get("/test", req -> ok("OK!").toFuture()))
                 .build()
                 .start();
 

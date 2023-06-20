@@ -57,7 +57,7 @@ public class CoapClientTest {
     @Test
     public void request() {
         given(clientService.apply(get(LOCAL_5683, "/test")))
-                .willReturn(completedFuture(CoapResponse.ok("ABC", CT_TEXT_PLAIN)));
+                .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
 
         // when
         CompletableFuture<CoapResponse> resp = client.send(get(LOCAL_5683, "/test"));
@@ -81,7 +81,7 @@ public class CoapClientTest {
     @Test
     public void syncRequest() throws CoapException {
         given(clientService.apply(get(LOCAL_5683, "/test")))
-                .willReturn(completedFuture(CoapResponse.ok("ABC", CT_TEXT_PLAIN)));
+                .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
 
         // when
         CoapResponse resp = client.sendSync(get(LOCAL_5683, "/test"));
@@ -94,7 +94,7 @@ public class CoapClientTest {
     @Test
     public void observationTest() throws Exception {
         given(clientService.apply(get(LOCAL_5683, "/test").token(token1001).observe(0)))
-                .willReturn(completedFuture(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next)));
+                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next).toFuture());
 
         ObservationConsumer obsConsumer = new ObservationConsumer();
         // when

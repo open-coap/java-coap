@@ -81,13 +81,13 @@ public class MbedtlsNettyTest {
                 .transport(serverTransport)
                 .executor(eventLoopGroup)
                 .route(RouterService.builder()
-                        .get("/test", __ -> completedFuture(ok("OK!")))
-                        .post("/echo", req -> completedFuture(ok(req.getPayload())))
+                        .get("/test", __ -> ok("OK!").toFuture())
+                        .post("/echo", req -> ok(req.getPayload()).toFuture())
                         .get("/dtls-ctx", req -> {
                             String key = req.options().getUriQueryMap().get("key");
                             String ctxValue = req.getTransContext(DTLS_AUTHENTICATION).get(key);
                             if (ctxValue != null) {
-                                return completedFuture(ok(ctxValue));
+                                return ok(ctxValue).toFuture();
                             } else {
                                 return completedFuture(CoapResponse.of(Code.C400_BAD_REQUEST));
                             }

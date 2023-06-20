@@ -21,13 +21,12 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.utils.Service;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
 
 class RouterServiceTest {
     Service<CoapRequest, CoapResponse> simpleHandler =
-            (CoapRequest r) -> CompletableFuture.completedFuture(ok(r.getMethod() + " " + r.options().getUriPath()));
+            (CoapRequest r) -> ok(r.getMethod() + " " + r.options().getUriPath()).toFuture();
 
     @Test
     public void shouldBuildSimpleService() throws ExecutionException, InterruptedException {
@@ -48,7 +47,7 @@ class RouterServiceTest {
     public void shouldFilterRoutes() throws ExecutionException, InterruptedException {
         Service<CoapRequest, CoapResponse> svc = RouterService.builder()
                 .get("/test3", simpleHandler)
-                .filter((CoapRequest req, Service<CoapRequest, CoapResponse> nextSvc) -> CompletableFuture.completedFuture(ok("42")))
+                .filter((CoapRequest req, Service<CoapRequest, CoapResponse> nextSvc) -> ok("42").toFuture())
                 .get("/test1", simpleHandler)
                 .post("/test1", simpleHandler)
                 .get("/test2/*", simpleHandler)
@@ -64,7 +63,7 @@ class RouterServiceTest {
     @Test
     public void shouldChangeDefaultHandler() throws ExecutionException, InterruptedException {
         Service<CoapRequest, CoapResponse> svc = RouterService.builder()
-                .defaultHandler((CoapRequest r) -> CompletableFuture.completedFuture(ok("OK")))
+                .defaultHandler((CoapRequest r) -> ok("OK").toFuture())
                 .build();
 
         assertEquals(Code.C205_CONTENT, svc.apply(CoapRequest.get("/test3")).get().getCode());

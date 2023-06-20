@@ -17,6 +17,7 @@ package org.opencoap.transport.mbedtls;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.Networks.localhost;
@@ -61,7 +62,7 @@ class MbedtlsCoapTransportTest {
         coapServer = CoapServer.builder()
                 .transport(new MbedtlsCoapTransport(dtlsServer))
                 .route(RouterService.builder()
-                        .get("/test", it -> completedFuture(ok("OK!")))
+                        .get("/test", it -> ok("OK!").toFuture())
                         .post("/send-malformed", it -> {
                             dtlsServer.send(new Packet<>("acghfh", it.getPeerAddress()).map(MbedtlsCoapTransportTest::toByteBuffer));
                             return completedFuture(CoapResponse.of(Code.C201_CREATED));
@@ -74,9 +75,9 @@ class MbedtlsCoapTransportTest {
                         .get("/auth", it -> {
                             String name = it.getTransContext(DTLS_AUTHENTICATION).get("auth");
                             if (name != null) {
-                                return completedFuture(CoapResponse.ok(name));
+                                return CoapResponse.ok(name).toFuture();
                             } else {
-                                return completedFuture(CoapResponse.of(Code.C401_UNAUTHORIZED));
+                                return coapResponse(Code.C401_UNAUTHORIZED).toFuture();
                             }
 
                         })

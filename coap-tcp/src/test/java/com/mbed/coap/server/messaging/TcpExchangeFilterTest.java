@@ -15,16 +15,19 @@
  */
 package com.mbed.coap.server.messaging;
 
-import static com.mbed.coap.packet.CoapRequest.*;
+import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.of;
-import static com.mbed.coap.packet.CoapResponse.*;
-import static com.mbed.coap.packet.Opaque.*;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Opaque.variableUInt;
 import static com.mbed.coap.transport.TransportContext.EMPTY;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static protocolTests.utils.CoapPacketBuilder.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -49,7 +52,7 @@ class TcpExchangeFilterTest {
         assertEquals(1, exchange.transactions());
 
         // when
-        assertTrue(exchange.handleResponse(new SeparateResponse(ok("ok"), Opaque.EMPTY, LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok").toSeparate(Opaque.EMPTY, LOCAL_5683, EMPTY)));
 
         // then
         assertEquals(ok("ok"), resp.join());
@@ -66,14 +69,14 @@ class TcpExchangeFilterTest {
         assertEquals(2, exchange.transactions());
 
         // when (response in different order)
-        assertTrue(exchange.handleResponse(new SeparateResponse(ok("ok"), variableUInt(2002), LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok").toSeparate(variableUInt(2002), LOCAL_5683, EMPTY)));
 
         // then
         assertEquals(ok("ok"), resp2.join());
         assertEquals(1, exchange.transactions());
 
         // and
-        assertTrue(exchange.handleResponse(new SeparateResponse(ok("ok2"), variableUInt(1001), LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok2").toSeparate(variableUInt(1001), LOCAL_5683, EMPTY)));
         assertTrue(resp.isDone());
         assertEquals(0, exchange.transactions());
     }
@@ -98,7 +101,7 @@ class TcpExchangeFilterTest {
 
         // then
         assertEquals(0, exchange.transactions());
-        assertFalse(exchange.handleResponse(new SeparateResponse(ok("ok"), Opaque.EMPTY, LOCAL_5683, EMPTY)));
+        assertFalse(exchange.handleResponse(ok("ok").toSeparate(Opaque.EMPTY, LOCAL_5683)));
     }
 
     @Test

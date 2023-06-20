@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.CoapSerializer.deserialize;
 import static com.mbed.coap.packet.CoapSerializer.serialize;
@@ -466,7 +467,7 @@ public class CoapPacketTest {
         SeparateResponse separateResponse = packet.toSeparateResponse();
 
         assertEquals(
-                CoapResponse.of(Code.C201_CREATED).payload("OK", MediaTypes.CT_TEXT_PLAIN).etag(Opaque.ofBytes(99)).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
+                coapResponse(Code.C201_CREATED).etag(Opaque.ofBytes(99)).payload("OK", MediaTypes.CT_TEXT_PLAIN).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
                 separateResponse
         );
     }

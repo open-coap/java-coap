@@ -16,7 +16,6 @@
  */
 package protocolTests;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.any;
@@ -56,10 +55,10 @@ public class DuplicateTest {
 
     private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
             .put("/test", req ->
-                    completedFuture(CoapResponse.ok("dupa"))
+                    CoapResponse.ok("dupa").toFuture()
             )
             .get("/test-non", req ->
-                    completedFuture(CoapResponse.ok("dupa2"))
+                    CoapResponse.ok("dupa2").toFuture()
             )
             .get("/test-delay", req ->
                     delayResource

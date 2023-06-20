@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 class MicrometerMetricsFilterTest {
     private final MeterRegistry registry = new SimpleMeterRegistry();
     private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
-    private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> completedFuture(ok("OK")));
+    private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> ok("OK").toFuture());
     private final Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
 
     @BeforeEach
@@ -59,7 +59,7 @@ class MicrometerMetricsFilterTest {
     public void shouldForwardResponse() throws ExecutionException, InterruptedException {
         CoapResponse resp = okService.apply(get("/test/1")).get();
 
-        assertEquals(resp, ok("OK"));
+        assertEquals(ok("OK"), resp);
     }
 
     @Test
@@ -108,7 +108,7 @@ class MicrometerMetricsFilterTest {
                 .registry(registry)
                 .build();
 
-        Service<CoapRequest, CoapResponse> svc = filterWithRoute.then(__ -> completedFuture(ok("OK")));
+        Service<CoapRequest, CoapResponse> svc = filterWithRoute.then(__ -> ok("OK").toFuture());
         svc.apply(get("/test/1")).join();
         svc.apply(get("/test/2")).join();
         svc.apply(get("/hello")).join();

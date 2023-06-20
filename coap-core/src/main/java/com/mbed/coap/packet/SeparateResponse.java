@@ -95,6 +95,6 @@ public class SeparateResponse {
     }
 
     public SeparateResponse duplicate() {
-        return new SeparateResponse(new CoapResponse(response.getCode(), response.getPayload(), response.options().duplicate()), token, peerAddress, transContext);
+        return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()), token, peerAddress, transContext);
     }
 }

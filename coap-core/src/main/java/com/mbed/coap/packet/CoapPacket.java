@@ -97,7 +97,7 @@ public class CoapPacket {
     }
 
     public CoapResponse toCoapResponse() {
-        return new CoapResponse(code, payload, options);
+        return CoapResponse.of(code, payload, options);
     }
 
     public SeparateResponse toSeparateResponse() {

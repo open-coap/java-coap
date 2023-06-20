@@ -29,8 +29,8 @@ class CoapResponseTest {
 
     @Test
     void build_bad_request() {
-        assertEquals(new CoapResponse(Code.C400_BAD_REQUEST, Opaque.EMPTY), CoapResponse.badRequest());
-        assertEquals(new CoapResponse(Code.C400_BAD_REQUEST, Opaque.of("really bad")), CoapResponse.badRequest("really bad"));
+        assertEquals(CoapResponse.of(Code.C400_BAD_REQUEST, Opaque.EMPTY), CoapResponse.badRequest());
+        assertEquals(CoapResponse.of(Code.C400_BAD_REQUEST, Opaque.of("really bad")), CoapResponse.badRequest("really bad"));
     }
 
     @Test

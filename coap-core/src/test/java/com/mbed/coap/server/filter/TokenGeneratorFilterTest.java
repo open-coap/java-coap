@@ -17,7 +17,6 @@ package com.mbed.coap.server.filter;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.packet.CoapRequest;
@@ -36,7 +35,7 @@ class TokenGeneratorFilterTest {
         Service<CoapRequest, CoapResponse> service = filter.then(req -> {
             assertTrue(req.getToken().nonEmpty());
             System.out.println(req);
-            return completedFuture(ok("ok"));
+            return ok("ok").toFuture();
         });
 
         assertEquals(ok("ok"), service.apply(get("/test")).join());
@@ -46,7 +45,7 @@ class TokenGeneratorFilterTest {
     void shouldNotSetTokenToWhenAlreadyExists() {
         Service<CoapRequest, CoapResponse> service = filter.then(req -> {
             assertEquals(Opaque.ofBytes(0x7b), req.getToken());
-            return completedFuture(ok("ok"));
+            return ok("ok").toFuture();
         });
 
         assertEquals(ok("ok"), service.apply(get("/test").token(123)).join());

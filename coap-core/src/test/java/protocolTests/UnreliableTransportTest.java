@@ -18,11 +18,9 @@ package protocolTests;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.transport.InMemoryCoapTransport.createAddress;
 import static com.mbed.coap.transmission.RetransmissionBackOff.ofExponential;
 import static com.mbed.coap.transport.InMemoryCoapTransport.createAddress;
 import static java.time.Duration.ofMillis;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.mbed.coap.CoapConstants;
@@ -52,8 +50,8 @@ public class UnreliableTransportTest {
 
     private CoapServer server = null;
     private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
-            .get("/test/1", __ -> completedFuture(CoapResponse.ok("Dziala")))
-            .get("/dropping", __ -> completedFuture(ok("OK")))
+            .get("/test/1", __ -> CoapResponse.ok("Dziala").toFuture())
+            .get("/dropping", __ -> ok("OK").toFuture())
             .build();
 
     @BeforeEach
@@ -121,7 +119,7 @@ public class UnreliableTransportTest {
         server = CoapServer.builder()
                 .transport(new DroppingPacketsTransportWrapper(CoapConstants.DEFAULT_PORT, (byte) 100))
                 .route(RouterService.builder()
-                        .get("/test", __ -> completedFuture(ok("TEST")))
+                        .get("/test", __ -> ok("TEST").toFuture())
                         .build())
                 .build()
                 .start();

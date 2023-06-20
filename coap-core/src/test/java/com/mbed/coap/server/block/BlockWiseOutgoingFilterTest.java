@@ -20,7 +20,7 @@ import static com.mbed.coap.packet.BlockSize.S_1024_BERT;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapRequest.put;
-import static com.mbed.coap.packet.CoapResponse.of;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -74,7 +74,7 @@ class BlockWiseOutgoingFilterTest {
         assertFalse(respFut.isDone());
 
         //verify response
-        promise.complete(ok(Opaque.of("OK")));
+        promise.complete(ok("OK"));
 
         assertEquals(ok("OK"), respFut.get());
     }
@@ -93,14 +93,14 @@ class BlockWiseOutgoingFilterTest {
         );
 
         //response
-        promise.complete(of(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
 
 
         //BLOCK 1
         assertMakeRequest(
                 post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_").block1Req(1, BlockSize.S_16, false)
         );
-        promise.complete(of(Code.C204_CHANGED).block1Req(1, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(1, BlockSize.S_16, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -119,12 +119,12 @@ class BlockWiseOutgoingFilterTest {
         assertMakeRequest(get(LOCAL_5683, "/test"));
 
         //response
-        promise.complete(of(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload(Opaque.of("0123456789ABCDEF")));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload(Opaque.of("0123456789ABCDEF")));
 
         //BLOCK 1
         assertMakeRequest(get(LOCAL_5683, "/test").block2Res(1, BlockSize.S_16, false));
 
-        promise.complete(of(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload(Opaque.of("0123456789abcdef_")));
+        promise.complete(ok("0123456789abcdef_").block2Res(1, BlockSize.S_16, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -142,7 +142,7 @@ class BlockWiseOutgoingFilterTest {
         //BLOCK 0
         assertMakeRequestAndReceive(
                 get(LOCAL_5683, "/test"),
-                of(Code.C205_CONTENT).block2Res(0, BlockSize.S_1024, true).payload(opaqueOfSize(1024))
+                coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_1024, true).payload(opaqueOfSize(1024))
         );
 
         //BLOCK 1
@@ -165,12 +165,12 @@ class BlockWiseOutgoingFilterTest {
         assertMakeRequest(get(LOCAL_5683, "/test"));
 
         //response
-        promise.complete(of(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload("LARGE___PAYLOAD_"));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload("LARGE___PAYLOAD_"));
 
         //BLOCK 1
         assertMakeRequest(get(LOCAL_5683, "/test").block2Res(1, BlockSize.S_16, false));
 
-        promise.complete(of(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload("LARGE___PAYLOAD_"));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload("LARGE___PAYLOAD_"));
 
         //verify
         assertTrue(respFut.isDone());
@@ -189,17 +189,17 @@ class BlockWiseOutgoingFilterTest {
         assertMakeRequest(get(LOCAL_5683, "/status"));
 
         //response
-        promise.complete(of(Code.C205_CONTENT).block2Res(0, S_1024_BERT, true).payload(opaqueOfSize(3072)));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(0, S_1024_BERT, true).payload(opaqueOfSize(3072)));
 
         //BLOCK 1
         assertMakeRequest(get(LOCAL_5683, "/status").block2Res(3, S_1024_BERT, false));
 
-        promise.complete(of(Code.C205_CONTENT).block2Res(3, S_1024_BERT, true).payload(opaqueOfSize(5120)));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(3, S_1024_BERT, true).payload(opaqueOfSize(5120)));
 
         //BLOCK 2
         assertMakeRequest(get(LOCAL_5683, "/status").block2Res(8, S_1024_BERT, false));
 
-        promise.complete(of(Code.C205_CONTENT).block2Res(8, S_1024_BERT, false).payload(opaqueOfSize(4711)));
+        promise.complete(coapResponse(Code.C205_CONTENT).block2Res(8, S_1024_BERT, false).payload(opaqueOfSize(4711)));
 
 
         //verify
@@ -220,17 +220,17 @@ class BlockWiseOutgoingFilterTest {
         //BLOCK 0
         assertMakeRequest(put(LOCAL_5683, "/options").block1Req(0, S_1024_BERT, true).payload(opaqueOfSize(8192)).size1(22067));
 
-        promise.complete(of(Code.C231_CONTINUE).block1Req(0, S_1024_BERT, true));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, S_1024_BERT, true));
 
         //BLOCK 1
         assertMakeRequest(put(LOCAL_5683, "/options").block1Req(8, S_1024_BERT, true).payload(opaqueOfSize(8192)));
 
-        promise.complete(of(Code.C231_CONTINUE).block1Req(8, S_1024_BERT, true));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(8, S_1024_BERT, true));
 
         //BLOCK 2
         assertMakeRequest(put(LOCAL_5683, "/options").block1Req(16, S_1024_BERT, false).payload(opaqueOfSize(5683)));
 
-        promise.complete(of(Code.C204_CHANGED).block1Req(16, S_1024_BERT, false));
+        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(16, S_1024_BERT, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -267,20 +267,20 @@ class BlockWiseOutgoingFilterTest {
         );
 
         //response new size=16
-        promise.complete(of(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, false));
 
 
         //BLOCK 1
         assertMakeRequest(
                 post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD_").block1Req(1, BlockSize.S_16, true)
         );
-        promise.complete(of(Code.C231_CONTINUE).block1Req(1, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C231_CONTINUE).block1Req(1, BlockSize.S_16, false));
 
         //BLOCK 2
         assertMakeRequest(
                 post(LOCAL_5683, "/test").payload("LARGE___PAYLOAD").block1Req(2, BlockSize.S_16, false)
         );
-        promise.complete(of(Code.C204_CHANGED).block1Req(2, BlockSize.S_16, false));
+        promise.complete(coapResponse(Code.C204_CHANGED).block1Req(2, BlockSize.S_16, false));
 
         //verify
         assertTrue(respFut.isDone());
@@ -298,6 +298,5 @@ class BlockWiseOutgoingFilterTest {
         assertEquals(req, lastReq);
         lastReq = null;
     }
-
 
 }
