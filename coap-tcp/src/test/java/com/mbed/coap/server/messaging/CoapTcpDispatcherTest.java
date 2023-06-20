@@ -16,6 +16,7 @@
 package com.mbed.coap.server.messaging;
 
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.variableUInt;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -92,7 +93,7 @@ class CoapTcpDispatcherTest {
         CoapPacket packet = newCoapPacket(LOCAL_1_5683).token(2001).code(Code.C205_CONTENT).obs(12).build();
         dispatcher.handle(packet);
 
-        verify(outboundHandler).apply(eq(CoapResponse.of(Code.C205_CONTENT).observe(12).toSeparate(variableUInt(2001), LOCAL_1_5683)));
+        verify(outboundHandler).apply(eq(coapResponse(Code.C205_CONTENT).observe(12).toSeparate(variableUInt(2001), LOCAL_1_5683)));
     }
 
     @Test
@@ -116,7 +117,7 @@ class CoapTcpDispatcherTest {
 
     @Test
     public void should_pass_request_to_inbound_service() {
-        given(inboundService.apply(any())).willReturn(completedFuture(ok("OK")));
+        given(inboundService.apply(any())).willReturn(ok("OK").toFuture());
         CoapPacketBuilder req = newCoapPacket(LOCAL_1_5683).token(2002).get().uriPath("/some/request");
 
         receive(req);

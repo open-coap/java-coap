@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.mbed.coap.server;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -74,7 +74,7 @@ public class ObservableResourceService implements Service<CoapRequest, CoapRespo
 
     public boolean terminate(Code code) {
         Objects.requireNonNull(code);
-        return put(new CoapResponse(code, Opaque.EMPTY, opts -> opts.setObserve(current.options().getObserve())));
+        return put(CoapResponse.of(code, Opaque.EMPTY, opts -> opts.setObserve(current.options().getObserve())));
     }
 
     public boolean put(CoapResponse obs) {

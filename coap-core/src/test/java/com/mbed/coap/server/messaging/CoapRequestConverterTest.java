@@ -18,7 +18,6 @@ package com.mbed.coap.server.messaging;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -41,8 +40,8 @@ class CoapRequestConverterTest {
     void shouldConvertConRequestAndResponse() {
         given(service.apply(eq(
                 post(LOCAL_5683, "/test2").token(13).payload("test"))
-        )).willReturn(completedFuture(
-                ok("ok"))
+        )).willReturn(
+                ok("ok").toFuture()
         );
 
         CompletableFuture<CoapPacket> resp = conv.apply(
@@ -56,8 +55,8 @@ class CoapRequestConverterTest {
     void shouldConvertNonRequestAndResponse() {
         given(service.apply(eq(
                 post(LOCAL_5683, "/test2").token(13).payload("test").context(NON_CONFIRMABLE, true))
-        )).willReturn(completedFuture(
-                ok("ok"))
+        )).willReturn(
+                ok("ok").toFuture()
         );
 
         CompletableFuture<CoapPacket> resp = conv.apply(

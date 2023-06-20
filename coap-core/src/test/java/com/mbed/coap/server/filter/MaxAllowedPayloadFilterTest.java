@@ -15,12 +15,13 @@
  */
 package com.mbed.coap.server.filter;
 
-import static com.mbed.coap.packet.CoapRequest.*;
+import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.of;
-import static com.mbed.coap.packet.Code.*;
-import static com.mbed.coap.utils.Bytes.*;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mbed.coap.packet.Code.C201_CREATED;
+import static com.mbed.coap.packet.Code.C413_REQUEST_ENTITY_TOO_LARGE;
+import static com.mbed.coap.utils.Bytes.opaqueOfSize;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Opaque;
@@ -44,7 +45,7 @@ class MaxAllowedPayloadFilterTest {
 
     @Test
     void shouldFailWhenPayloadAboveLimit() {
-        CoapResponse expected = new CoapResponse(C413_REQUEST_ENTITY_TOO_LARGE, Opaque.of("too much"), o -> o.setSize1(50));
+        CoapResponse expected = CoapResponse.of(C413_REQUEST_ENTITY_TOO_LARGE, Opaque.of("too much"), o -> o.setSize1(50));
 
         assertEquals(expected, service.apply(post("/t").payload(opaqueOfSize(51))).join());
         assertEquals(expected, service.apply(post("/t").payload(opaqueOfSize(10021))).join());

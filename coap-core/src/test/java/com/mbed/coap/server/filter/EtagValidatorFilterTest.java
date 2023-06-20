@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package com.mbed.coap.server.filter;
 
-import static com.mbed.coap.packet.CoapRequest.*;
-import static com.mbed.coap.packet.CoapResponse.of;
-import static com.mbed.coap.packet.CoapResponse.*;
-import static com.mbed.coap.packet.Opaque.*;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.post;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Opaque.ofBytes;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -34,7 +34,7 @@ class EtagValidatorFilterTest {
 
     private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
     private final CoapResponse resource = ok("OK").etag(ofBytes(100)).maxAge(100);
-    private final Service<CoapRequest, CoapResponse> service = filter.then(__ -> completedFuture(resource));
+    private final Service<CoapRequest, CoapResponse> service = filter.then(__ -> resource.toFuture());
 
     @Test
     void shouldPassResponseWhenMissingEtagInRequest() {
@@ -47,7 +47,7 @@ class EtagValidatorFilterTest {
     void shouldReplyValidWhenRequestWithSameEtag() {
         CompletableFuture<CoapResponse> resp = service.apply(get("/9").etag(ofBytes(100)));
 
-        assertEquals(of(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());
+        assertEquals(coapResponse(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());
     }
 
     @Test
@@ -56,7 +56,7 @@ class EtagValidatorFilterTest {
                 get("/9").options(o -> o.setEtag(new Opaque[]{ofBytes(200), ofBytes(100)}))
         );
 
-        assertEquals(of(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());
+        assertEquals(coapResponse(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());
     }
 
     @Test

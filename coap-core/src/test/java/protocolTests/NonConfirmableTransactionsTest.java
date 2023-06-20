@@ -17,10 +17,10 @@ package protocolTests;
 
 import static com.mbed.coap.packet.BlockSize.S_16;
 import static com.mbed.coap.packet.CoapRequest.put;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
 import static com.mbed.coap.utils.Validations.require;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,12 +54,12 @@ public class NonConfirmableTransactionsTest {
     private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
             .get("/test", req -> {
                         require(req.getTransContext(NON_CONFIRMABLE));
-                        return completedFuture(ok("OK"));
+                        return ok("OK").toFuture();
                     }
             )
             .get("/large", req -> {
-                require(req.getTransContext(NON_CONFIRMABLE));
-                        return completedFuture(ok("aaaaaaaaaaaaaaa|bbbbbb"));
+                        require(req.getTransContext(NON_CONFIRMABLE));
+                        return ok("aaaaaaaaaaaaaaa|bbbbbb").toFuture();
                     }
             )
             .build();
@@ -125,7 +125,7 @@ public class NonConfirmableTransactionsTest {
         client.send(coap(4310).non(Code.C201_CREATED).token(32).block2Res(1, S_16, false).payload("dddd"));
 
         // then
-        assertEquals(CoapResponse.of(Code.C201_CREATED).block2Res(1, S_16, false).payload(Opaque.of("ccccccccccccccccdddd")), resp.join());
+        assertEquals(coapResponse(Code.C201_CREATED).block2Res(1, S_16, false).payload(Opaque.of("ccccccccccccccccdddd")), resp.join());
     }
 
     @Test

@@ -18,7 +18,6 @@ package protocolTests;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.CoapResponse;
@@ -46,7 +45,7 @@ public class MalformedPacketTest {
         server = CoapServer.builder()
                 .transport(udp())
                 .route(RouterService.builder()
-                        .get("/test/1", __ -> completedFuture(CoapResponse.ok("Dziala")))
+                        .get("/test/1", __ -> CoapResponse.ok("Dziala").toFuture())
                 )
                 .build();
         server.start();

@@ -19,10 +19,9 @@ package protocolTests;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
+import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static java.time.Duration.ofMillis;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,7 +54,7 @@ public class ObservationTest {
         obsResource = new ObservableResourceService(CoapResponse.ok(EMPTY));
         server = CoapServer.builder().transport(udp())
                 .route(RouterService.builder()
-                        .get("/path1", __ -> completedFuture(CoapResponse.ok("content1")))
+                        .get("/path1", __ -> CoapResponse.ok("content1").toFuture())
                         .get(RES_OBS_PATH1, obsResource)
                 )
                 .retransmission(ofFixed(ofMillis(500))).blockSize(BlockSize.S_128).build();

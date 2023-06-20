@@ -19,6 +19,7 @@ package protocolTests;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapRequest.put;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.Networks.localhost;
@@ -70,9 +71,9 @@ public class ClientServerWithBlocksTest {
         changeableBigResource = new ChangeableBigResource();
         server = CoapServer.builder().transport(InMemoryCoapTransport.create(5683)).blockSize(BlockSize.S_32).maxMessageSize(64)
                 .route(RouterService.builder()
-                        .get("/bigResource", __ -> completedFuture(CoapResponse.ok(BIG_RESOURCE)))
-                        .get("/", __ -> completedFuture(CoapResponse.ok(BIG_RESOURCE)))
-                        .get("/small", __ -> completedFuture(CoapResponse.ok(BODY)))
+                        .get("/bigResource", __ -> CoapResponse.ok(BIG_RESOURCE).toFuture())
+                        .get("/", __ -> CoapResponse.ok(BIG_RESOURCE).toFuture())
+                        .get("/small", __ -> CoapResponse.ok(BODY).toFuture())
                         .get("/dynamic", new DynamicBigResource())
                         .get("/ultra-dynamic", new UltraDynamicBigResource())
                         .get("/chang-res", changeableBigResource)
@@ -271,7 +272,7 @@ public class ClientServerWithBlocksTest {
 
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
-            final CoapResponse resp = new CoapResponse(Code.C205_CONTENT, dynamicResource, opts ->
+            final CoapResponse resp = CoapResponse.of(Code.C205_CONTENT, dynamicResource, opts ->
                     opts.setEtag(Opaque.variableUInt(dynamicResource.hashCode()))
             );
 
@@ -279,7 +280,7 @@ public class ClientServerWithBlocksTest {
                 dynamicResource = dynamicResource.concat(of("-CH"));
                 changed = true;
             }
-            return completedFuture(resp);
+            return resp.toFuture();
         }
 
     }
@@ -291,10 +292,10 @@ public class ClientServerWithBlocksTest {
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
             dynRes = dynRes.concat(of(" C"));
-            final CoapResponse resp = new CoapResponse(Code.C205_CONTENT, dynRes, opts ->
-                    opts.setEtag(Opaque.variableUInt(dynRes.hashCode()))
-            );
-            return completedFuture(resp);
+            return coapResponse(Code.C205_CONTENT)
+                    .etag(Opaque.variableUInt(dynRes.hashCode()))
+                    .payload(dynRes)
+                    .toFuture();
         }
     }
 
@@ -310,9 +311,9 @@ public class ClientServerWithBlocksTest {
                 case GET:
                     if (req.getPayload().size() > 0) {
                         //body = exchange.getRequestBody()
-                        return completedFuture(CoapResponse.ok(req.getPayload()));
+                        return CoapResponse.ok(req.getPayload()).toFuture();
                     } else {
-                        return completedFuture(CoapResponse.ok(body));
+                        return CoapResponse.ok(body).toFuture();
                     }
                 case PUT:
                     body = req.getPayload();

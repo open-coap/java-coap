@@ -40,10 +40,10 @@ public class RoutingServiceTest {
 
     private Service<CoapRequest, CoapResponse> routeService = RouterService.builder()
             .get("/test/1",
-                    req -> completedFuture(CoapResponse.ok("Test1", CT_TEXT_PLAIN))
+                    req -> CoapResponse.ok("Test1", CT_TEXT_PLAIN).toFuture()
             )
             .post("/test/bad-request",
-                    req -> completedFuture(CoapResponse.badRequest())
+                    req -> CoapResponse.badRequest().toFuture()
             )
             .put("/path1/*",
                     req -> completedFuture(CoapResponse.of(Code.C204_CHANGED))
@@ -52,7 +52,7 @@ public class RoutingServiceTest {
                     req -> completedFuture(CoapResponse.of(Code.C202_DELETED))
             )
             .fetch("/fetchtest/",
-                    req -> completedFuture(CoapResponse.ok("{\"key1:\" [\"value1\", \"value2\"]}", CT_APPLICATION_JSON))
+                    req -> CoapResponse.ok("{\"key1:\" [\"value1\", \"value2\"]}", CT_APPLICATION_JSON).toFuture()
             )
             .patch("/test4/",
                     req -> completedFuture(CoapResponse.of(Code.C204_CHANGED))
@@ -61,10 +61,10 @@ public class RoutingServiceTest {
                     req -> completedFuture(CoapResponse.of(Code.C204_CHANGED))
             )
             .any("/test2", req ->
-                    completedFuture(CoapResponse.ok("Reply to " + req.getMethod()))
+                    CoapResponse.ok("Reply to " + req.getMethod()).toFuture()
             )
             .any("/test3/*", req ->
-                    completedFuture(CoapResponse.ok("Reply to " + req.getMethod()))
+                    CoapResponse.ok("Reply to " + req.getMethod()).toFuture()
             )
             .build();
 

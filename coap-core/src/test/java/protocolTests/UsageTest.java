@@ -15,8 +15,8 @@
  */
 package protocolTests;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.BlockSize;
@@ -64,12 +64,12 @@ public class UsageTest {
                 // define routing
                 // (note that each resource function is a `Service` type and can be decorated/transformed with `Filter`)
                 .route(RouterService.builder()
-                        .get("/.well-known/core", req -> completedFuture(
-                                CoapResponse.ok("</sensors/temperature>", MediaTypes.CT_APPLICATION_LINK__FORMAT)
-                        ))
+                        .get("/.well-known/core", req ->
+                                CoapResponse.ok("</sensors/temperature>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
+                        )
                         .post("/actuators/switch", req -> {
                             // ...
-                            return completedFuture(CoapResponse.of(Code.C204_CHANGED));
+                            return coapResponse(Code.C204_CHANGED).toFuture();
                         })
                         // observable resource
                         .get("/sensors/temperature", req -> {
@@ -81,7 +81,7 @@ public class UsageTest {
                                     }
                             );
 
-                            return completedFuture(resp);
+                            return resp.toFuture();
                         })
                 )
                 .build();

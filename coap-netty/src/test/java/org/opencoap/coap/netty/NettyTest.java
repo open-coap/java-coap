@@ -19,7 +19,6 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.utils.Networks.localhost;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
@@ -54,8 +53,8 @@ public class NettyTest {
                 .transport(new NettyCoapTransport(createBootstrap(0), EMPTY_RESOLVER))
                 .executor(eventLoopGroup)
                 .route(RouterService.builder()
-                        .get("/test", __ -> completedFuture(ok("OK")))
-                        .post("/echo", req -> completedFuture(ok(req.getPayload())))
+                        .get("/test", __ -> ok("OK").toFuture())
+                        .post("/echo", req -> ok(req.getPayload()).toFuture())
                 )
                 .build().start();
     }

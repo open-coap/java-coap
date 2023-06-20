@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,24 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.CoapRequest.*;
-import static com.mbed.coap.packet.CoapResponse.*;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapResponse.notFound;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.packet.Opaque.*;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.reset;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.verifyNoInteractions;
+import static org.mockito.BDDMockito.verifyNoMoreInteractions;
 import com.mbed.coap.exception.CoapTimeoutException;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -73,8 +83,8 @@ public class ObservationSenderFilterTest {
         inServiceResponse(CoapResponse.ok("test").nextSupplier(next));
 
         // when
-        assertTrue(next.put(new CoapResponse(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
-        assertTrue(next.put(new CoapResponse(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
         assertTrue(next.put(null));
 
         // then
@@ -95,10 +105,10 @@ public class ObservationSenderFilterTest {
 
 
         // when
-        assertTrue(next.put(new CoapResponse(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
 
         // then
-        assertFalse(next.put(new CoapResponse(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
         // and
         SeparateResponse notif1 = ok("test2").observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));
@@ -113,10 +123,10 @@ public class ObservationSenderFilterTest {
 
 
         // when
-        assertTrue(next.put(new CoapResponse(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(2))));
 
         // then
-        assertFalse(next.put(new CoapResponse(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
         // and
         SeparateResponse notif1 = ok("test2").observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));
@@ -129,10 +139,10 @@ public class ObservationSenderFilterTest {
         inServiceResponse(CoapResponse.ok("test").nextSupplier(next));
 
         // when
-        assertTrue(next.put(new CoapResponse(Code.C404_NOT_FOUND, of("test2"), opts -> opts.setObserve(2))));
+        assertTrue(next.put(CoapResponse.of(Code.C404_NOT_FOUND, of("test2"), opts -> opts.setObserve(2))));
 
         // then
-        assertFalse(next.put(new CoapResponse(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
+        assertFalse(next.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setObserve(3))));
         // and
         SeparateResponse notif1 = notFound().payload(Opaque.of("test2")).observe(2).toSeparate(EMPTY, null);
         verify(sendNotification).apply(eq(notif1));

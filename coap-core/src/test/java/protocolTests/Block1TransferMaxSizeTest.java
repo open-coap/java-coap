@@ -144,7 +144,7 @@ public class Block1TransferMaxSizeTest {
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
             switch (req.getMethod()) {
                 case GET:
-                    return completedFuture(CoapResponse.ok(data));
+                    return CoapResponse.ok(data).toFuture();
                 case PUT:
                     data = req.getPayload();
                     return completedFuture(CoapResponse.of(Code.C204_CHANGED));

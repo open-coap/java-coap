@@ -21,6 +21,8 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.iPatch;
 import static com.mbed.coap.packet.CoapRequest.patch;
 import static com.mbed.coap.packet.CoapRequest.post;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
@@ -74,33 +76,33 @@ abstract class IntegrationTestBase {
         slowResourcePromise = new CompletableFuture<>();
         TestResource testResource = new TestResource();
         final Service<CoapRequest, CoapResponse> route = RouterService.builder()
-                .get("/", __ -> completedFuture(CoapResponse.ok("Shortest path")))
+                .get("/", __ -> CoapResponse.ok("Shortest path").toFuture())
                 .get("/test/1", req ->
-                        completedFuture(CoapResponse.ok("Dziala", MediaTypes.CT_TEXT_PLAIN))
+                        ok("Dziala", MediaTypes.CT_TEXT_PLAIN).toFuture()
                 )
                 .any("/test2", testResource)
-                .get("/large", __ -> completedFuture(
-                        CoapResponse.ok(largePayload)
-                ))
-                .post("/large", req -> completedFuture(
-                        CoapResponse.ok("Got " + req.getPayload().size() + "B")
-                ))
-                .fetch("/large", __ -> completedFuture(
-                        CoapResponse.ok(largePayload)
-                ))
-                .iPatch("/large", req -> completedFuture(
-                        CoapResponse.ok("Got " + req.getPayload().size() + "B")
-                ))
-                .patch("/large", req -> completedFuture(
-                        CoapResponse.ok("Got " + req.getPayload().size() + "B")
-                ))
+                .get("/large", __ ->
+                        CoapResponse.ok(largePayload).toFuture()
+                )
+                .post("/large", req ->
+                        CoapResponse.ok("Got " + req.getPayload().size() + "B").toFuture()
+                )
+                .fetch("/large", __ ->
+                        CoapResponse.ok(largePayload).toFuture()
+                )
+                .iPatch("/large", req ->
+                        CoapResponse.ok("Got " + req.getPayload().size() + "B").toFuture()
+                )
+                .patch("/large", req ->
+                        CoapResponse.ok("Got " + req.getPayload().size() + "B").toFuture()
+                )
                 .get("/exception", __ -> {
                     throw new IllegalArgumentException();
                 })
                 .get("/obs", obsResource)
                 .get("/slow", __ -> slowResourcePromise)
                 .get(CoapConstants.WELL_KNOWN_CORE, req ->
-                        completedFuture(CoapResponse.ok("<test/1>,<test2>", MediaTypes.CT_APPLICATION_LINK__FORMAT))
+                        ok("<test/1>,<test2>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
                 ).build();
 
         server = buildServer(0, IntegrationTestBase::routeFilter, route).start();
@@ -301,7 +303,7 @@ abstract class IntegrationTestBase {
 
     static CompletableFuture<CoapResponse> routeFilter(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
         if ("/route-filter".equals(request.options().getUriPath())) {
-            return CompletableFuture.completedFuture(CoapResponse.ok("Intercepted"));
+            return CoapResponse.ok("Intercepted").toFuture();
         }
         return service.apply(request);
     }
@@ -315,7 +317,7 @@ abstract class IntegrationTestBase {
         public CompletableFuture<CoapResponse> apply(CoapRequest request) {
             switch (request.getMethod()) {
                 case GET:
-                    return completedFuture(get(request));
+                    return get(request).toFuture();
                 case POST:
                     return failedFuture(new CoapCodeException(Code.C400_BAD_REQUEST));
                 case PUT:
@@ -335,8 +337,8 @@ abstract class IntegrationTestBase {
                 }
 
                 if (!isFound) {
-                    //did not found accepted content type
-                    return CoapResponse.of(Code.C406_NOT_ACCEPTABLE);
+                    //did not find accepted content type
+                    return coapResponse(Code.C406_NOT_ACCEPTABLE);
                 }
             }
 

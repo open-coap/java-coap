@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 package com.mbed.coap.server.block;
 
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.exception.CoapBlockException;
 import com.mbed.coap.exception.CoapBlockTooLargeEntityException;
 import com.mbed.coap.exception.CoapException;
@@ -142,7 +142,7 @@ class BlockWiseCallback {
         if (response == null) {
             response = blResponse;
         } else {
-            this.response = new CoapResponse(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options());
+            this.response = CoapResponse.of(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options());
             this.response.options().setBlock2Res(blResponse.options().getBlock2Res());
 
         }

@@ -17,13 +17,11 @@
 package protocolTests;
 
 import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.Opaque.of;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.utils.Networks.localhost;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -90,14 +88,10 @@ public class BlockTransferOnDemandTest {
             int blockNr = req.options().getBlock2Res() == null ? 0 : req.options().getBlock2Res().getNr();
 
             if (blockNr == 0) {
-                return completedFuture(new CoapResponse(Code.C205_CONTENT, of("16B-of-data-here"), opts ->
-                        opts.setBlock2Res(new BlockOption(0, BlockSize.S_16, true))
-                ));
+                return coapResponse(Code.C205_CONTENT).block2Res(0, BlockSize.S_16, true).payload("16B-of-data-here").toFuture();
             } else {
                 // last packet
-                return completedFuture(new CoapResponse(Code.C205_CONTENT, of("-plus-some"), opts ->
-                        opts.setBlock2Res(new BlockOption(1, BlockSize.S_16, false))
-                ));
+                return coapResponse(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload("-plus-some").toFuture();
             }
 
         }

@@ -40,27 +40,32 @@ public class CoapResponse {
         this(code, payload, options, null);
     }
 
-    public CoapResponse(Code code, Opaque payload) {
-        this(code, payload, new HeaderOptions());
-    }
-
-    public CoapResponse(Code code, Opaque payload, Consumer<HeaderOptions> optionsFunc) {
-        this(code, payload);
-        optionsFunc.accept(options);
-    }
-
     // --- STATIC CONSTRUCTORS ---
 
     public static CoapResponse of(Code code) {
-        return new CoapResponse(code, Opaque.EMPTY);
+        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions());
+    }
+
+    public static CoapResponse coapResponse(Code code) {
+        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions());
     }
 
     public static CoapResponse of(Code code, Opaque payload) {
-        return new CoapResponse(code, payload);
+        return new CoapResponse(code, payload, new HeaderOptions());
+    }
+
+    public static CoapResponse of(Code code, Opaque payload, HeaderOptions options) {
+        return new CoapResponse(code, payload, options);
+    }
+
+    public static CoapResponse of(Code code, Opaque payload, Consumer<HeaderOptions> optionsFunc) {
+        HeaderOptions options = new HeaderOptions();
+        optionsFunc.accept(options);
+        return new CoapResponse(code, payload, options);
     }
 
     public static CoapResponse of(Code code, Opaque payload, short contentFormat) {
-        return new CoapResponse(code, payload, opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(code, payload, opts -> opts.setContentFormat(contentFormat));
     }
 
     public static CoapResponse of(Code code, String description) {
@@ -68,7 +73,7 @@ public class CoapResponse {
     }
 
     public static CoapResponse ok(Opaque payload) {
-        return new CoapResponse(Code.C205_CONTENT, payload);
+        return of(Code.C205_CONTENT, payload);
     }
 
     public static CoapResponse ok(String payload) {
@@ -76,23 +81,23 @@ public class CoapResponse {
     }
 
     public static CoapResponse ok(Opaque payload, short contentFormat) {
-        return new CoapResponse(Code.C205_CONTENT, payload, opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(Code.C205_CONTENT, payload, opts -> opts.setContentFormat(contentFormat));
     }
 
     public static CoapResponse ok(String payload, short contentFormat) {
-        return new CoapResponse(Code.C205_CONTENT, Opaque.of(payload), opts -> opts.setContentFormat(contentFormat));
+        return CoapResponse.of(Code.C205_CONTENT, Opaque.of(payload), opts -> opts.setContentFormat(contentFormat));
     }
 
     public static CoapResponse notFound() {
-        return new CoapResponse(Code.C404_NOT_FOUND, Opaque.EMPTY);
+        return of(Code.C404_NOT_FOUND, Opaque.EMPTY);
     }
 
     public static CoapResponse badRequest() {
-        return new CoapResponse(Code.C400_BAD_REQUEST, Opaque.EMPTY);
+        return of(Code.C400_BAD_REQUEST, Opaque.EMPTY);
     }
 
     public static CoapResponse badRequest(String errorDescription) {
-        return new CoapResponse(Code.C400_BAD_REQUEST, Opaque.of(errorDescription));
+        return of(Code.C400_BAD_REQUEST, Opaque.of(errorDescription));
     }
 
     // ---------------------
@@ -119,6 +124,10 @@ public class CoapResponse {
 
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
         return toSeparate(token, peerAddress, TransportContext.EMPTY);
+    }
+
+    public CompletableFuture<CoapResponse> toFuture() {
+        return CompletableFuture.completedFuture(this);
     }
 
     @Override

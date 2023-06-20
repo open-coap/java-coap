@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class EtagValidatorFilter implements Filter.SimpleFilter<CoapRequest, Coa
         if (request.options().getEtagArray() != null && resp.options().getEtag() != null) {
             for (Opaque etag : request.options().getEtagArray()) {
                 if (etag.equals(resp.options().getEtag())) {
-                    return new CoapResponse(Code.C203_VALID, Opaque.EMPTY, resp.options());
+                    return CoapResponse.of(Code.C203_VALID, Opaque.EMPTY, resp.options());
                 }
             }
         }

@@ -16,11 +16,15 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.CoapRequest.*;
-import static com.mbed.coap.packet.CoapResponse.*;
-import static com.mbed.coap.packet.Opaque.*;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.observe;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Opaque.EMPTY;
+import static com.mbed.coap.packet.Opaque.ofBytes;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.utils.Service;
@@ -55,7 +59,7 @@ class ObserveRequestFilterTest {
 
     @Test
     void shouldSetNextSupplierForSuccessfulObservationResponse() {
-        service = filter.then(req -> completedFuture(ok("ok").options(o -> o.setObserve(12))));
+        service = filter.then(req -> ok("ok").observe(12).toFuture());
 
         CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs"));
 
@@ -64,7 +68,7 @@ class ObserveRequestFilterTest {
 
     @Test
     void shouldNotSetNextSupplierForFailedObservationResponse() {
-        service = filter.then(req -> completedFuture(ok("ok")));
+        service = filter.then(req -> ok("ok").toFuture());
 
         CompletableFuture<CoapResponse> resp = service.apply(observe(null, "/obs"));
 

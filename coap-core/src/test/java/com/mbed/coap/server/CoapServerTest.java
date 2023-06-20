@@ -18,7 +18,6 @@ package com.mbed.coap.server;
 
 
 import static com.mbed.coap.packet.CoapResponse.ok;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,7 +54,7 @@ public class CoapServerTest {
         given(transport.receive()).willAnswer(__ -> receiveQueue.poll());
         receiveQueue.removeAll();
 
-        server = new CoapServer(transport, dispatcher, __ -> completedFuture(ok("OK")), stop).start();
+        server = new CoapServer(transport, dispatcher, __ -> ok("OK").toFuture(), stop).start();
     }
 
     @Test
@@ -71,7 +70,7 @@ public class CoapServerTest {
 
     @Test
     public void shouldDoNothingWhenAttemptToStopWhenNotRunning() throws Exception {
-        final CoapServer nonStartedServer = new CoapServer(transport, dispatcher, __ -> completedFuture(ok("OK")), stop);
+        final CoapServer nonStartedServer = new CoapServer(transport, dispatcher, __ -> ok("OK").toFuture(), stop);
 
         nonStartedServer.stop();
     }

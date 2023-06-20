@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.mbed.coap.packet;
 
-import static com.mbed.coap.packet.Opaque.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static protocolTests.utils.CoapPacketBuilder.*;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.packet.Opaque.variableUInt;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.transport.TransportContext;
 import org.junit.jupiter.api.Test;
 
@@ -63,9 +64,10 @@ class CoapTcpPacketConverterTest {
 
     @Test
     void convertSeperateResponseToCoap() {
-        SeparateResponse resp = CoapResponse.of(Code.C201_CREATED, "<test>")
+        SeparateResponse resp = coapResponse(Code.C201_CREATED)
                 .maxAge(412)
                 .etag(Opaque.of("123"))
+                .payload("<test>")
                 .toSeparate(variableUInt(142), LOCAL_5683, TransportContext.EMPTY);
 
         // when
