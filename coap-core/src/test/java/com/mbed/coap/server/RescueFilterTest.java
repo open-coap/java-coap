@@ -15,18 +15,21 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.CoapRequest.*;
-import static com.mbed.coap.utils.FutureHelpers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
+import static com.mbed.coap.utils.FutureHelpers.failedFuture;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.exception.CoapCodeException;
+import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
+import com.mbed.coap.utils.Filter;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
 class RescueFilterTest {
 
-    private final RescueFilter filter = new RescueFilter();
+    private final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new RescueFilter());
 
     @Test
     void shouldConvertCoapCodeExceptionToResponse() {

@@ -21,6 +21,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.ofBytes;
 import static com.mbed.coap.utils.Assertions.assertEquals;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -34,7 +35,7 @@ class ObserveRequestFilterTest {
 
     private HashMapObservationsStore obsMap = new HashMapObservationsStore();
     private ObserveRequestFilter filter = new ObserveRequestFilter(obsMap::add);
-    private Service<CoapRequest, CoapResponse> service = filter.then(req -> ok(req.getToken()).toFuture());
+    private Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(req -> ok(req.getToken()).toFuture());
 
     @Test
     void shouldAddTokenForObservationRequest() {
@@ -59,7 +60,7 @@ class ObserveRequestFilterTest {
 
     @Test
     void shouldAddObservationRelationForSuccessfulObservationResponse() {
-        service = filter.then(req -> ok("ok").observe(12).toFuture());
+        service = REQUEST_BUILDER_FILTER.andThen(filter).then(req -> ok("ok").observe(12).toFuture());
 
         CompletableFuture<CoapResponse> resp = service.apply(observe("/obs"));
 
@@ -69,7 +70,7 @@ class ObserveRequestFilterTest {
 
     @Test
     void shouldNotAddObservationRelationForFailedObservationResponse() {
-        service = filter.then(req -> ok("ok").toFuture());
+        service = REQUEST_BUILDER_FILTER.andThen(filter).then(req -> ok("ok").toFuture());
 
         CompletableFuture<CoapResponse> resp = service.apply(observe("/obs"));
 

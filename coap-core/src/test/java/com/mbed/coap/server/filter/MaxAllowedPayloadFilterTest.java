@@ -22,6 +22,7 @@ import static com.mbed.coap.packet.Code.C201_CREATED;
 import static com.mbed.coap.packet.Code.C413_REQUEST_ENTITY_TOO_LARGE;
 import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class MaxAllowedPayloadFilterTest {
 
-    private final Service<CoapRequest, CoapResponse> service = new MaxAllowedPayloadFilter(50, "too much")
+    private final Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(new MaxAllowedPayloadFilter(50, "too much"))
             .then(coapRequest -> completedFuture(of(C201_CREATED)));
 
     @Test

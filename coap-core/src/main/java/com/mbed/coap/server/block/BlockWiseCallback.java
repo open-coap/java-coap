@@ -70,6 +70,10 @@ class BlockWiseCallback {
         }
     }
 
+    BlockWiseCallback(Service<CoapRequest, CoapResponse> sendService, Capabilities csm, CoapRequest.Builder request, int maxIncomingBlockTransferSize) throws CoapException {
+        this(sendService, csm, request.build(), maxIncomingBlockTransferSize);
+    }
+
     CompletableFuture<CoapResponse> receive(CoapResponse response) {
         LOGGER.trace("BlockWiseCallback.call(): {}", response);
 
@@ -125,7 +129,7 @@ class BlockWiseCallback {
         // see https://tools.ietf.org/html/draft-ietf-core-block-18#section-4 , Implementation notes
         request.options().setSize1(null);
         Opaque blockPayload = BlockWiseTransfer.createBlockPart(responseBlock, requestPayload, maxBlockPayload);
-        request = request.payload(blockPayload);
+        request = request.withPayload(blockPayload);
         LOGGER.trace("BlockWiseCallback.call() next block b1: {}", request);
         return makeRequest();
     }
@@ -210,7 +214,7 @@ class BlockWiseCallback {
         request.options().setBlock1Req(block1Req);
 
         Opaque blockPayload = BlockWiseTransfer.createBlockPart(block1Req, requestPayload, block1Req.getSize());
-        request = request.payload(blockPayload);
+        request = request.withPayload(blockPayload);
 
         return makeRequest();
     }

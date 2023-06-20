@@ -18,14 +18,10 @@ package com.mbed.coap.utils;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 
-public class Assertions {
+public class CoapRequestBuilderFilter {
 
-    public static void assertEquals(CoapResponse.Builder expected, CoapResponse actual) {
-        org.junit.jupiter.api.Assertions.assertEquals(expected.build(), actual);
-    }
-
-    public static void assertEquals(CoapRequest.Builder expected, CoapRequest actual) {
-        org.junit.jupiter.api.Assertions.assertEquals(expected.build(), actual);
-    }
+    public static final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> REQUEST_BUILDER_FILTER = (request, service) -> {
+        return service.apply(request.build());
+    };
 
 }

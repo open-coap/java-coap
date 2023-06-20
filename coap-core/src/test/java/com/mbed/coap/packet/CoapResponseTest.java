@@ -89,12 +89,6 @@ class CoapResponseTest {
         assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", coapResponse(C400_BAD_REQUEST).payload("{\"error\":123}").contentFormat(CT_APPLICATION_JSON).build().toString());
     }
 
-    private static HeaderOptions newOptions(Consumer<HeaderOptions> optionsFunc) {
-        HeaderOptions options = new HeaderOptions();
-        optionsFunc.accept(options);
-        return options;
-    }
-
     @Nested
     class BuilderTest {
 
@@ -147,4 +141,11 @@ class CoapResponseTest {
             assertEquals(expected, separateResponse);
         }
     }
+
+    static HeaderOptions newOptions(Consumer<HeaderOptions> optionsFunc) {
+        HeaderOptions options = new HeaderOptions();
+        optionsFunc.accept(options);
+        return options;
+    }
+
 }

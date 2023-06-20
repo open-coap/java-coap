@@ -46,7 +46,7 @@ class NotificationsReceiverTest {
 
     @Test
     void shouldNotifyAndRetrieveBlocks() throws InterruptedException {
-        given(service.apply(get("/obs").block2Res(1, S_16, false))).willReturn(ok("bbb").toFuture());
+        given(service.apply(get("/obs").block2Res(1, S_16, false).build())).willReturn(ok("bbb").toFuture());
         SeparateResponse obs = ok("aaaaaaaaaaaaaaaa").observe(2).block2Res(0, S_16, true).toSeparate(of("100"), null);
 
         // when
@@ -58,7 +58,7 @@ class NotificationsReceiverTest {
 
     @Test
     void shouldFailWhenUnexpectedBlockRetrieving() {
-        given(service.apply(get("/obs").block2Res(1, S_16, false))).willReturn(notFound().toFuture());
+        given(service.apply(get("/obs").block2Res(1, S_16, false).build())).willReturn(notFound().toFuture());
         SeparateResponse obs = ok("aaaaaaaaaaaaaaaa").observe(2).block2Res(0, S_16, true).toSeparate(of("100"), null);
 
         // when

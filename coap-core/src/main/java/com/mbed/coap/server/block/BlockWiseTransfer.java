@@ -43,7 +43,7 @@ class BlockWiseTransfer {
         int maxBlockPayload = csm.getMaxOutboundPayloadSize();
 
         return request
-                .options(o -> o
+                .withOptions(o -> o
                         .block1Req(blockOption)
                         .unsetBlock2Res()
                         .size1(payloadSize)
@@ -52,7 +52,7 @@ class BlockWiseTransfer {
                                 o.requestTag(csm.nextRequestTag())
                         )
                 )
-                .payload(
+                .withPayload(
                         createBlockPart(blockOption, request.getPayload(), maxBlockPayload)
                 );
     }

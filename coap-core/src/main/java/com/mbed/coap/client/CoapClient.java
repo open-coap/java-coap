@@ -60,11 +60,19 @@ public class CoapClient implements Closeable {
     }
 
     public CompletableFuture<CoapResponse> send(CoapRequest request) {
-        return clientService.apply(request.address(destination));
+        return clientService.apply(request.withAddress(destination));
+    }
+
+    public CompletableFuture<CoapResponse> send(CoapRequest.Builder request) {
+        return send(request.build());
     }
 
     public CoapResponse sendSync(CoapRequest request) throws CoapException {
         return await(send(request));
+    }
+
+    public CoapResponse sendSync(CoapRequest.Builder request) throws CoapException {
+        return sendSync(request.build());
     }
 
     private static CoapResponse await(CompletableFuture<CoapResponse> future) throws CoapException {

@@ -20,6 +20,7 @@ import static com.mbed.coap.utils.FutureHelpers.wrapExceptions;
 import com.mbed.coap.transport.TransportContext;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -52,56 +53,44 @@ public final class CoapRequest {
 
 
     // --- STATIC BUILDERS ---
-
-    public static CoapRequest of(InetSocketAddress peerAddress, Method method, String uriPath) {
-        HeaderOptions options = new HeaderOptions();
-        options.setUriPath(uriPath);
-
-        return new CoapRequest(method, Opaque.EMPTY, options, Opaque.EMPTY, peerAddress, TransportContext.EMPTY);
+    public static Builder request(Method method, String uriPath) {
+        return new Builder(method, uriPath);
     }
 
-    public static CoapRequest get(String uriPath) {
-        return CoapRequest.of(null, Method.GET, uriPath);
+    public static Builder get(String uriPath) {
+        return request(Method.GET, uriPath);
     }
 
-    public static CoapRequest post(String uriPath) {
-        return CoapRequest.of(null, Method.POST, uriPath);
+    public static Builder put(String uriPath) {
+        return request(Method.PUT, uriPath);
     }
 
-    public static CoapRequest put(String uriPath) {
-        return CoapRequest.of(null, Method.PUT, uriPath);
+    public static Builder post(String uriPath) {
+        return request(Method.POST, uriPath);
     }
 
-    public static CoapRequest delete(String uriPath) {
-        return CoapRequest.of(null, Method.DELETE, uriPath);
+    public static Builder delete(String uriPath) {
+        return request(Method.DELETE, uriPath);
     }
 
-    public static CoapRequest fetch(String uriPath) {
-        return CoapRequest.of(null, Method.FETCH, uriPath);
+    public static Builder fetch(String uriPath) {
+        return request(Method.FETCH, uriPath);
     }
 
-    public static CoapRequest patch(String uriPath) {
-        return CoapRequest.of(null, Method.PATCH, uriPath);
+    public static Builder patch(String uriPath) {
+        return request(Method.PATCH, uriPath);
     }
 
-    public static CoapRequest iPatch(String uriPath) {
-        return CoapRequest.of(null, Method.iPATCH, uriPath);
+    public static Builder iPatch(String uriPath) {
+        return request(Method.iPATCH, uriPath);
+    }
+
+    public static Builder observe(String uriPath) {
+        return get(uriPath).observe();
     }
 
     public static CoapRequest ping(InetSocketAddress peerAddress, TransportContext transContext) {
         return new CoapRequest(peerAddress, transContext);
-    }
-
-    public static CoapRequest observe(String uriPath) {
-        return observe(null, uriPath);
-    }
-
-    public static CoapRequest observe(InetSocketAddress peerAddress, String uriPath) {
-        CoapRequest obsRequest = new CoapRequest(Method.GET, Opaque.EMPTY, new HeaderOptions(), Opaque.EMPTY, peerAddress, TransportContext.EMPTY);
-        obsRequest.options().setObserve(0);
-        obsRequest.options().setUriPath(uriPath);
-
-        return obsRequest;
     }
 
     // --------------------
@@ -180,161 +169,181 @@ public final class CoapRequest {
 
 
     // ---  MODIFIERS ---
-    public CoapRequest token(Opaque newToken) {
+    public CoapRequest withToken(Opaque newToken) {
         return new CoapRequest(method, newToken, options, payload, peerAddress, transContext);
     }
 
-    public CoapRequest token(long token) {
-        return token(Opaque.variableUInt(token));
+    public CoapRequest withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
+        CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
+        optionsFunc.accept(optionsBuilder);
+        return new CoapRequest(method, token, optionsBuilder.build(), payload, peerAddress, transContext);
     }
 
-
-    public CoapRequest payload(Opaque newPayload) {
+    public CoapRequest withPayload(Opaque newPayload) {
         return new CoapRequest(method, token, options, newPayload, peerAddress, transContext);
     }
 
-    public CoapRequest payload(String newPayload) {
-        return payload(Opaque.of(newPayload));
-    }
-
-    public CoapRequest payload(String newPayload, short contentFormat) {
-        options.setContentFormat(contentFormat);
-        return payload(newPayload);
-    }
-
-    public CoapRequest payload(Opaque newPayload, short contentFormat) {
-        options.setContentFormat(contentFormat);
-        return payload(newPayload);
-    }
-
-    public CoapRequest address(InetSocketAddress newPeerAddress) {
+    public CoapRequest withAddress(InetSocketAddress newPeerAddress) {
         return new CoapRequest(method, token, options, payload, newPeerAddress, transContext);
     }
 
-    public CoapRequest from(InetSocketAddress peerAddress) {
-        return this.address(peerAddress);
-    }
+    public static class Builder {
+        private final Method method;
+        private Opaque token = Opaque.EMPTY;
+        private final CoapOptionsBuilder options;
+        private Opaque payload = Opaque.EMPTY;
+        private InetSocketAddress peerAddress;
+        private TransportContext transContext = TransportContext.EMPTY;
 
-    public CoapRequest to(InetSocketAddress peerAddress) {
-        return address(peerAddress);
-    }
-
-    public CoapRequest fromLocal(int localPort) {
-        return wrapExceptions(() ->
-                address(new InetSocketAddress(InetAddress.getLocalHost(), localPort))
-        );
-    }
-
-    public CoapRequest toLocal(int localPort) {
-        return fromLocal(localPort);
-    }
-
-    public CoapRequest context(TransportContext newTransportContext) {
-        return new CoapRequest(method, token, options, payload, peerAddress, newTransportContext);
-    }
-
-    public <T> CoapRequest context(TransportContext.Key<T> key, T value) {
-        return new CoapRequest(method, token, options, payload, peerAddress, TransportContext.of(key, value));
-    }
-
-    // --- OPTIONS MODIFIERS ---
-
-    public CoapRequest options(Consumer<CoapOptionsBuilder> optionsConsumer) {
-        CoapOptionsBuilder optionsBuilder = new CoapOptionsBuilder(options);
-        optionsConsumer.accept(optionsBuilder);
-        return this;
-    }
-
-    public CoapRequest observe(int observe) {
-        options.setObserve(observe);
-        return this;
-    }
-
-    public CoapRequest observe() {
-        options.setObserve(0);
-        return this;
-    }
-
-    public CoapRequest deregisterObserve() {
-        options.setObserve(1);
-        return this;
-    }
-
-    public CoapRequest etag(Opaque etag) {
-        options.setEtag(etag);
-        return this;
-    }
-
-    public CoapRequest block1Req(int num, BlockSize size, boolean more) {
-        options.setBlock1Req(new BlockOption(num, size, more));
-        return this;
-    }
-
-    public CoapRequest block2Res(int num, BlockSize size, boolean more) {
-        options.setBlock2Res(new BlockOption(num, size, more));
-        return this;
-    }
-
-    public CoapRequest size1(int size) {
-        options.setSize1(size);
-        return this;
-    }
-
-    public CoapRequest maxAge(long maxAge) {
-        this.options.setMaxAge(maxAge);
-        return this;
-    }
-
-    public CoapRequest host(String host) {
-        this.options.setUriHost(host);
-        return this;
-    }
-
-    public CoapRequest query(String name, String val) {
-        if (name.isEmpty() || name.contains("=") || name.contains("&") || name.contains("?")
-                || val.isEmpty() || val.contains("=") || val.contains("&") || val.contains("?")) {
-            throw new IllegalArgumentException("Non valid characters provided in query");
+        private Builder(Method method, String uriPath) {
+            this.method = method;
+            this.options = CoapOptionsBuilder.options();
+            this.options.uriPath(uriPath);
         }
-        final StringBuilder query = new StringBuilder();
-        if (options.getUriQuery() != null) {
-            query.append(options.getUriQuery());
-            query.append('&');
-        }
-        query.append(name).append('=').append(val);
-        options.setUriQuery(query.toString());
-        return this;
-    }
 
-    public CoapRequest blockSize(BlockSize size) {
-        if (size == null) {
+        public CoapRequest build() {
+            return new CoapRequest(method, token, options.build(), payload, peerAddress, transContext);
+        }
+
+        public CoapRequest to(InetSocketAddress address) {
+            return this.address(address).build();
+        }
+
+        public CoapRequest toLocal(int localPort) {
+            return wrapExceptions(() ->
+                    this.address(new InetSocketAddress(InetAddress.getLocalHost(), localPort)).build()
+            );
+        }
+
+        public CoapRequest from(InetSocketAddress address) {
+            return this.address(address).build();
+        }
+
+        public CoapRequest fromLocal(int localPort) {
+            return wrapExceptions(() ->
+                    this.address(new InetSocketAddress(InetAddress.getLocalHost(), localPort)).build()
+            );
+        }
+
+        public Builder payload(Opaque payload, short contentFormat) {
+            this.payload = payload;
+            return contentFormat(contentFormat);
+        }
+
+        public Builder payload(String payload, short contentFormat) {
+            return payload(Opaque.of(payload), contentFormat);
+        }
+
+        public Builder payload(String newPayload) {
+            return payload(Opaque.of(newPayload));
+        }
+
+        public Builder payload(Opaque payload) {
+            this.payload = payload;
             return this;
         }
-        if (method == Method.GET) {
-            options.setBlock2Res(new BlockOption(0, size, false));
+
+        public Builder token(Opaque token) {
+            this.token = token;
+            return this;
         }
-        if (method == Method.PUT || method == Method.POST || method == Method.FETCH || method == Method.PATCH || method == Method.iPATCH) {
-            options.setBlock1Req(new BlockOption(0, size, true));
+
+        public Builder token(long token) {
+            return token(Opaque.variableUInt(token));
         }
-        return this;
-    }
 
-    public CoapRequest query(String uriQuery) {
-        options.setUriQuery(uriQuery);
-        return this;
-    }
+        public Builder context(TransportContext newTransportContext) {
+            this.transContext = newTransportContext;
+            return this;
+        }
 
-    public CoapRequest proxy(String proxyUri) {
-        options.setProxyUri(proxyUri);
-        return this;
-    }
+        public <T> Builder context(TransportContext.Key<T> key, T value) {
+            transContext = transContext.with(key, value);
+            return this;
+        }
 
-    public CoapRequest ifMatch(Opaque etag) {
-        options.setIfMatch(new Opaque[]{etag});
-        return this;
-    }
+        public Builder address(InetSocketAddress address) {
+            this.peerAddress = address;
+            return this;
+        }
 
-    public CoapRequest accept(short contentFormat) {
-        options.setAccept(contentFormat);
-        return this;
+        public Builder options(Consumer<CoapOptionsBuilder> optionsFunc) {
+            optionsFunc.accept(options);
+            return this;
+        }
+
+        public Builder observe() {
+            options.observe(0);
+            return this;
+        }
+
+        public Builder deregisterObserve() {
+            options.observe(1);
+            return this;
+        }
+
+
+        public Builder accept(Short contentFormat) {
+            options.accept(contentFormat);
+            return this;
+        }
+
+        public Builder blockSize(BlockSize size) {
+            if (size == null) {
+                return this;
+            }
+            if (method == Method.GET) {
+                options.block2Res(0, size, false);
+            }
+            if (method == Method.PUT || method == Method.POST || method == Method.FETCH || method == Method.PATCH || method == Method.iPATCH) {
+                options.block1Req(0, size, true);
+            }
+            return this;
+        }
+
+        public Builder block1Req(int blockNr, BlockSize size, boolean more) {
+            options.block1Req(blockNr, size, more);
+            return this;
+        }
+
+        public Builder block2Res(int blockNr, BlockSize blockSize, boolean more) {
+            options.block2Res(blockNr, blockSize, more);
+            return this;
+        }
+
+        public Builder size1(int size) {
+            options.size1(size);
+            return this;
+        }
+
+        public Builder etag(Opaque... etag) {
+            options.etag(etag);
+            return this;
+        }
+
+        public Builder query(String query) {
+            options.query(query);
+            return this;
+        }
+
+        public Builder maxAge(Duration maxAge) {
+            options.maxAge(maxAge);
+            return this;
+        }
+
+        public Builder host(String host) {
+            options.host(host);
+            return this;
+        }
+
+        public Builder query(String name, String value) {
+            options.query(name, value);
+            return this;
+        }
+
+        public Builder contentFormat(Short contentFormat) {
+            options.contentFormat(contentFormat);
+            return this;
+        }
     }
 }

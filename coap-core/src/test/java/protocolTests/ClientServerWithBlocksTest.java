@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapBlockException;
 import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapRequest;
@@ -231,7 +230,7 @@ public class ClientServerWithBlocksTest {
 
         CoapRequest request = put("/chang-res")
                 .payload(body)
-                .options(o -> o.block1Req(new BlockOption(1, BlockSize.S_128, true)))
+                .options(o -> o.block1Req(1, BlockSize.S_128, true))
                 .toLocal(SERVER_PORT);
 
         CoapResponse resp = cnn.clientService().apply(request).join();

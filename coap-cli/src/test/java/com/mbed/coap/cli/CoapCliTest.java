@@ -18,9 +18,9 @@ package com.mbed.coap.cli;
 import static com.mbed.coap.packet.BlockSize.S_16;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.CoapOptionsBuilder.options;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,7 +93,7 @@ class CoapCliTest {
         // then
         assertEquals(0, exitCode);
         assertEquals("\nDziala!\n", sw.toString().replace("\r", ""));
-        assertEquals(CoapRequest.get("/test"), sendCommand.request);
+        assertEquals(get("/test"), sendCommand.request);
     }
 
     @Test
@@ -109,10 +109,10 @@ class CoapCliTest {
         assertEquals(0, exitCode);
         assertEquals("\nReceived 29\n", sw.toString().replace("\r", ""));
 
-        CoapRequest expected = CoapRequest.post("/test")
+        CoapRequest.Builder expected = CoapRequest.post("/test")
                 .options(it -> it
                         .query("par1", "val1")
-                        .block1Req(1, S_16, false)
+                        .block1Req(0, S_16, true)
                         .proxyUri("http://another-uri")
                         .requestTag(sendCommand.request.options().getRequestTag()) // it's random
                 )
@@ -129,7 +129,7 @@ class CoapCliTest {
         assertEquals(0, exitCode);
         assertEquals("\nReceived 27\n", sw.toString().replace("\r", ""));
 
-        CoapRequest expected = CoapRequest.post("/test")
+        CoapRequest.Builder expected = CoapRequest.post("/test")
                 .payload(Opaque.decodeHex("a16e626573745f6775697461726973746a476172795f4d6f6f7265"), MediaTypes.CT_APPLICATION_CBOR)
                 .accept(MediaTypes.CT_APPLICATION_JSON);
         assertEquals(expected, sendCommand.request);

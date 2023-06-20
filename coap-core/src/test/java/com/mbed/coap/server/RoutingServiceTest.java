@@ -25,6 +25,7 @@ import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
 import static com.mbed.coap.packet.MediaTypes.CT_TEXT_PLAIN;
 import static com.mbed.coap.utils.Assertions.assertEquals;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
@@ -39,7 +40,7 @@ import org.junit.jupiter.api.Test;
 
 public class RoutingServiceTest {
 
-    private Service<CoapRequest, CoapResponse> routeService = RouterService.builder()
+    private Service<CoapRequest.Builder, CoapResponse> routeService = REQUEST_BUILDER_FILTER.then(RouterService.builder()
             .get("/test/1",
                     req -> CoapResponse.ok("Test1", CT_TEXT_PLAIN).toFuture()
             )
@@ -67,7 +68,7 @@ public class RoutingServiceTest {
             .any("/test3/*", req ->
                     CoapResponse.ok("Reply to " + req.getMethod()).toFuture()
             )
-            .build();
+            .build());
 
     @Test
     public void shouldRouteWithExactUriPath() throws ExecutionException, InterruptedException {
