@@ -15,6 +15,7 @@
  */
 package com.mbed.coap.server.filter;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -31,10 +32,11 @@ public class EchoFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse
                 .thenCompose(resp -> {
                     if (resp.getCode() == Code.C401_UNAUTHORIZED && resp.options().getEcho() != null) {
                         // server required freshness verification, retry with echo
-                        CoapRequest requestWithEcho = request.options(it -> it.echo(resp.options().getEcho()));
+
+                        CoapRequest requestWithEcho = request.withOptions(it -> it.echo(resp.options().getEcho()));
                         return service.apply(requestWithEcho);
                     } else {
-                        return resp.toFuture();
+                        return completedFuture(resp);
                     }
                 });
     }

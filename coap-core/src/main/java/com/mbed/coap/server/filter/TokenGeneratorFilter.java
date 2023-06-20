@@ -48,7 +48,7 @@ public class TokenGeneratorFilter implements Filter.SimpleFilter<CoapRequest, Co
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
         if (!request.isPing() && request.getToken().isEmpty()) {
-            return service.apply(request.token(tokenGenerator.get()));
+            return service.apply(request.withToken(tokenGenerator.get()));
         }
 
         return service.apply(request);

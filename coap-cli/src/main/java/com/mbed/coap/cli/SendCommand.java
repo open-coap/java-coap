@@ -17,6 +17,7 @@
 package com.mbed.coap.cli;
 
 import static com.mbed.coap.cli.TransportOptions.addressFromUri;
+import static com.mbed.coap.packet.CoapRequest.request;
 import com.mbed.coap.CoapConstants;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.BlockSize;
@@ -82,15 +83,16 @@ public class SendCommand implements Callable<Integer> {
             Thread.sleep(200);
 
             String uriPath = uri.getPath().isEmpty() ? CoapConstants.WELL_KNOWN_CORE : uri.getPath();
-            request = CoapRequest.of(null, method, uriPath)
+            request = request(method, uriPath)
                     .query(uri.getQuery() == null ? "" : uri.getQuery())
                     .blockSize(blockSize)
                     .payload(hexPayload ? Opaque.decodeHex(payload) : Opaque.of(payload))
+                    .contentFormat(contentFormat)
+                    .accept(accept)
                     .options(o -> o
-                            .contentFormat(contentFormat)
                             .proxyUri(proxyUri)
-                            .accept(accept)
-                    );
+                    )
+                    .build();
             CoapResponse resp = cli.sendSync(request);
 
             if (resp.getPayload().nonEmpty()) {

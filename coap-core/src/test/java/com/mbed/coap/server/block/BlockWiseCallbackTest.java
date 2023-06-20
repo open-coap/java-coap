@@ -347,7 +347,7 @@ public class BlockWiseCallbackTest {
         );
     }
 
-    private void assertSent(CoapRequest expected) {
+    private void assertSent(CoapRequest.Builder expected) {
         assertFalse(response.isDone());
         assertNotNull(lastReq);
         lastReq = null;

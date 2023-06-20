@@ -39,7 +39,7 @@ class TokenGeneratorFilterTest {
             return ok("ok").toFuture();
         });
 
-        assertEquals(ok("ok"), service.apply(get("/test")).join());
+        assertEquals(ok("ok"), service.apply(get("/test").build()).join());
     }
 
     @Test
@@ -49,7 +49,7 @@ class TokenGeneratorFilterTest {
             return ok("ok").toFuture();
         });
 
-        assertEquals(ok("ok"), service.apply(get("/test").token(123)).join());
+        assertEquals(ok("ok"), service.apply(get("/test").token(123).build()).join());
     }
 
     @Test

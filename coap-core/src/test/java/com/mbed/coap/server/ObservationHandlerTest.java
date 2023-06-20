@@ -46,7 +46,7 @@ class ObservationHandlerTest {
         reset(service);
         notifReceiver.clear();
 
-        obsMap.add(get("/obs").token(of("100")));
+        obsMap.add(get("/obs").token(of("100")).build());
     }
 
     @Test

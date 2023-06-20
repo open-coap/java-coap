@@ -150,14 +150,14 @@ abstract class IntegrationTestBase {
 
     @Test
     public void requestWithAccept() throws Exception {
-        CoapRequest request = get("/test2").accept(MediaTypes.CT_APPLICATION_JSON);
+        CoapRequest.Builder request = get("/test2").accept(MediaTypes.CT_APPLICATION_JSON);
 
         assertEquals(Code.C406_NOT_ACCEPTABLE, client.sendSync(request).getCode());
     }
 
     @Test
     public void simpleRequestWithCustomHeader() throws Exception {
-        CoapRequest request = get("/test/1")
+        CoapRequest.Builder request = get("/test/1")
                 .options(o -> o.custom(74, Opaque.variableUInt(0x010203L)));
 
         assertEquals("Dziala", client.sendSync(request).getPayloadString());
@@ -165,7 +165,7 @@ abstract class IntegrationTestBase {
 
     @Test
     public void simpleRequestWithCriticalCustomHeader() throws Exception {
-        CoapRequest request = get("/test/1")
+        CoapRequest.Builder request = get("/test/1")
                 .options(o -> o.custom(71, Opaque.variableUInt(0x010203L)));
 
         assertEquals(Code.C402_BAD_OPTION, client.sendSync(request).getCode());
@@ -173,7 +173,7 @@ abstract class IntegrationTestBase {
 
     @Test
     public void simpleRequestWithNonCriticalCustomHeader() throws Exception {
-        CoapRequest request = get("/test/1")
+        CoapRequest.Builder request = get("/test/1")
                 .options(o -> o.custom(72, Opaque.ofBytes(1, 2, 3)));
 
         assertEquals("Dziala", client.sendSync(request).getPayloadString());

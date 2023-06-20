@@ -15,7 +15,9 @@
  */
 package com.mbed.coap.server;
 
+import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -30,43 +32,43 @@ class RouterServiceTest {
 
     @Test
     public void shouldBuildSimpleService() throws ExecutionException, InterruptedException {
-        Service<CoapRequest, CoapResponse> svc = RouterService.builder()
+        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.then(RouterService.builder()
                 .get("/test1", simpleHandler)
                 .post("/test1", simpleHandler)
                 .get("/test2/*", simpleHandler)
                 .get("/test3", simpleHandler)
-                .build();
+                .build());
 
         assertEquals("GET /test1", svc.apply(CoapRequest.get("/test1")).get().getPayloadString());
         assertEquals("POST /test1", svc.apply(CoapRequest.post("/test1")).get().getPayloadString());
-        assertEquals("GET /test2/prefixed-route", svc.apply(CoapRequest.get("/test2/prefixed-route")).get().getPayloadString());
-        assertEquals(Code.C404_NOT_FOUND, svc.apply(CoapRequest.get("/test3/not-prefixed-route")).get().getCode());
+        assertEquals("GET /test2/prefixed-route", svc.apply(get("/test2/prefixed-route")).get().getPayloadString());
+        assertEquals(Code.C404_NOT_FOUND, svc.apply(get("/test3/not-prefixed-route")).get().getCode());
     }
 
     @Test
     public void shouldFilterRoutes() throws ExecutionException, InterruptedException {
-        Service<CoapRequest, CoapResponse> svc = RouterService.builder()
+        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.then(RouterService.builder()
                 .get("/test3", simpleHandler)
                 .filter((CoapRequest req, Service<CoapRequest, CoapResponse> nextSvc) -> ok("42").toFuture())
                 .get("/test1", simpleHandler)
                 .post("/test1", simpleHandler)
                 .get("/test2/*", simpleHandler)
-                .build();
+                .build());
 
-        assertEquals("42", svc.apply(CoapRequest.get("/test1")).get().getPayloadString());
+        assertEquals("42", svc.apply(get("/test1")).get().getPayloadString());
         assertEquals("42", svc.apply(CoapRequest.post("/test1")).get().getPayloadString());
-        assertEquals("42", svc.apply(CoapRequest.get("/test2/prefixed-route")).get().getPayloadString());
-        assertEquals("GET /test3", svc.apply(CoapRequest.get("/test3")).get().getPayloadString());
-        assertEquals(Code.C404_NOT_FOUND, svc.apply(CoapRequest.get("/test4")).get().getCode());
+        assertEquals("42", svc.apply(get("/test2/prefixed-route")).get().getPayloadString());
+        assertEquals("GET /test3", svc.apply(get("/test3")).get().getPayloadString());
+        assertEquals(Code.C404_NOT_FOUND, svc.apply(get("/test4")).get().getCode());
     }
 
     @Test
     public void shouldChangeDefaultHandler() throws ExecutionException, InterruptedException {
-        Service<CoapRequest, CoapResponse> svc = RouterService.builder()
+        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.then(RouterService.builder()
                 .defaultHandler((CoapRequest r) -> ok("OK").toFuture())
-                .build();
+                .build());
 
-        assertEquals(Code.C205_CONTENT, svc.apply(CoapRequest.get("/test3")).get().getCode());
+        assertEquals(Code.C205_CONTENT, svc.apply(get("/test3")).get().getCode());
     }
 
     @Test
@@ -77,10 +79,10 @@ class RouterServiceTest {
                 .get("/test2", simpleHandler)
                 .mergeRoutes(builder1);
 
-        Service<CoapRequest, CoapResponse> svc = builder2.build();
+        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.then(builder2.build());
 
-        assertEquals(Code.C205_CONTENT, svc.apply(CoapRequest.get("/test1")).get().getCode());
-        assertEquals(Code.C205_CONTENT, svc.apply(CoapRequest.get("/test2")).get().getCode());
+        assertEquals(Code.C205_CONTENT, svc.apply(get("/test1")).get().getCode());
+        assertEquals(Code.C205_CONTENT, svc.apply(get("/test2")).get().getCode());
     }
 
 }

@@ -41,7 +41,7 @@ class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapRespo
 
         CoapRequest obsReq;
         if (req.getToken().isEmpty()) {
-            obsReq = req.token(Opaque.variableUInt(nextToken.incrementAndGet()));
+            obsReq = req.withToken(Opaque.variableUInt(nextToken.incrementAndGet()));
         } else {
             obsReq = req;
         }

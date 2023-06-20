@@ -15,6 +15,7 @@
  */
 package com.mbed.coap.server.filter;
 
+import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.ofBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,13 +32,13 @@ class EtagGeneratorFilterTest {
     void shouldAddEtagToResponse() {
         Service<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").toFuture());
 
-        assertEquals(ofBytes(1, 2), service.apply(CoapRequest.get("/test")).join().options().getEtag());
+        assertEquals(ofBytes(1, 2), service.apply(get("/test").build()).join().options().getEtag());
     }
 
     @Test
     void shouldNotChangeEtagToResponseWhenExists() {
         Service<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").etag(ofBytes(99)).toFuture());
 
-        assertEquals(ofBytes(99), service.apply(CoapRequest.get("/test")).join().options().getEtag());
+        assertEquals(ofBytes(99), service.apply(get("/test").build()).join().options().getEtag());
     }
 }

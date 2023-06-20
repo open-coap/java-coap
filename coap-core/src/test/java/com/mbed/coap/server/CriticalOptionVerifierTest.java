@@ -31,7 +31,7 @@ class CriticalOptionVerifierTest {
 
     @Test
     void shouldReturnBadOptionWhenUnrecognizedCriticalOption() {
-        CoapRequest req = get("/test").options(o -> o.custom(1001, Opaque.of("foo")));
+        CoapRequest req = get("/test").options(o -> o.custom(1001, Opaque.of("foo"))).build();
 
         CompletableFuture<CoapResponse> resp = filter.apply(req, null);
 

@@ -18,7 +18,9 @@ package org.opencoap.coap.metrics.micrometer;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.utils.Assertions.assertEquals;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,8 +37,8 @@ import org.junit.jupiter.api.Test;
 class MicrometerMetricsFilterTest {
     private final MeterRegistry registry = new SimpleMeterRegistry();
     private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
-    private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> ok("OK").toFuture());
-    private final Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
+    private final Service<CoapRequest.Builder, CoapResponse> okService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> ok("OK").toFuture());
+    private final Service<CoapRequest.Builder, CoapResponse> failingService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> failedFuture(new Exception("error message")));
 
     @BeforeEach
     public void beforeEach() {
@@ -107,7 +109,7 @@ class MicrometerMetricsFilterTest {
                 .registry(registry)
                 .build();
 
-        Service<CoapRequest, CoapResponse> svc = filterWithRoute.then(__ -> ok("OK").toFuture());
+        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.andThen(filterWithRoute).then(__ -> ok("OK").toFuture());
         svc.apply(get("/test/1")).join();
         svc.apply(get("/test/2")).join();
         svc.apply(get("/hello")).join();

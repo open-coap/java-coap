@@ -87,7 +87,7 @@ class ObserversManagerTest {
     @Test
     public void doNotCreateObservationRelationWhenObsIsNot0() throws ExecutionException, InterruptedException {
         // when
-        assertNull(obsMgr.subscribe(get("/test").token(13).observe(10).from(PEER_1), ok("OK!")).options().getObserve());
+        assertNull(obsMgr.subscribe(get("/test").token(13).options(o -> o.observe(10)).from(PEER_1), ok("OK!")).options().getObserve());
 
         // then
         assertEquals(0, obsMgr.size());

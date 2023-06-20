@@ -21,10 +21,10 @@ import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.ofBytes;
 import static com.mbed.coap.utils.Assertions.assertEquals;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +34,7 @@ class EtagValidatorFilterTest {
 
     private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
     private final CoapResponse.Builder resource = ok("OK").etag(ofBytes(100)).maxAge(100);
-    private final Service<CoapRequest, CoapResponse> service = filter.then(__ -> resource.toFuture());
+    private final Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> resource.toFuture());
 
     @Test
     void shouldPassResponseWhenMissingEtagInRequest() {
@@ -53,7 +53,7 @@ class EtagValidatorFilterTest {
     @Test
     void shouldReplyValidWhenRequestWithSameOneOfEtags() {
         CompletableFuture<CoapResponse> resp = service.apply(
-                get("/9").options(o -> o.etag(new Opaque[]{ofBytes(200), ofBytes(100)}))
+                get("/9").etag(ofBytes(200), ofBytes(100))
         );
 
         assertEquals(coapResponse(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());
