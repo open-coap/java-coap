@@ -16,7 +16,9 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.utils.FutureHelpers.wrapExceptions;
 import com.mbed.coap.transport.TransportContext;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -58,56 +60,28 @@ public final class CoapRequest {
         return new CoapRequest(method, Opaque.EMPTY, options, Opaque.EMPTY, peerAddress, TransportContext.EMPTY);
     }
 
-    public static CoapRequest get(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.GET, uriPath);
-    }
-
     public static CoapRequest get(String uriPath) {
         return CoapRequest.of(null, Method.GET, uriPath);
-    }
-
-    public static CoapRequest post(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.POST, uriPath);
     }
 
     public static CoapRequest post(String uriPath) {
         return CoapRequest.of(null, Method.POST, uriPath);
     }
 
-    public static CoapRequest put(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.PUT, uriPath);
-    }
-
     public static CoapRequest put(String uriPath) {
         return CoapRequest.of(null, Method.PUT, uriPath);
-    }
-
-    public static CoapRequest delete(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.DELETE, uriPath);
     }
 
     public static CoapRequest delete(String uriPath) {
         return CoapRequest.of(null, Method.DELETE, uriPath);
     }
 
-    public static CoapRequest fetch(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.FETCH, uriPath);
-    }
-
     public static CoapRequest fetch(String uriPath) {
         return CoapRequest.of(null, Method.FETCH, uriPath);
     }
 
-    public static CoapRequest patch(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.PATCH, uriPath);
-    }
-
     public static CoapRequest patch(String uriPath) {
         return CoapRequest.of(null, Method.PATCH, uriPath);
-    }
-
-    public static CoapRequest iPatch(InetSocketAddress peerAddress, String uriPath) {
-        return CoapRequest.of(peerAddress, Method.iPATCH, uriPath);
     }
 
     public static CoapRequest iPatch(String uriPath) {
@@ -233,6 +207,24 @@ public final class CoapRequest {
         return new CoapRequest(method, token, options, payload, newPeerAddress, transContext);
     }
 
+    public CoapRequest from(InetSocketAddress peerAddress) {
+        return this.address(peerAddress);
+    }
+
+    public CoapRequest to(InetSocketAddress peerAddress) {
+        return address(peerAddress);
+    }
+
+    public CoapRequest fromLocal(int localPort) {
+        return wrapExceptions(() ->
+                address(new InetSocketAddress(InetAddress.getLocalHost(), localPort))
+        );
+    }
+
+    public CoapRequest toLocal(int localPort) {
+        return fromLocal(localPort);
+    }
+
     public CoapRequest context(TransportContext newTransportContext) {
         return new CoapRequest(method, token, options, payload, peerAddress, newTransportContext);
     }
@@ -250,6 +242,16 @@ public final class CoapRequest {
 
     public CoapRequest observe(int observe) {
         options.setObserve(observe);
+        return this;
+    }
+
+    public CoapRequest observe() {
+        options.setObserve(0);
+        return this;
+    }
+
+    public CoapRequest deregisterObserve() {
+        options.setObserve(1);
         return this;
     }
 

@@ -46,8 +46,6 @@ import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.InMemoryCoapTransport;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -196,11 +194,13 @@ public class ClientServerWithBlocksTest {
     @Test
     public void sizeTest() throws Exception {
         CoapServer cnn = CoapServer.builder().blockSize(BlockSize.S_256).transport(InMemoryCoapTransport.create()).build().start();
-        CoapRequest request = get(new InetSocketAddress(InetAddress.getLocalHost(), SERVER_PORT), "/small")
+        CoapRequest request = get("/small")
                 .options(o -> {
-                    o.setBlock2Res(new BlockOption(0, BlockSize.S_256, true));
-                    o.setSize2Res(0);
-                });
+                            o.setBlock2Res(new BlockOption(0, BlockSize.S_256, true));
+                            o.setSize2Res(0);
+                        }
+                )
+                .fromLocal(SERVER_PORT);
 
         CompletableFuture<CoapResponse> resp = cnn.clientService().apply(request);
 
@@ -230,9 +230,10 @@ public class ClientServerWithBlocksTest {
         // no-block transfers client, we need "pure" server and make block packets in tests
         CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).build().start();
 
-        CoapRequest request = put(new InetSocketAddress(InetAddress.getLocalHost(), SERVER_PORT), "/chang-res")
+        CoapRequest request = put("/chang-res")
                 .payload(body)
-                .options(o -> o.setBlock1Req(new BlockOption(1, BlockSize.S_128, true)));
+                .options(o -> o.setBlock1Req(new BlockOption(1, BlockSize.S_128, true)))
+                .toLocal(SERVER_PORT);
 
         CoapResponse resp = cnn.clientService().apply(request).join();
 

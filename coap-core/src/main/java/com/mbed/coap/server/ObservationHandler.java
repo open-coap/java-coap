@@ -76,7 +76,7 @@ class ObservationHandler {
                 return false;
             }
             // retrieve full notification payload
-            CoapRequest fullNotifRequest = CoapRequest.get(observationResp.getPeerAddress(), obsListContainer.uriPath)
+            CoapRequest fullNotifRequest = CoapRequest.get(obsListContainer.uriPath).from(observationResp.getPeerAddress())
                     .block2Res(1, observationResp.options().getBlock2Res().getBlockSize(), false);
 
             clientService

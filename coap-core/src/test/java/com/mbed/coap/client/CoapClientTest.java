@@ -56,11 +56,11 @@ public class CoapClientTest {
 
     @Test
     public void request() {
-        given(clientService.apply(get(LOCAL_5683, "/test")))
+        given(clientService.apply(get("/test").from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
 
         // when
-        CompletableFuture<CoapResponse> resp = client.send(get(LOCAL_5683, "/test"));
+        CompletableFuture<CoapResponse> resp = client.send(get("/test").from(LOCAL_5683));
 
         // then
         assertEquals("ABC", resp.join().getPayloadString());
@@ -80,11 +80,11 @@ public class CoapClientTest {
 
     @Test
     public void syncRequest() throws CoapException {
-        given(clientService.apply(get(LOCAL_5683, "/test")))
+        given(clientService.apply(get("/test").from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
 
         // when
-        CoapResponse resp = client.sendSync(get(LOCAL_5683, "/test"));
+        CoapResponse resp = client.sendSync(get("/test").from(LOCAL_5683));
 
         // then
         assertEquals("ABC", resp.getPayloadString());
@@ -93,7 +93,7 @@ public class CoapClientTest {
 
     @Test
     public void observationTest() throws Exception {
-        given(clientService.apply(get(LOCAL_5683, "/test").token(token1001).observe(0)))
+        given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next).toFuture());
 
         ObservationConsumer obsConsumer = new ObservationConsumer();
@@ -111,7 +111,7 @@ public class CoapClientTest {
 
     @Test
     public void shouldTerminateObservation() {
-        given(clientService.apply(get(LOCAL_5683, "/test").token(token1001).observe(0)))
+        given(clientService.apply(get("/test").token(token1001).observe(0).from(LOCAL_5683)))
                 .willReturn(completedFuture(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next)));
         ObservationConsumer obsConsumer = new ObservationConsumer();
 

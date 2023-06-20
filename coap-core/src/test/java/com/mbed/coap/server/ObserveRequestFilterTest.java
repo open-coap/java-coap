@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ class ObserveRequestFilterTest {
 
     @Test
     void shouldNotChangeTokenForNonObservationRequest() {
-        CompletableFuture<CoapResponse> resp = service.apply(get(null, "/obs"));
+        CompletableFuture<CoapResponse> resp = service.apply(get("/obs"));
 
         assertEquals(ok(EMPTY), resp.join());
     }

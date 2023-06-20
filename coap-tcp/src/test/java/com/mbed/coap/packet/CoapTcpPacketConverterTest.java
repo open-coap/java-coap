@@ -15,6 +15,7 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.Opaque.variableUInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,9 +27,10 @@ class CoapTcpPacketConverterTest {
 
     @Test
     void convertRequestToCoap() {
-        CoapRequest req = CoapRequest.post(LOCAL_5683, "/path1")
+        CoapRequest req = post("/path1")
                 .token(123)
-                .payload("<test>", MediaTypes.CT_APPLICATION_XML);
+                .payload("<test>", MediaTypes.CT_APPLICATION_XML)
+                .to(LOCAL_5683);
 
         // when
         CoapPacket coapPacket = CoapTcpPacketConverter.toCoapPacket(req);

@@ -45,7 +45,7 @@ public class ObservableResourceServiceTest {
 
     @Test
     public void createObservationRelation() throws ExecutionException, InterruptedException {
-        CompletableFuture<CoapResponse> resp = obsRes.apply(get(PEER_1, "/test").token(13).observe(0));
+        CompletableFuture<CoapResponse> resp = obsRes.apply(get("/test").token(13).observe(0).from(PEER_1));
 
         assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test"), opts -> opts.setObserve(0)), resp.get());
         assertNotNull(resp.get().next);
@@ -54,7 +54,7 @@ public class ObservableResourceServiceTest {
     @Test
     public void doNotCreateObservationRelationWhenMissingObs() throws ExecutionException, InterruptedException {
         // when
-        CompletableFuture<CoapResponse> resp = obsRes.apply(get(PEER_1, "/test"));
+        CompletableFuture<CoapResponse> resp = obsRes.apply(get("/test").from(PEER_1));
 
         // then
         assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test")), resp.get());
@@ -64,7 +64,7 @@ public class ObservableResourceServiceTest {
     @Test
     public void doNotCreateObservationRelationWhenObsIsNot0() throws ExecutionException, InterruptedException {
         // when
-        CompletableFuture<CoapResponse> resp = obsRes.apply(get(PEER_1, "/test").token(13).observe(10));
+        CompletableFuture<CoapResponse> resp = obsRes.apply(get("/test").token(13).observe(10).from(PEER_1));
 
         // then
         assertEquals(CoapResponse.ok("test"), resp.get());
@@ -132,7 +132,7 @@ public class ObservableResourceServiceTest {
 
         // then
         assertEquals(CoapResponse.of(Code.C404_NOT_FOUND, EMPTY, opts -> opts.setObserve(1)), obs.get());
-        assertEquals(CoapResponse.notFound(), obsRes.apply(get(PEER_1, "/")).get());
+        assertEquals(CoapResponse.notFound(), obsRes.apply(get("/").from(PEER_1)).get());
     }
 
     @Test
@@ -142,7 +142,7 @@ public class ObservableResourceServiceTest {
         CompletableFuture<CoapResponse> obs2 = subscribe(PEER_2).get();
 
         // when
-        CompletableFuture<CoapResponse> resp2 = obsRes.apply(get(PEER_1, "/test").token(13).observe(1));
+        CompletableFuture<CoapResponse> resp2 = obsRes.apply(get("/test").token(13).observe(1).from(PEER_1));
         // and
         obsRes.putPayload(of("test2"));
 
@@ -170,7 +170,7 @@ public class ObservableResourceServiceTest {
     }
 
     private Supplier<CompletableFuture<CoapResponse>> subscribe(InetSocketAddress peerAddress) throws InterruptedException, ExecutionException {
-        CompletableFuture<CoapResponse> resp = obsRes.apply(get(peerAddress, "/test").token(13).observe(0));
+        CompletableFuture<CoapResponse> resp = obsRes.apply(get("/test").token(13).observe(0).from(peerAddress));
         return resp.get().next;
     }
 

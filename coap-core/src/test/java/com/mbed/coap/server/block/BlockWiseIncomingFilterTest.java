@@ -29,6 +29,7 @@ import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
@@ -36,12 +37,10 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.messaging.Capabilities;
 import com.mbed.coap.utils.Service;
-import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
 class BlockWiseIncomingFilterTest {
-    private static final InetSocketAddress LOCAL_5683 = new InetSocketAddress("localhost", 5683);
     private Capabilities capability = Capabilities.BASE;
     private final BlockWiseIncomingFilter blockingFilter = new BlockWiseIncomingFilter(__ -> capability, 10000000);
     private CoapRequest lastRequest = null;
@@ -52,7 +51,7 @@ class BlockWiseIncomingFilterTest {
         Service<CoapRequest, CoapResponse> service = blockingFilter
                 .then(__ -> ok("OK").toFuture());
 
-        CompletableFuture<CoapResponse> resp = service.apply(get(LOCAL_5683, "/"));
+        CompletableFuture<CoapResponse> resp = service.apply(get("/").from(LOCAL_5683));
 
         assertEquals(ok("OK"), resp.join());
     }
@@ -69,24 +68,24 @@ class BlockWiseIncomingFilterTest {
 
         //BLOCK 1
         resp = service.apply(
-                put(LOCAL_5683, "/").token(1001).block1Req(0, S_16, true).payload(opaqueOfSize(16))
+                put("/").token(1001).block1Req(0, S_16, true).payload(opaqueOfSize(16)).to(LOCAL_5683)
         );
         assertEquals(coapResponse(C231_CONTINUE).block1Req(0, S_16, true), resp.join());
 
         //BLOCK 2
         resp = service.apply(
-                put(LOCAL_5683, "/").token(2002).block1Req(1, S_16, true).payload(opaqueOfSize(16))
+                put("/").token(2002).block1Req(1, S_16, true).payload(opaqueOfSize(16)).to(LOCAL_5683)
         );
         assertEquals(coapResponse(C231_CONTINUE).block1Req(1, S_16, true), resp.join());
 
         //BLOCK 3
         resp = service.apply(
-                put(LOCAL_5683, "/").token(3003).block1Req(2, S_16, false).payload(opaqueOfSize(1))
+                put("/").token(3003).block1Req(2, S_16, false).payload(opaqueOfSize(1)).to(LOCAL_5683)
         );
         assertEquals(coapResponse(C204_CHANGED).block1Req(2, S_16, false).payload("ok"), resp.join());
 
 
-        assertEquals(put(LOCAL_5683, "/").token(3003).block1Req(2, S_16, false).payload(opaqueOfSize(33)), lastRequest);
+        assertEquals(put("/").token(3003).block1Req(2, S_16, false).payload(opaqueOfSize(33)).to(LOCAL_5683), lastRequest);
     }
 
     @Test
@@ -95,9 +94,9 @@ class BlockWiseIncomingFilterTest {
                 .then(__ -> ok("OK").toFuture());
 
         //BLOCK 1
-        service.apply(put(LOCAL_5683, "/").block1Req(0, S_16, true).payload(opaqueOfSize(16)));
+        service.apply(put("/").block1Req(0, S_16, true).payload(opaqueOfSize(16)).to(LOCAL_5683));
         //BLOCK 2
-        CompletableFuture<CoapResponse> resp = service.apply(put(LOCAL_5683, "/").block1Req(1, S_16, true).payload(opaqueOfSize(17)));
+        CompletableFuture<CoapResponse> resp = service.apply(put("/").block1Req(1, S_16, true).payload(opaqueOfSize(17)).to(LOCAL_5683));
 
         // then
         assertThatThrownBy(resp::join).hasCause(new CoapCodeException(Code.C400_BAD_REQUEST, "block size mismatch"));
@@ -109,7 +108,7 @@ class BlockWiseIncomingFilterTest {
                 .then(__ -> ok("OK").toFuture());
 
         //BLOCK 1
-        CompletableFuture<CoapResponse> resp = service.apply(put(LOCAL_5683, "/").block1Req(0, S_16, true).payload(opaqueOfSize(17)));
+        CompletableFuture<CoapResponse> resp = service.apply(put("/").block1Req(0, S_16, true).payload(opaqueOfSize(17)).to(LOCAL_5683));
 
         // then
         assertThatThrownBy(resp::join).hasCause(new CoapCodeException(Code.C400_BAD_REQUEST, "block size mismatch"));
@@ -123,11 +122,11 @@ class BlockWiseIncomingFilterTest {
         CompletableFuture<CoapResponse> resp;
 
         //BLOCK 0
-        resp = service.apply(get(LOCAL_5683, "/large"));
+        resp = service.apply(get("/large").from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(0, BlockSize.S_1024_BERT, true).payload(opaqueOfSize(1024)), resp.join());
 
         //BLOCK 1
-        resp = service.apply(get(LOCAL_5683, "/large").block2Res(1, BlockSize.S_1024_BERT, false));
+        resp = service.apply(get("/large").block2Res(1, BlockSize.S_1024_BERT, false).from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(1, BlockSize.S_1024_BERT, false).payload(opaqueOfSize(976)), resp.join());
     }
 
@@ -138,7 +137,7 @@ class BlockWiseIncomingFilterTest {
         capability = new Capabilities(4000, true);
 
         //when
-        CompletableFuture<CoapResponse> resp = service.apply(get(LOCAL_5683, "/large"));
+        CompletableFuture<CoapResponse> resp = service.apply(get("/large").from(LOCAL_5683));
 
         //then full payload, no blocks
         assertEquals(coapResponse(C205_CONTENT).payload(opaqueOfSize(2000)), resp.join());
@@ -152,15 +151,15 @@ class BlockWiseIncomingFilterTest {
         CompletableFuture<CoapResponse> resp;
 
         //BLOCK 0
-        resp = service.apply(get(LOCAL_5683, "/xlarge"));
+        resp = service.apply(get("/xlarge").from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(0, BlockSize.S_1024_BERT, true).payload(opaqueOfSize(4096)), resp.join());
 
         //BLOCK 1
-        resp = service.apply(get(LOCAL_5683, "/xlarge").block2Res(4, BlockSize.S_1024_BERT, false));
+        resp = service.apply(get("/xlarge").block2Res(4, BlockSize.S_1024_BERT, false).from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(4, BlockSize.S_1024_BERT, true).payload(opaqueOfSize(4096)), resp.join());
 
         //BLOCK 2
-        resp = service.apply(get(LOCAL_5683, "/xlarge").block2Res(8, BlockSize.S_1024_BERT, false));
+        resp = service.apply(get("/xlarge").block2Res(8, BlockSize.S_1024_BERT, false).from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(8, BlockSize.S_1024_BERT, false).payload(opaqueOfSize(1808)), resp.join());
     }
 

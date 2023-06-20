@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class TcpExchangeFilterTest {
     @Test
     void successfulSingleRequest() {
         // given
-        resp = exchange.apply(get(LOCAL_5683, "/13"), sender);
+        resp = exchange.apply(get("/13").from(LOCAL_5683), sender);
         assertEquals(1, exchange.transactions());
 
         // when
@@ -62,8 +62,8 @@ class TcpExchangeFilterTest {
     @Test
     void successfulMultipleRequests() {
         // given
-        CoapRequest req = get(LOCAL_5683, "/13").token(1001);
-        CoapRequest req2 = get(LOCAL_5683, "/14").token(2002);
+        CoapRequest req = get("/13").token(1001).from(LOCAL_5683);
+        CoapRequest req2 = get("/14").token(2002).from(LOCAL_5683);
         resp = exchange.apply(req, sender);
         resp2 = exchange.apply(req2, sender);
         assertEquals(2, exchange.transactions());
@@ -84,7 +84,7 @@ class TcpExchangeFilterTest {
     @Test
     void failWhenSendingFails() {
         // when
-        resp = exchange.apply(get(LOCAL_5683, "/13"), __ -> failedFuture(new IOException()));
+        resp = exchange.apply(get("/13").from(LOCAL_5683), __ -> failedFuture(new IOException()));
 
         // then
         assertEquals(0, exchange.transactions());
@@ -94,7 +94,7 @@ class TcpExchangeFilterTest {
     @Test
     void cancelBeforeGettingResponse() {
         // given
-        resp = exchange.apply(get(LOCAL_5683, "/13"), sender);
+        resp = exchange.apply(get("/13").from(LOCAL_5683), sender);
 
         // when
         resp.cancel(false);
@@ -107,9 +107,9 @@ class TcpExchangeFilterTest {
     @Test
     void failWhenAborted() {
         // given
-        resp = exchange.apply(get(LOCAL_5683, "/13"), sender);
-        resp2 = exchange.apply(get(LOCAL_5683, "/14").token(123), sender);
-        CompletableFuture<CoapResponse> resp3 = exchange.apply(get(LOCAL_1_5683, "/16"), sender);
+        resp = exchange.apply(get("/13").from(LOCAL_5683), sender);
+        resp2 = exchange.apply(get("/14").token(123).from(LOCAL_5683), sender);
+        CompletableFuture<CoapResponse> resp3 = exchange.apply(get("/16").from(LOCAL_1_5683), sender);
 
         // when
         assertTrue(exchange.handleResponse(of(Code.C705_ABORT).toSeparate(Opaque.EMPTY, LOCAL_5683)));

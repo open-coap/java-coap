@@ -197,11 +197,11 @@ public class QueueRequestsTest {
     @Test
     public void shouldFailToSendTooManyRequests() throws Exception {
         // given
-        CompletableFuture<CoapResponse> futResp1 = client.send(get(LOCAL_5683, "/path1"));
-        CompletableFuture<CoapResponse> futResp2 = client.send(get(LOCAL_5683, "/path2"));
+        CompletableFuture<CoapResponse> futResp1 = client.send(get("/path1").from(LOCAL_5683));
+        CompletableFuture<CoapResponse> futResp2 = client.send(get("/path2").from(LOCAL_5683));
 
         // when
-        CompletableFuture<CoapResponse> futResp3 = client.send(get(LOCAL_5683, "/path3"));
+        CompletableFuture<CoapResponse> futResp3 = client.send(get("/path3").from(LOCAL_5683));
 
         // then
         assertTrue(futResp3.isCompletedExceptionally());
