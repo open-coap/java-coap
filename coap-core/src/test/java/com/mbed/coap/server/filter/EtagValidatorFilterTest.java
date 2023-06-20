@@ -53,7 +53,7 @@ class EtagValidatorFilterTest {
     @Test
     void shouldReplyValidWhenRequestWithSameOneOfEtags() {
         CompletableFuture<CoapResponse> resp = service.apply(
-                get("/9").options(o -> o.setEtag(new Opaque[]{ofBytes(200), ofBytes(100)}))
+                get("/9").options(o -> o.etag(new Opaque[]{ofBytes(200), ofBytes(100)}))
         );
 
         assertEquals(coapResponse(Code.C203_VALID).etag(ofBytes(100)).maxAge(100), resp.join());

@@ -235,8 +235,9 @@ public final class CoapRequest {
 
     // --- OPTIONS MODIFIERS ---
 
-    public CoapRequest options(Consumer<HeaderOptions> optionsConsumer) {
-        optionsConsumer.accept(options);
+    public CoapRequest options(Consumer<CoapOptionsBuilder> optionsConsumer) {
+        CoapOptionsBuilder optionsBuilder = new CoapOptionsBuilder(options);
+        optionsConsumer.accept(optionsBuilder);
         return this;
     }
 

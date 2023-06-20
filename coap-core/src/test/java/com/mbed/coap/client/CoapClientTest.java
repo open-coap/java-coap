@@ -94,7 +94,7 @@ public class CoapClientTest {
     @Test
     public void observationTest() throws Exception {
         given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next).toFuture());
+                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).nextSupplier(next).toFuture());
 
         ObservationConsumer obsConsumer = new ObservationConsumer();
         // when
@@ -104,15 +104,15 @@ public class CoapClientTest {
         assertEquals("1", resp.get().getPayloadString());
 
         // and then observation
-        next.put(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.setObserve(2)));
-        assertEquals(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.setObserve(2)), obsConsumer.next());
+        next.put(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.observe(2)));
+        assertEquals(CoapResponse.ok("2", CT_TEXT_PLAIN).options(o -> o.observe(2)), obsConsumer.next());
 
     }
 
     @Test
     public void shouldTerminateObservation() {
         given(clientService.apply(get("/test").token(token1001).observe(0).from(LOCAL_5683)))
-                .willReturn(completedFuture(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.setObserve(1)).nextSupplier(next)));
+                .willReturn(completedFuture(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).nextSupplier(next)));
         ObservationConsumer obsConsumer = new ObservationConsumer();
 
         // given, established observation relation

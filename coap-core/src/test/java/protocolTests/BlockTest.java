@@ -152,7 +152,7 @@ public class BlockTest {
         transport.receive(newCoapPacket(101).con(Code.C205_CONTENT).obs(2).token(1).block2Res(0, BlockSize.S_16, true).payload("123456789012345|").build(), new InetSocketAddress("127.0.0.1", 61616));
 
 
-        assertEquals(observationListener.next(), CoapResponse.ok("123456789012345|123456789012345|12345").options(o -> o.setBlock2Res(new BlockOption(2, BlockSize.S_16, false))));
+        assertEquals(observationListener.next(), CoapResponse.ok("123456789012345|123456789012345|12345").options(o -> o.block2Res(new BlockOption(2, BlockSize.S_16, false))));
     }
 
     @Test

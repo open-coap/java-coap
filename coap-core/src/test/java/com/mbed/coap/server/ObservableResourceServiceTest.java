@@ -47,7 +47,7 @@ public class ObservableResourceServiceTest {
     public void createObservationRelation() throws ExecutionException, InterruptedException {
         CompletableFuture<CoapResponse> resp = obsRes.apply(get("/test").token(13).observe(0).from(PEER_1));
 
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test"), opts -> opts.setObserve(0)), resp.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test"), opts -> opts.observe(0)), resp.get());
         assertNotNull(resp.get().next);
     }
 
@@ -81,7 +81,7 @@ public class ObservableResourceServiceTest {
         obsRes.putPayload(of("test2"));
 
         // then
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(1)), obs.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(1)), obs.get());
     }
 
     @Test
@@ -91,19 +91,19 @@ public class ObservableResourceServiceTest {
         CompletableFuture<CoapResponse> obs = next.get();
 
         // when
-        obsRes.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setEtag(of("200"))));
+        obsRes.put(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.etag(of("200"))));
         CompletableFuture<CoapResponse> obs2 = next.get();
-        obsRes.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.setEtag(of("300"))));
+        obsRes.put(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> opts.etag(of("300"))));
 
         // then
         assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> {
-            opts.setObserve(1);
-            opts.setEtag(of("200"));
+            opts.observe(1);
+            opts.etag(of("200"));
         }), obs.get());
 
         assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test3"), opts -> {
-            opts.setObserve(2);
-            opts.setEtag(of("300"));
+            opts.observe(2);
+            opts.etag(of("300"));
         }), obs2.get());
     }
 
@@ -117,8 +117,8 @@ public class ObservableResourceServiceTest {
         obsRes.putPayload(of("test2"));
 
         // then
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(1)), obs1.get());
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(1)), obs2.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(1)), obs1.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(1)), obs2.get());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class ObservableResourceServiceTest {
         obsRes.put(CoapResponse.notFound());
 
         // then
-        assertEquals(CoapResponse.of(Code.C404_NOT_FOUND, EMPTY, opts -> opts.setObserve(1)), obs.get());
+        assertEquals(CoapResponse.of(Code.C404_NOT_FOUND, EMPTY, opts -> opts.observe(1)), obs.get());
         assertEquals(CoapResponse.notFound(), obsRes.apply(get("/").from(PEER_1)).get());
     }
 
@@ -151,7 +151,7 @@ public class ObservableResourceServiceTest {
         assertNull(resp2.get().next);
 
         assertTrue(obs1.isCancelled());
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(1)), obs2.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(1)), obs2.get());
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ObservableResourceServiceTest {
 
         // then
         assertTrue(obs1.isCancelled());
-        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.setObserve(1)), obs2.get());
+        assertEquals(CoapResponse.of(Code.C205_CONTENT, of("test2"), opts -> opts.observe(1)), obs2.get());
     }
 
     private Supplier<CompletableFuture<CoapResponse>> subscribe(InetSocketAddress peerAddress) throws InterruptedException, ExecutionException {

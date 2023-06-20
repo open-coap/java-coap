@@ -127,12 +127,12 @@ futureResponse.thenAccept(resp ->
 // send request with payload and header options
 CompletableFuture<CoapResponse> futureResponse2 = client.send(CoapRequest
         .post("/actuator/switch")
-        .options(opt -> {
-            // set header options, for example:
-            opt.setEtag(Opaque.decodeHex("0a8120"));
-            opt.setAccept(MediaTypes.CT_APPLICATION_JSON);
-            opt.setMaxAge(3600L);
-        })
+        // set header options, for example:
+        .options(opt -> opt
+                .etag(Opaque.decodeHex("0a8120"))
+                .accept(MediaTypes.CT_APPLICATION_JSON)
+                .maxAge(Duration.ofHours(1))
+        )
         .payload("{\"power\": \"on\"}", MediaTypes.CT_APPLICATION_JSON)
         .context(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
 );
@@ -160,12 +160,12 @@ server = CoapServer.builder()
         // define routing
         // (note that each resource function is a `Service` type and can be decorated/transformed with `Filter`)
         .route(RouterService.builder()
-                .get("/.well-known/core", req -> completedFuture(
-                        CoapResponse.ok("</sensors/temperature>", MediaTypes.CT_APPLICATION_LINK__FORMAT)
-                ))
+                .get("/.well-known/core", req ->
+                        CoapResponse.ok("</sensors/temperature>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
+                )
                 .post("/actuators/switch", req -> {
                     // ...
-                    return completedFuture(CoapResponse.of(Code.C204_CHANGED));
+                    return coapResponse(Code.C204_CHANGED).toFuture();
                 })
                 // observable resource
                 .get("/sensors/temperature", req -> {
@@ -177,7 +177,7 @@ server = CoapServer.builder()
                             }
                     );
 
-                    return completedFuture(resp);
+                    return resp.toFuture();
                 })
         )
         .build();

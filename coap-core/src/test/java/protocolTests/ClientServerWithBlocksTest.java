@@ -195,10 +195,9 @@ public class ClientServerWithBlocksTest {
     public void sizeTest() throws Exception {
         CoapServer cnn = CoapServer.builder().blockSize(BlockSize.S_256).transport(InMemoryCoapTransport.create()).build().start();
         CoapRequest request = get("/small")
-                .options(o -> {
-                            o.setBlock2Res(new BlockOption(0, BlockSize.S_256, true));
-                            o.setSize2Res(0);
-                        }
+                .options(o -> o
+                        .block2Res(0, BlockSize.S_256, true)
+                        .size2Res(0)
                 )
                 .fromLocal(SERVER_PORT);
 
@@ -232,7 +231,7 @@ public class ClientServerWithBlocksTest {
 
         CoapRequest request = put("/chang-res")
                 .payload(body)
-                .options(o -> o.setBlock1Req(new BlockOption(1, BlockSize.S_128, true)))
+                .options(o -> o.block1Req(new BlockOption(1, BlockSize.S_128, true)))
                 .toLocal(SERVER_PORT);
 
         CoapResponse resp = cnn.clientService().apply(request).join();
@@ -274,7 +273,7 @@ public class ClientServerWithBlocksTest {
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
             final CoapResponse resp = CoapResponse.of(Code.C205_CONTENT, dynamicResource, opts ->
-                    opts.setEtag(Opaque.variableUInt(dynamicResource.hashCode()))
+                    opts.etag(Opaque.variableUInt(dynamicResource.hashCode()))
             );
 
             if (!changed) {
