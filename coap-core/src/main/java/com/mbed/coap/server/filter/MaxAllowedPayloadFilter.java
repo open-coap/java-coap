@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.mbed.coap.server.filter;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -36,9 +36,10 @@ public class MaxAllowedPayloadFilter implements Filter.SimpleFilter<CoapRequest,
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
 
         if (request.getPayload().size() > max) {
-            CoapResponse response = CoapResponse.of(Code.C413_REQUEST_ENTITY_TOO_LARGE, msg);
-            response.options().setSize1(max);
-            return completedFuture(response);
+            return coapResponse(Code.C413_REQUEST_ENTITY_TOO_LARGE)
+                    .options(o -> o.size1(max))
+                    .payload(msg)
+                    .toFuture();
         } else {
             return service.apply(request);
         }

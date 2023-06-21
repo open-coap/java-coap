@@ -39,7 +39,7 @@ public class BlockWiseNotificationFilter implements Filter.SimpleFilter<Separate
             //request that needs to use blocks
             obs = obs.duplicate();
             Opaque newPayload = BlockWiseTransfer.updateWithFirstBlock(obs, csm);
-            obs = obs.payload(newPayload);
+            obs = obs.withPayload(newPayload);
         }
         return service.apply(obs);
     }

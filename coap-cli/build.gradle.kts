@@ -17,6 +17,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
     testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation(testFixtures(project(":coap-core")))
 }
 
 tasks {

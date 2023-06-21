@@ -19,10 +19,13 @@ import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Code.C401_UNAUTHORIZED;
+import static com.mbed.coap.utils.Assertions.assertEquals;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Opaque;
+import com.mbed.coap.utils.Filter;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 public class EchoFilterTest {
 
-    private final EchoFilter filter = new EchoFilter();
+    private final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new EchoFilter());
 
     @Test
     void shouldRetryWithEcho() throws ExecutionException, InterruptedException {
@@ -61,7 +64,7 @@ public class EchoFilterTest {
         if (Objects.equals(Opaque.of("echo1"), request.options().getEcho())) {
             return ok("OK").toFuture();
         } else {
-            return CoapResponse.of(C401_UNAUTHORIZED)
+            return coapResponse(C401_UNAUTHORIZED)
                     .options(it -> it.echo(Opaque.of("echo1")))
                     .toFuture();
         }

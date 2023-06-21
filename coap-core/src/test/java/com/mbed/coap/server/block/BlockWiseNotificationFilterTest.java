@@ -65,7 +65,7 @@ class BlockWiseNotificationFilterTest {
 
         // then
         assertTrue(resp.join());
-        SeparateResponse expected = ok("aaaaaaaaaaaaaaab").options(o -> o.size2Res(27)).block2Res(0, S_16, true).toSeparate(token, LOCAL_1_5683);
+        SeparateResponse expected = ok("aaaaaaaaaaaaaaab").size2Res(27).block2Res(0, S_16, true).toSeparate(token, LOCAL_1_5683);
         verify(service).apply(expected);
     }
 }

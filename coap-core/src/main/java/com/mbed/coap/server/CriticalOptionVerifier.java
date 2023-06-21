@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
  */
 package com.mbed.coap.server;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -29,7 +29,7 @@ class CriticalOptionVerifier implements Filter.SimpleFilter<CoapRequest, CoapRes
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
         if (request.options().containsUnrecognisedCriticalOption()) {
-            return completedFuture(CoapResponse.of(Code.C402_BAD_OPTION));
+            return coapResponse(Code.C402_BAD_OPTION).toFuture();
         }
         return service.apply(request);
     }

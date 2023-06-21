@@ -16,12 +16,13 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.packet.CoapResponse.*;
-import static com.mbed.coap.packet.Opaque.*;
-import static java.util.concurrent.CompletableFuture.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static protocolTests.utils.CoapPacketBuilder.*;
+import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Opaque.EMPTY;
+import static com.mbed.coap.packet.Opaque.ofBytes;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;

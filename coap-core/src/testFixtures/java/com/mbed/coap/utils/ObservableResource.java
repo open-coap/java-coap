@@ -15,6 +15,7 @@
  */
 package com.mbed.coap.utils;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.packet.CoapRequest;
@@ -30,11 +31,10 @@ public class ObservableResource implements Service<CoapRequest, CoapResponse> {
     private CoapResponse current;
     private final String uriPath;
 
-    public ObservableResource(String uriPath, CoapResponse current, ObserversManager observersManager) {
-        this.current = current;
+    public ObservableResource(String uriPath, CoapResponse.Builder current, ObserversManager observersManager) {
+        this.current = current.observe(0).build();
         this.observersManager = observersManager;
         this.uriPath = uriPath;
-        current.options().setObserve(0);
     }
 
     @Override
@@ -43,12 +43,12 @@ public class ObservableResource implements Service<CoapRequest, CoapResponse> {
     }
 
     public void putPayload(Opaque payload) {
-        put(current.payload(payload));
+        put(current.withPayload(payload));
     }
 
     public void terminate(Code code) {
         requireNonNull(code);
-        put(CoapResponse.of(code, Opaque.EMPTY, opts -> opts.observe(current.options().getObserve())));
+        put(coapResponse(code).observe(current.options().getObserve()).build());
     }
 
     public void put(CoapResponse obs) {

@@ -23,6 +23,7 @@ import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +48,7 @@ import org.junit.jupiter.api.Test;
 class BlockWiseOutgoingFilterTest {
 
     private Capabilities capability = Capabilities.BASE;
-    private CompletableFuture<CoapResponse> promise;
+    private CompletableFuture<CoapResponse.Builder> promise;
     private CoapRequest lastReq;
     private BlockWiseOutgoingFilter filter = new BlockWiseOutgoingFilter(__ -> capability, 100_000);
     private Service<CoapRequest, CoapResponse> service = filter.then(this::newPromise);
@@ -55,7 +56,7 @@ class BlockWiseOutgoingFilterTest {
     private CompletableFuture<CoapResponse> newPromise(CoapRequest req) {
         promise = new CompletableFuture<>();
         lastReq = req;
-        return promise;
+        return promise.thenApply(CoapResponse.Builder::build);
     }
 
     @Test
@@ -288,7 +289,7 @@ class BlockWiseOutgoingFilterTest {
         assertEquals(Code.C204_CHANGED, respFut.get().getCode());
     }
 
-    private void assertMakeRequestAndReceive(CoapRequest req, CoapResponse resp) {
+    private void assertMakeRequestAndReceive(CoapRequest req, CoapResponse.Builder resp) {
         assertMakeRequest(req);
 
         //response

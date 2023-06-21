@@ -17,6 +17,7 @@ package com.mbed.coap.server.messaging;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -63,7 +64,7 @@ class ExchangeFilterTest {
         assertEquals(1, exchangeFilter.transactions());
 
         // when
-        CoapResponse cpResp = CoapResponse.ok("ok");
+        CoapResponse cpResp = CoapResponse.ok("ok").build();
         promise.complete(cpResp);
 
         // then

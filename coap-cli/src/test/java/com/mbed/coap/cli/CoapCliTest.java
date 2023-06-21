@@ -16,16 +16,17 @@
 package com.mbed.coap.cli;
 
 import static com.mbed.coap.packet.BlockSize.S_16;
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.packet.CoapOptionsBuilder.options;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
 import com.mbed.coap.packet.Opaque;
@@ -54,10 +55,10 @@ class CoapCliTest {
                 .route(RouterService.builder()
                         .post("/rd", req -> {
                             String epName = req.options().getUriQueryMap().get("ep");
-                            return completedFuture(CoapResponse.of(Code.C201_CREATED, Opaque.EMPTY, o -> o.locationPath("/rd/" + epName)));
+                            return coapResponse(Code.C201_CREATED).locationPath("/rd/" + epName).toFuture();
                         })
-                        .get("/test", __ -> completedFuture(ok("Dziala!")))
-                        .post("/test", req -> completedFuture(ok("Received " + req.getPayload().size())))
+                        .get("/test", __ -> ok("Dziala!").toFuture())
+                        .post("/test", req -> ok("Received " + req.getPayload().size()).toFuture())
 
                 )
                 .build()

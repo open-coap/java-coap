@@ -18,6 +18,7 @@ package protocolTests;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.decodeHex;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;

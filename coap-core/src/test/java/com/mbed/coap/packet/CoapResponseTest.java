@@ -16,21 +16,59 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
+import static com.mbed.coap.packet.Code.C201_CREATED;
+import static com.mbed.coap.packet.Code.C204_CHANGED;
+import static com.mbed.coap.packet.Code.C205_CONTENT;
+import static com.mbed.coap.packet.Code.C400_BAD_REQUEST;
+import static com.mbed.coap.packet.Code.C404_NOT_FOUND;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
 import static com.mbed.coap.packet.MediaTypes.CT_TEXT_PLAIN;
+import static com.mbed.coap.packet.Opaque.decodeHex;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
+import com.mbed.coap.transport.TransportContext;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Func;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
 
 class CoapResponseTest {
 
     @Test
-    void build_bad_request() {
-        assertEquals(CoapResponse.of(Code.C400_BAD_REQUEST, Opaque.EMPTY), CoapResponse.badRequest());
-        assertEquals(CoapResponse.of(Code.C400_BAD_REQUEST, Opaque.of("really bad")), CoapResponse.badRequest("really bad"));
+    void staticFactory() {
+        assertEquals(CoapResponse.ok(), CoapResponse.of(C205_CONTENT, Opaque.EMPTY));
+        assertEquals(CoapResponse.ok(Opaque.of("test")), CoapResponse.of(C205_CONTENT, "test"));
+        assertEquals(CoapResponse.ok("test"), CoapResponse.of(C205_CONTENT, Opaque.of("test")));
+        assertEquals(CoapResponse.ok("test"), CoapResponse.of(C205_CONTENT, Opaque.of("test")));
+        assertEquals(CoapResponse.badRequest(), CoapResponse.of(C400_BAD_REQUEST, Opaque.EMPTY));
+        assertEquals(CoapResponse.notFound(), CoapResponse.of(C404_NOT_FOUND, Opaque.EMPTY));
+    }
+
+    @Test
+    public void shouldModifyPayload() {
+        CoapResponse response = CoapResponse.of(C205_CONTENT, Opaque.of("moi"));
+        CoapResponse expected = CoapResponse.of(C205_CONTENT, Opaque.of("czesc"));
+
+        assertEquals(expected, response.withPayload(Opaque.of("czesc")));
+        assertEquals("moi", response.getPayloadString());
+    }
+
+    @Test
+    public void shouldModifyOptions() {
+        CoapResponse response = CoapResponse.of(C205_CONTENT, Opaque.of("test"), newOptions(o -> o.setMaxAge(100L)));
+        CoapResponse expected = CoapResponse.of(C205_CONTENT, Opaque.of("test"), newOptions(o -> o.setMaxAge(200L)));
+
+        assertEquals(expected, response.withOptions(o -> o.maxAge(200)));
+        assertEquals(100, response.options().getMaxAge());
     }
 
     @Test
@@ -38,16 +76,75 @@ class CoapResponseTest {
         EqualsVerifier.forClass(CoapResponse.class)
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)
                 .withGenericPrefabValues(CompletableFuture.class, (Func.Func1<CoapResponse, CompletableFuture>) coapResponse -> new CompletableFuture<>())
-                .withPrefabValues(CoapResponse.class, CoapResponse.badRequest(), CoapResponse.ok(""))
+                .withPrefabValues(CoapResponse.class, CoapResponse.badRequest().build(), CoapResponse.ok().build())
                 .usingGetClass()
                 .verify();
     }
 
     @Test
     void testToString() {
-        assertEquals("CoapResponse[205, pl(4):64757061]", CoapResponse.ok("dupa").toString());
-        assertEquals("CoapResponse[400, ETag:6565]", CoapResponse.badRequest().etag(Opaque.of("ee")).toString());
-        assertEquals("CoapResponse[205, ContTp:0, pl(3):616161]", CoapResponse.ok("aaa", CT_TEXT_PLAIN).toString());
-        assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", CoapResponse.of(Code.C400_BAD_REQUEST, Opaque.of("{\"error\":123}"), CT_APPLICATION_JSON).toString());
+        assertEquals("CoapResponse[205, pl(4):64757061]", CoapResponse.ok("dupa").build().toString());
+        assertEquals("CoapResponse[400, ETag:6565]", CoapResponse.badRequest().etag(Opaque.of("ee")).build().toString());
+        assertEquals("CoapResponse[205, ContTp:0, pl(3):616161]", CoapResponse.ok("aaa", CT_TEXT_PLAIN).build().toString());
+        assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", coapResponse(C400_BAD_REQUEST).payload("{\"error\":123}").contentFormat(CT_APPLICATION_JSON).build().toString());
+    }
+
+    private static HeaderOptions newOptions(Consumer<HeaderOptions> optionsFunc) {
+        HeaderOptions options = new HeaderOptions();
+        optionsFunc.accept(options);
+        return options;
+    }
+
+    @Nested
+    class BuilderTest {
+
+        @Test
+        public void shouldBuildComplex() {
+            CoapResponse response = coapResponse(C201_CREATED)
+                    .payload(Opaque.of("{'test:1}"))
+                    .contentFormat(CT_APPLICATION_JSON)
+                    .observe(123)
+                    .etag(decodeHex("0102"))
+                    .size2Res(9)
+                    .locationPath("/test")
+                    .maxAge(Duration.ofMinutes(1))
+                    .options(o -> o
+                            .proxyUri("/proxy/test")
+                            .ifMatch(decodeHex("99"))
+                            .size1(432)
+                    )
+                    .build();
+
+            CoapResponse expected = CoapResponse.of(C201_CREATED, Opaque.of("{'test:1}"), newOptions(o -> {
+                o.setContentFormat(CT_APPLICATION_JSON);
+                o.setObserve(123);
+                o.setEtag(decodeHex("0102"));
+                o.setSize2Res(9);
+                o.setLocationPath("/test");
+                o.setMaxAge(60L);
+                o.setProxyUri("/proxy/test");
+                o.setIfMatch(new Opaque[]{decodeHex("99")});
+                o.setSize1(432);
+            }));
+
+            assertEquals(expected, response);
+        }
+
+
+        @Test
+        public void shouldReturnCompletedFuture() throws ExecutionException, InterruptedException {
+            CompletableFuture<CoapResponse> future = coapResponse(C205_CONTENT).toFuture();
+
+            assertTrue(future.isDone());
+            assertEquals(future.get(), CoapResponse.of(C205_CONTENT));
+        }
+
+        @Test
+        public void shouldReturnSeparateResponse() {
+            SeparateResponse separateResponse = coapResponse(C204_CHANGED).toSeparate(decodeHex("0102"), LOCAL_5683);
+            SeparateResponse expected = new SeparateResponse(CoapResponse.of(C204_CHANGED), decodeHex("0102"), LOCAL_5683, TransportContext.EMPTY);
+
+            assertEquals(expected, separateResponse);
+        }
     }
 }

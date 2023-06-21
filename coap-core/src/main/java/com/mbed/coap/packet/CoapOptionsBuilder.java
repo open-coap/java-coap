@@ -30,7 +30,7 @@ public class CoapOptionsBuilder {
         return new CoapOptionsBuilder(options.duplicate());
     }
 
-    CoapOptionsBuilder(HeaderOptions options) {
+    private CoapOptionsBuilder(HeaderOptions options) {
         this.options = options;
     }
 

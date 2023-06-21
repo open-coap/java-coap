@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+/*
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.exception;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 
@@ -46,7 +47,7 @@ public class CoapCodeException extends CoapException {
         return code;
     }
 
-    public CoapResponse toResponse() {
-        return CoapResponse.of(code, getMessage());
+    public CoapResponse.Builder toResponse() {
+        return coapResponse(code).payload(getMessage());
     }
 }

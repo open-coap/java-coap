@@ -141,8 +141,8 @@ class BlockWiseCallback {
         if (response == null) {
             response = blResponse;
         } else {
-            this.response = CoapResponse.of(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options());
-            this.response.options().setBlock2Res(blResponse.options().getBlock2Res());
+            this.response = CoapResponse.of(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options())
+                    .withOptions(o -> o.block2Res(blResponse.options().getBlock2Res()));
 
         }
         if (hasResourceChanged(blResponse)) {

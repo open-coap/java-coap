@@ -27,6 +27,7 @@ import static com.mbed.coap.packet.Code.C204_CHANGED;
 import static com.mbed.coap.packet.Code.C205_CONTENT;
 import static com.mbed.coap.packet.Code.C231_CONTINUE;
 import static com.mbed.coap.packet.Opaque.decodeHex;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

@@ -90,8 +90,8 @@ public class SeparateResponse {
         return Objects.hash(response, token, peerAddress, transContext);
     }
 
-    public SeparateResponse payload(Opaque newPayload) {
-        return new SeparateResponse(response.payload(newPayload), token, peerAddress, transContext);
+    public SeparateResponse withPayload(Opaque newPayload) {
+        return new SeparateResponse(response.withPayload(newPayload), token, peerAddress, transContext);
     }
 
     public SeparateResponse duplicate() {

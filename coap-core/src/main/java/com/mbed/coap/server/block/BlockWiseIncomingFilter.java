@@ -16,8 +16,8 @@
  */
 package com.mbed.coap.server.block;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
@@ -99,9 +99,10 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
                 reqBlock = new BlockOption(reqBlock.getNr(), localBlockSize, reqBlock.hasMore());
             }
 
-            CoapResponse response = CoapResponse.of(Code.C231_CONTINUE);
-            response.options().setBlock1Req(reqBlock);
-            return completedFuture(response);
+            final BlockOption finalReqBlock = reqBlock;
+            return coapResponse(Code.C231_CONTINUE)
+                    .options(o -> o.block1Req(finalReqBlock))
+                    .toFuture();
         }
     }
 
@@ -157,7 +158,7 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
         }
         Opaque blockPayload = resp.getPayload().slice(blFrom, newLength);
         resp.options().setBlock2Res(block2Res);
-        return resp.payload(blockPayload);
+        return resp.withPayload(blockPayload);
     }
 
 }

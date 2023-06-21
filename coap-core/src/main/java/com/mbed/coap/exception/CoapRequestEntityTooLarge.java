@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+/*
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,14 +38,15 @@ public class CoapRequestEntityTooLarge extends CoapCodeException {
     }
 
     @Override
-    public CoapResponse toResponse() {
-        CoapResponse resp = super.toResponse();
-        if (maxSize > 0) {
-            resp.options().setSize1(maxSize);
-        }
-        if (blockOptionHint != null) {
-            resp.options().setBlock1Req(blockOptionHint);
-        }
-        return resp;
+    public CoapResponse.Builder toResponse() {
+        return super.toResponse()
+                .options(o -> {
+                    if (maxSize > 0) {
+                        o.size1(maxSize);
+                    }
+                    if (blockOptionHint != null) {
+                        o.block1Req(blockOptionHint);
+                    }
+                });
     }
 }

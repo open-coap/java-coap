@@ -20,7 +20,7 @@ import static com.mbed.coap.packet.CoapRequest.observe;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.ofBytes;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
