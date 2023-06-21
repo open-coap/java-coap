@@ -30,7 +30,7 @@ class SeparateResponseTest {
         EqualsVerifier.forClass(SeparateResponse.class)
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)
                 .withGenericPrefabValues(CompletableFuture.class, (Func.Func1<CoapResponse, CompletableFuture>) coapResponse -> new CompletableFuture<>())
-                .withPrefabValues(CoapResponse.class, CoapResponse.badRequest(), CoapResponse.ok(""))
+                .withPrefabValues(CoapResponse.class, CoapResponse.badRequest().build(), CoapResponse.ok().build())
                 .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
                 .usingGetClass()
                 .verify();

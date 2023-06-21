@@ -43,7 +43,7 @@ class RescueFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
             return rescue(ex.getCause());
         }
         if (ex instanceof CoapCodeException) {
-            return ((CoapCodeException) ex).toResponse();
+            return ((CoapCodeException) ex).toResponse().build();
         }
 
         LOGGER.error("Unexpected exception: {}", ex.getMessage(), ex);

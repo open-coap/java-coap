@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapResponse.of;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.variableUInt;
 import static com.mbed.coap.transport.TransportContext.EMPTY;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

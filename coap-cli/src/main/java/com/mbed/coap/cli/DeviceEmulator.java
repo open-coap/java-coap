@@ -16,7 +16,6 @@
  */
 package com.mbed.coap.cli;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.client.RegistrationManager;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -77,7 +76,7 @@ public class DeviceEmulator implements Callable<Integer> {
     }
 
     protected Service<CoapRequest, CoapResponse> createRouting() {
-        Service<CoapRequest, CoapResponse> timeResource = __ -> completedFuture(CoapResponse.ok(Instant.now().toString()));
+        Service<CoapRequest, CoapResponse> timeResource = __ -> CoapResponse.ok(Instant.now().toString()).toFuture();
 
         scheduledExecutor.scheduleAtFixedRate(() ->
                         obsManager.sendObservation("/time", timeResource),
@@ -85,12 +84,12 @@ public class DeviceEmulator implements Callable<Integer> {
         );
 
         return RouterService.builder()
-                .get("/3/0/1", __ -> completedFuture(CoapResponse.ok("Acme")))
-                .get("/3/0/2", __ -> completedFuture(CoapResponse.ok("Emulator")))
-                .get("/3/0/3", __ -> completedFuture(CoapResponse.ok("0.0.1")))
+                .get("/3/0/1", __ -> CoapResponse.ok("Acme").toFuture())
+                .get("/3/0/2", __ -> CoapResponse.ok("Emulator").toFuture())
+                .get("/3/0/3", __ -> CoapResponse.ok("0.0.1").toFuture())
                 .get("/delayed-10s", __ -> {
                     CompletableFuture<CoapResponse> promise = new CompletableFuture<>();
-                    scheduledExecutor.schedule(() -> promise.complete(CoapResponse.ok("OK")), 10, TimeUnit.SECONDS);
+                    scheduledExecutor.schedule(() -> promise.complete(CoapResponse.ok("OK").build()), 10, TimeUnit.SECONDS);
                     return promise;
                 })
                 .get("/time", obsManager.then(timeResource))

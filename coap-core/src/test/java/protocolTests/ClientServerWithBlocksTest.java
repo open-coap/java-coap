@@ -272,9 +272,7 @@ public class ClientServerWithBlocksTest {
 
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
-            final CoapResponse resp = CoapResponse.of(Code.C205_CONTENT, dynamicResource, opts ->
-                    opts.etag(Opaque.variableUInt(dynamicResource.hashCode()))
-            );
+            final CoapResponse.Builder resp = CoapResponse.ok().etag(Opaque.variableUInt(dynamicResource.hashCode())).payload(dynamicResource);
 
             if (!changed) {
                 dynamicResource = dynamicResource.concat(of("-CH"));

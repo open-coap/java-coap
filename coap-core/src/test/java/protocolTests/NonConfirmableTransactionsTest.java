@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Validations.require;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

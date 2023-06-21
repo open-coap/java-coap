@@ -17,6 +17,7 @@ package com.mbed.coap.server.observe;
 
 import static com.mbed.coap.packet.CoapRequest.fetch;
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.notFound;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.utils.IpPortAddress;
 import com.mbed.coap.utils.Service;
@@ -101,7 +103,7 @@ class ObserversManagerTest {
         obsMgr.sendObservation("/test", __ -> ok("OK 1").toFuture());
 
         // then
-        CoapResponse expected = ok("OK 1").observe(1);
+        CoapResponse.Builder expected = coapResponse(Code.C205_CONTENT).observe(1).payload("OK 1");
         verify(outboundObservation).apply(eq(expected.toSeparate(variableUInt(13), PEER_1)));
         verify(outboundObservation).apply(eq(expected.toSeparate(variableUInt(1312), PEER_2)));
     }
@@ -116,8 +118,8 @@ class ObserversManagerTest {
         obsMgr.sendObservation("/test", okResource);
 
         // then
-        verify(outboundObservation).apply(eq(ok("OK", CT_TEXT_PLAIN).observe(1).toSeparate(variableUInt(13), PEER_1)));
-        verify(outboundObservation).apply(eq(ok("<r>OK</r>", CT_APPLICATION_XML).observe(1).toSeparate(variableUInt(1312), PEER_2)));
+        verify(outboundObservation).apply(eq(ok().payload("OK", CT_TEXT_PLAIN).observe(1).toSeparate(variableUInt(13), PEER_1)));
+        verify(outboundObservation).apply(eq(ok().payload("<r>OK</r>").contentFormat(CT_APPLICATION_XML).observe(1).toSeparate(variableUInt(1312), PEER_2)));
     }
 
     @Test
@@ -150,8 +152,8 @@ class ObserversManagerTest {
         // then
         assertEquals(1, obsMgr.size());
 
-        obsMgr.sendObservation("/test", __ -> completedFuture(ok("OK")));
-        CoapResponse expected = ok("OK").observe(1);
+        obsMgr.sendObservation("/test", __ -> ok("OK").toFuture());
+        CoapResponse.Builder expected = coapResponse(Code.C205_CONTENT).observe(1).payload("OK");
         verify(outboundObservation).apply(eq(expected.toSeparate(variableUInt(222), PEER_1)));
     }
 
@@ -164,7 +166,7 @@ class ObserversManagerTest {
         obsMgr.sendObservation("/test", __ -> notFound().toFuture());
 
         // then
-        CoapResponse expected = notFound().observe(1);
+        CoapResponse.Builder expected = coapResponse(Code.C404_NOT_FOUND).observe(1);
         verify(outboundObservation).apply(eq(expected.toSeparate(variableUInt(13), PEER_1)));
     }
 

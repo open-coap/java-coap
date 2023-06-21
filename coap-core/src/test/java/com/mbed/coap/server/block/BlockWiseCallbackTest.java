@@ -29,6 +29,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Code.C204_CHANGED;
 import static com.mbed.coap.packet.Code.C231_CONTINUE;
 import static com.mbed.coap.packet.Code.C413_REQUEST_ENTITY_TOO_LARGE;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -361,8 +362,12 @@ public class BlockWiseCallbackTest {
         response = bwc.receive(resp);
     }
 
-    private void receive(CoapResponse resp) {
-        promise.complete(resp);
+    private void receiveFirst(CoapResponse.Builder resp) {
+        receiveFirst(resp.build());
+    }
+
+    private void receive(CoapResponse.Builder resp) {
+        promise.complete(resp.build());
     }
 
     private void givenPutRequest(int payloadSize) throws CoapException {

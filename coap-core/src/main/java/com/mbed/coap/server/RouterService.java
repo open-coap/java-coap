@@ -17,7 +17,6 @@ package com.mbed.coap.server;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Method;
@@ -37,7 +36,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     private final List<Entry<RequestMatcher, Service<CoapRequest, CoapResponse>>> prefixedHandlers;
     public final Service<CoapRequest, CoapResponse> defaultHandler;
 
-    public final static Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> completedFuture(CoapResponse.notFound());
+    public final static Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> CoapResponse.notFound().toFuture();
 
     public static RouteBuilder builder() {
         return new RouteBuilder();

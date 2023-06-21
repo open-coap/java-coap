@@ -27,6 +27,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -71,9 +72,9 @@ abstract class IntegrationTestBase {
 
     private final Opaque largePayload = Bytes.opaqueOfRandom(3000);
     protected final StubNotificationsReceiver receiver = new StubNotificationsReceiver();
-    private CompletableFuture<CoapResponse> slowResourcePromise;
+    private CompletableFuture<CoapResponse.Builder> slowResourcePromise;
     private ObserversManager observersManager;
-    private CoapResponse obsResource = CoapResponse.ok("");
+    private CoapResponse.Builder obsResource = CoapResponse.ok();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -106,7 +107,7 @@ abstract class IntegrationTestBase {
                 })
                 .get("/obs", req -> observersManager.apply(req, __ -> obsResource.toFuture()))
                 .fetch("/obs", req -> observersManager.apply(req, __ -> obsResource.toFuture()))
-                .get("/slow", __ -> slowResourcePromise)
+                .get("/slow", __ -> slowResourcePromise.thenApply(CoapResponse.Builder::build))
                 .get(CoapConstants.WELL_KNOWN_CORE, req ->
                         ok("<test/1>,<test2>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
                 ).build();
@@ -219,14 +220,14 @@ abstract class IntegrationTestBase {
     void readLargePayload() {
         CoapResponse resp = client.send(get("/large").token(101)).join();
 
-        assertEquals(CoapResponse.ok(largePayload), resp.options(CoapOptionsBuilder::unsetBlock2Res));
+        assertEquals(CoapResponse.ok(largePayload), resp.withOptions(CoapOptionsBuilder::unsetBlock2Res));
     }
 
     @Test
     void readLargePayloadFetch() {
         CoapResponse resp = client.send(fetch("/large").token(103)).join();
 
-        assertEquals(CoapResponse.ok(largePayload), resp.options(CoapOptionsBuilder::unsetBlock2Res));
+        assertEquals(CoapResponse.ok(largePayload), resp.withOptions(CoapOptionsBuilder::unsetBlock2Res));
     }
 
     @Test
@@ -234,7 +235,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(post("/large").token(102).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.withOptions(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -243,7 +244,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(patch("/large").token(105).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.withOptions(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -252,7 +253,7 @@ abstract class IntegrationTestBase {
         await().untilAsserted(() -> {
             CoapResponse resp = client.send(iPatch("/large").token(106).payload(largePayload)).join();
 
-            assertEquals(CoapResponse.ok("Got 3000B"), resp.options(CoapOptionsBuilder::unsetBlock1Req));
+            assertEquals(CoapResponse.ok("Got 3000B"), resp.withOptions(CoapOptionsBuilder::unsetBlock1Req));
         });
     }
 
@@ -261,7 +262,7 @@ abstract class IntegrationTestBase {
     void observeResource() throws Exception {
         // given
         CoapResponse observe = client.sendSync(observe("/obs"));
-        assertEquals(CoapResponse.ok("").observe(0), observe);
+        assertEquals(CoapResponse.ok().observe(0), observe);
 
         // when
         observersManager.sendObservation("/obs", __ -> ok("obs1").toFuture());
@@ -275,8 +276,8 @@ abstract class IntegrationTestBase {
     @Test
     void observeResource_with_FETCH() throws Exception {
         // given
-        CoapResponse observe = client.sendSync(fetch("/obs").observe(0));
-        assertEquals(CoapResponse.ok("").observe(0), observe);
+        CoapResponse observe = client.sendSync(fetch("/obs").observe());
+        assertEquals(CoapResponse.ok().observe(0), observe);
 
         // when
         observersManager.sendObservation("/obs", __ -> ok("obs1").toFuture());
@@ -356,7 +357,7 @@ abstract class IntegrationTestBase {
             }
         }
 
-        public CoapResponse get(CoapRequest request) {
+        public CoapResponse.Builder get(CoapRequest request) {
             if (request.options().getAccept() != null) {
                 boolean isFound = false;
                 if (request.options().getAccept() == contentType) {
@@ -369,7 +370,7 @@ abstract class IntegrationTestBase {
                 }
             }
 
-            return CoapResponse.ok(payload, contentType);
+            return CoapResponse.ok().payload(payload).contentFormat(contentType);
         }
 
         public CoapResponse put(CoapRequest request) {

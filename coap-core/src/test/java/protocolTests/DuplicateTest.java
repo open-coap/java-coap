@@ -129,7 +129,7 @@ public class DuplicateTest {
 
         // when
         //let response be sent
-        delayResource.complete(CoapResponse.ok("dupa3"));
+        delayResource.complete(CoapResponse.ok("dupa3").build());
 
         // then
         client.verifyReceived(coap(11).ack(Code.C205_CONTENT).payload("dupa3"));

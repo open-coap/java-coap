@@ -17,8 +17,8 @@ package org.opencoap.coap.metrics.micrometer;
 
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;

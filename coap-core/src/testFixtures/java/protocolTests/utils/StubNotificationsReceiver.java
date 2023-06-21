@@ -15,7 +15,7 @@
  */
 package protocolTests.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.server.observe.NotificationsReceiver;
@@ -37,7 +37,7 @@ public class StubNotificationsReceiver implements NotificationsReceiver {
         return queue.poll(5, TimeUnit.SECONDS);
     }
 
-    public void verifyReceived(CoapResponse obs) throws InterruptedException {
+    public void verifyReceived(CoapResponse.Builder obs) throws InterruptedException {
         CoapResponse received = queue.poll(1, TimeUnit.SECONDS).asResponse();
         assertEquals(obs, received);
     }

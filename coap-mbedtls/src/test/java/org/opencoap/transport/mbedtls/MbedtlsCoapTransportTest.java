@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.of;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;

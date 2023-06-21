@@ -90,7 +90,7 @@ public class CoapClientTest {
     @Test
     public void observationTest() throws Exception {
         given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok("1", CT_TEXT_PLAIN).options(o -> o.observe(1)).toFuture());
+                .willReturn(CoapResponse.ok().payload("1").contentFormat(CT_TEXT_PLAIN).observe(1).toFuture());
 
         // when
         CompletableFuture<CoapResponse> resp = client.send(observe("/test").token(token1001));

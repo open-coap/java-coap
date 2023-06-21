@@ -20,7 +20,7 @@ import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.ofBytes;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.mbed.coap.utils.Assertions.assertEquals;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class EtagValidatorFilterTest {
 
     private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
-    private final CoapResponse resource = ok("OK").etag(ofBytes(100)).maxAge(100);
+    private final CoapResponse.Builder resource = ok("OK").etag(ofBytes(100)).maxAge(100);
     private final Service<CoapRequest, CoapResponse> service = filter.then(__ -> resource.toFuture());
 
     @Test

@@ -61,6 +61,10 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
                 .thenApply(resp -> subscribe(request, resp));
     }
 
+    public CoapResponse subscribe(CoapRequest req, CoapResponse.Builder resp) {
+        return subscribe(req, resp.build());
+    }
+
     public CoapResponse subscribe(CoapRequest req, CoapResponse resp) {
         if (req.getMethod() != Method.GET && req.getMethod() != Method.FETCH) {
             return resp;
@@ -73,14 +77,14 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
             remove(req.options().getUriPath(), req.getPeerAddress());
         }
 
-        return resp.options(CoapOptionsBuilder::unsetObserve);
+        return resp.withOptions(CoapOptionsBuilder::unsetObserve);
     }
 
     private CoapResponse updateObserve(CoapResponse resp) {
         if (resp.options().getObserve() != null) {
             return resp;
         }
-        return resp.options(o -> o.observe(observeSeq.get()));
+        return resp.withOptions(o -> o.observe(observeSeq.get()));
     }
 
     public void sendObservation(String uriPath, Service<CoapRequest, CoapResponse> service) {
@@ -128,7 +132,7 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
     }
 
     private static SeparateResponse toSeparateResponse(CoapResponse obsResponse, int currentObserveSequence, CoapRequest subscribeRequest) {
-        return obsResponse.options(o -> o.observe(currentObserveSequence))
+        return obsResponse.withOptions(o -> o.observe(currentObserveSequence))
                 .toSeparate(subscribeRequest.getToken(), subscribeRequest.getPeerAddress());
     }
 

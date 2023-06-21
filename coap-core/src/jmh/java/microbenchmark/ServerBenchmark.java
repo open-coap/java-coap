@@ -15,7 +15,6 @@
  */
 package microbenchmark;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.mbed.coap.exception.CoapException;
@@ -66,10 +65,9 @@ public class ServerBenchmark {
         server = CoapServer.builder()
                 .transport(mockTransport)
                 .route(RouterService.builder()
-                        .get("/path1/sub2/sub3", __ -> completedFuture(
-                                CoapResponse.ok("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890")
-                                        .maxAge(requestCounter++)
-                        ))
+                        .get("/path1/sub2/sub3", __ ->
+                                CoapResponse.ok("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890").maxAge((int) requestCounter++).toFuture()
+                        )
                 )
                 .build();
         server.start();

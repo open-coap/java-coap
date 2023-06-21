@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
- * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +17,7 @@ package com.mbed.coap.packet;
 
 import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -39,10 +39,6 @@ public class CoapResponse {
         return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions());
     }
 
-    public static CoapResponse coapResponse(Code code) {
-        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions());
-    }
-
     public static CoapResponse of(Code code, Opaque payload) {
         return new CoapResponse(code, payload, new HeaderOptions());
     }
@@ -51,46 +47,38 @@ public class CoapResponse {
         return new CoapResponse(code, payload, options);
     }
 
-    public static CoapResponse of(Code code, Opaque payload, Consumer<CoapOptionsBuilder> optionsFunc) {
-        CoapOptionsBuilder options = CoapOptionsBuilder.options();
-        optionsFunc.accept(options);
-        return new CoapResponse(code, payload, options.build());
-    }
-
-    public static CoapResponse of(Code code, Opaque payload, short contentFormat) {
-        return CoapResponse.of(code, payload, opts -> opts.contentFormat(contentFormat));
-    }
-
     public static CoapResponse of(Code code, String description) {
         return of(code, Opaque.of(description));
     }
 
-    public static CoapResponse ok(Opaque payload) {
-        return of(Code.C205_CONTENT, payload);
+    // --- BUILDER CONSTRUCTORS ---
+
+    public static CoapResponse.Builder coapResponse(Code code) {
+        return new CoapResponse.Builder(code);
     }
 
-    public static CoapResponse ok(String payload) {
-        return ok(Opaque.of(payload));
+    public static CoapResponse.Builder ok() {
+        return new CoapResponse.Builder(Code.C205_CONTENT);
     }
 
-    public static CoapResponse ok(Opaque payload, short contentFormat) {
-        return CoapResponse.of(Code.C205_CONTENT, payload, opts -> opts.contentFormat(contentFormat));
+    public static CoapResponse.Builder ok(Opaque payload) {
+        return new CoapResponse.Builder(Code.C205_CONTENT).payload(payload);
     }
 
-    public static CoapResponse ok(String payload, short contentFormat) {
-        return CoapResponse.of(Code.C205_CONTENT, Opaque.of(payload), opts -> opts.contentFormat(contentFormat));
+    public static CoapResponse.Builder ok(String payload) {
+        return new CoapResponse.Builder(Code.C205_CONTENT).payload(payload);
     }
 
-    public static CoapResponse notFound() {
-        return of(Code.C404_NOT_FOUND, Opaque.EMPTY);
+    public static CoapResponse.Builder ok(String payload, short contentFormat) {
+        return new CoapResponse.Builder(Code.C205_CONTENT).payload(payload).contentFormat(contentFormat);
     }
 
-    public static CoapResponse badRequest() {
-        return of(Code.C400_BAD_REQUEST, Opaque.EMPTY);
+    public static CoapResponse.Builder notFound() {
+        return new CoapResponse.Builder(Code.C404_NOT_FOUND);
     }
 
-    public static CoapResponse badRequest(String errorDescription) {
-        return of(Code.C400_BAD_REQUEST, Opaque.of(errorDescription));
+    public static CoapResponse.Builder badRequest() {
+        return new CoapResponse.Builder(Code.C400_BAD_REQUEST);
     }
 
     // ---------------------
@@ -117,10 +105,6 @@ public class CoapResponse {
 
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
         return toSeparate(token, peerAddress, TransportContext.EMPTY);
-    }
-
-    public CompletableFuture<CoapResponse> toFuture() {
-        return CompletableFuture.completedFuture(this);
     }
 
     @Override
@@ -155,54 +139,105 @@ public class CoapResponse {
         }
     }
 
-    // ---  MODIFIERS ---
+    // ---  IMMUTABLE MODIFIERS ---
 
-    public CoapResponse payload(Opaque newPayload) {
+    public CoapResponse withPayload(Opaque newPayload) {
         return new CoapResponse(code, newPayload, options);
     }
 
-    public CoapResponse payload(String newPayload) {
-        return payload(Opaque.of(newPayload));
-    }
-
-    public CoapResponse payload(String newPayload, short contentFormat) {
-        return payload(Opaque.of(newPayload), contentFormat);
-    }
-
-    public CoapResponse payload(Opaque newPayload, short contentFormat) {
-        options.setContentFormat(contentFormat);
-        return payload(newPayload);
-    }
-
-    public CoapResponse options(Consumer<CoapOptionsBuilder> optionsFunc) {
+    public CoapResponse withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
         CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
         optionsFunc.accept(optionsBuilder);
         return new CoapResponse(code, payload, optionsBuilder.build());
     }
 
-    public CoapResponse etag(Opaque etag) {
-        options.setEtag(etag);
-        return this;
-    }
+    public static class Builder {
+        private final Code code;
+        private final CoapOptionsBuilder options = CoapOptionsBuilder.options();
+        private Opaque payload = Opaque.EMPTY;
 
-    public CoapResponse maxAge(long maxAge) {
-        options.setMaxAge(maxAge);
-        return this;
-    }
+        private Builder(Code code) {
+            this.code = code;
+        }
 
-    public CoapResponse block1Req(int num, BlockSize size, boolean more) {
-        options.setBlock1Req(new BlockOption(num, size, more));
-        return this;
-    }
+        public CoapResponse build() {
+            return new CoapResponse(code, payload, options.build());
+        }
 
-    public CoapResponse block2Res(int num, BlockSize size, boolean more) {
-        options.setBlock2Res(new BlockOption(num, size, more));
-        return this;
-    }
+        public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
+            return build().toSeparate(token, peerAddress, transContext);
+        }
 
-    public CoapResponse observe(int observe) {
-        options.setObserve(observe);
-        return this;
-    }
+        public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
+            return build().toSeparate(token, peerAddress);
+        }
 
+        public CompletableFuture<CoapResponse> toFuture() {
+            return CompletableFuture.completedFuture(build());
+        }
+
+        public Builder payload(Opaque payload) {
+            this.payload = payload;
+            return this;
+        }
+
+        public Builder payload(String payload) {
+            return payload(Opaque.of(payload));
+        }
+
+        public Builder payload(String payload, short contentFormat) {
+            options.contentFormat(contentFormat);
+            return payload(Opaque.of(payload));
+        }
+
+        public Builder options(Consumer<CoapOptionsBuilder> builder) {
+            builder.accept(options);
+            return this;
+        }
+
+        public Builder locationPath(String locationPath) {
+            options.locationPath(locationPath);
+            return this;
+        }
+
+        public Builder etag(Opaque etag) {
+            options.etag(etag);
+            return this;
+        }
+
+        public Builder block1Req(int blockNr, BlockSize blockSize, boolean more) {
+            options.block1Req(blockNr, blockSize, more);
+            return this;
+        }
+
+        public Builder block2Res(int blockNr, BlockSize blockSize, boolean more) {
+            options.block2Res(blockNr, blockSize, more);
+            return this;
+        }
+
+        public Builder maxAge(int maxAge) {
+            options.maxAge(maxAge);
+            return this;
+        }
+
+        public Builder maxAge(Duration maxAge) {
+            options.maxAge(maxAge);
+            return this;
+        }
+
+        public Builder observe(int observe) {
+            options.observe(observe);
+            return this;
+        }
+
+        public Builder contentFormat(short contentFormat) {
+            options.contentFormat(contentFormat);
+            return this;
+        }
+
+        public Builder size2Res(int size) {
+            options.size2Res(size);
+            return this;
+        }
+    }
 }

@@ -17,6 +17,7 @@ package com.mbed.coap.server.filter;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.HeaderOptions;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
@@ -39,11 +40,14 @@ public class EtagGeneratorFilter implements Filter.SimpleFilter<CoapRequest, Coa
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
         return service
                 .apply(request)
-                .thenApply(resp -> {
-                    if (resp.options().getEtagArray() == null) {
-                        return resp.etag(etagGenerator.apply(resp.getPayload()));
-                    }
-                    return resp;
-                });
+                .thenApply(this::updateEtag);
+    }
+
+    private CoapResponse updateEtag(CoapResponse resp) {
+        return resp.withOptions(o ->
+                o.ifNull(HeaderOptions::getEtagArray, __ ->
+                        o.etag(etagGenerator.apply(resp.getPayload()))
+                )
+        );
     }
 }
