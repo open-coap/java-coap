@@ -91,7 +91,7 @@ class CoapCliTest {
 
         // then
         assertEquals(0, exitCode);
-        assertEquals("\nDziala!\n", sw.toString());
+        assertEquals("\nDziala!\n", sw.toString().replace("\r", ""));
         assertEquals(CoapRequest.get("/test"), sendCommand.request);
     }
 
@@ -106,7 +106,7 @@ class CoapCliTest {
 
         // then
         assertEquals(0, exitCode);
-        assertEquals("\nReceived 29\n", sw.toString());
+        assertEquals("\nReceived 29\n", sw.toString().replace("\r", ""));
 
         CoapRequest expected = CoapRequest.post("/test")
                 .query("par1", "val1")
@@ -123,7 +123,7 @@ class CoapCliTest {
 
         // then
         assertEquals(0, exitCode);
-        assertEquals("\nReceived 27\n", sw.toString());
+        assertEquals("\nReceived 27\n", sw.toString().replace("\r", ""));
 
         CoapRequest expected = CoapRequest.post("/test")
                 .payload(Opaque.decodeHex("a16e626573745f6775697461726973746a476172795f4d6f6f7265"), MediaTypes.CT_APPLICATION_CBOR)
