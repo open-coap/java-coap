@@ -34,6 +34,10 @@ The following features are supported by the library:
   - TLS
 * LwM2M TLV and JSON data formats
 
+### Fork
+
+This project started as a fork from https://github.com/PelionIoT/java-coap, but it has changed significantly, so it became project of its own.
+
 ### Integrations:
 
 - micrometer: metrics
