@@ -77,8 +77,9 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     private String getRoute(String uriPath) {
-        if (route != null)
+        if (route != null) {
             return route;
+        }
 
         return uriPath != null ? uriPath : "/";
     }
