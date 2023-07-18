@@ -21,6 +21,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Method;
+import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
 
     private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers;
     private final List<Entry<RequestMatcher, Service<CoapRequest, CoapResponse>>> prefixedHandlers;
+    public final Service<CoapRequest, CoapResponse> defaultHandler;
 
     public final static Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> completedFuture(CoapResponse.notFound());
 
@@ -41,7 +43,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
         return new RouteBuilder();
     }
 
-    private RouterService(Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers) {
+    private RouterService(Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers, Service<CoapRequest, CoapResponse> defaultHandler) {
 
         this.handlers = unmodifiableMap(
                 handlers.entrySet().stream()
@@ -54,6 +56,8 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
                         .filter(entry -> entry.getKey().isPrefixed())
                         .collect(Collectors.toList())
         );
+
+        this.defaultHandler = defaultHandler;
     }
 
     @Override
@@ -78,11 +82,17 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
                 return e.getValue();
             }
         }
-        return NOT_FOUND_SERVICE;
+        return defaultHandler;
     }
 
     public static class RouteBuilder {
+        @FunctionalInterface
+        public interface WrapFilterProducer {
+            Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> getFilter(Method method, String uriPath);
+        }
+
         private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers = new HashMap<>();
+        public Service<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND_SERVICE;
 
         public RouteBuilder get(String uriPath, Service<CoapRequest, CoapResponse> service) {
             return add(Method.GET, uriPath, service);
@@ -121,15 +131,42 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
             return this;
         }
 
+        public RouteBuilder defaultHandler(Service<CoapRequest, CoapResponse> defaultHandler) {
+            this.defaultHandler = defaultHandler;
+            return this;
+        }
+
+        public RouteBuilder mergeRoutes(RouteBuilder otherBuilder) {
+            this.handlers.putAll(otherBuilder.handlers);
+
+            return this;
+        }
 
         public Service<CoapRequest, CoapResponse> build() {
-            return new RouterService(handlers);
+            return new RouterService(handlers, defaultHandler);
+        }
+
+        public RouteBuilder wrapRoutes(WrapFilterProducer wrapperFilterProducer) {
+            Map<RequestMatcher, Service<CoapRequest, CoapResponse>> wrappedRouteHandlers = new HashMap<>();
+            for(Entry<RequestMatcher, Service<CoapRequest, CoapResponse>> e : handlers.entrySet()) {
+                RequestMatcher key = e.getKey();
+                Service<CoapRequest, CoapResponse> service = e.getValue();
+
+                wrappedRouteHandlers.put(key, wrapperFilterProducer.getFilter(key.method, key.uriPath).then(service));
+            }
+            handlers.putAll(wrappedRouteHandlers);
+
+            return this;
+        }
+
+        public RouteBuilder wrapRoutes(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilter) {
+            return wrapRoutes((WrapFilterProducer) (m, u) -> wrapperFilter);
         }
     }
 
     static final class RequestMatcher {
-        private final Method method;
-        private final String uriPath;
+        final Method method;
+        final String uriPath;
         private transient final boolean isPrefixed;
 
         RequestMatcher(Method method, String uriPath) {
