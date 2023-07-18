@@ -33,14 +33,16 @@ import java.util.concurrent.CompletableFuture;
 public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final MeterRegistry registry;
     private final String metricName;
+    private final String route;
 
     public static MicrometerMetricsFilterBuilder builder() {
         return new MicrometerMetricsFilterBuilder();
     }
 
-    MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig) {
+    MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig, String route) {
         this.registry = registry;
         this.metricName = metricName;
+        this.route = route;
 
         registry.config().meterFilter(new MeterFilter() {
             @Override
@@ -69,9 +71,16 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
         return Arrays.asList(
                 Tag.of("method", req.getMethod().name()),
                 Tag.of("status", resp != null ? resp.getCode().codeToString() : "n/a"),
-                Tag.of("route", uriPath != null ? uriPath : "/"),
+                Tag.of("route", getRoute(uriPath)),
                 Tag.of("throwable", err != null ? err.getClass().getCanonicalName() : "n/a")
         );
+    }
+
+    private String getRoute(String uriPath) {
+        if (route != null)
+            return route;
+
+        return uriPath != null ? uriPath : "/";
     }
 
     public static class MicrometerMetricsFilterBuilder {
@@ -79,6 +88,7 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
         private MeterRegistry registry;
         private String metricName;
         private DistributionStatisticConfig distributionStatisticConfig;
+        private String route;
 
         MicrometerMetricsFilterBuilder() {
         }
@@ -98,6 +108,11 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
             return this;
         }
 
+        public MicrometerMetricsFilterBuilder route(String route) {
+            this.route = route;
+            return this;
+        }
+
         public MicrometerMetricsFilter build() {
             if (this.registry == null) {
                 this.registry = new LoggingMeterRegistry();
@@ -111,7 +126,7 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
                 this.distributionStatisticConfig = DistributionStatisticConfig.builder().percentiles(0.5, 0.9, 0.95, 0.99).build();
             }
 
-            return new MicrometerMetricsFilter(this.registry, this.metricName, this.distributionStatisticConfig);
+            return new MicrometerMetricsFilter(this.registry, this.metricName, this.distributionStatisticConfig, this.route);
         }
     }
 }

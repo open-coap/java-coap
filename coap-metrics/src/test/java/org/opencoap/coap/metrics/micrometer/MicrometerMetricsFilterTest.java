@@ -26,14 +26,21 @@ import com.mbed.coap.utils.Service;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 class MicrometerMetricsFilterTest {
-    private final MeterRegistry registry = new LoggingMeterRegistry();
+    private final MeterRegistry registry = new SimpleMeterRegistry();
     private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
     private final Service<CoapRequest, CoapResponse> okService = filter.then(__ -> completedFuture(ok("OK")));
     private final Service<CoapRequest, CoapResponse> failingService = filter.then(__ -> failedFuture(new Exception("error message")));
+
+    @BeforeEach
+    public void beforeEach() {
+        registry.clear();
+    }
 
     @Test
     public void shouldBuildFilter() {
@@ -83,6 +90,29 @@ class MicrometerMetricsFilterTest {
                         .tag("method", "GET")
                         .tag("throwable", "n/a")
                         .timer()
+        );
+    }
+
+    @Test
+    public void shouldUseDefinedRouteForAllMeteredRequests() {
+        MicrometerMetricsFilter filterWithRoute = MicrometerMetricsFilter.builder().registry(registry).route("/test/DEVICE_ID").build();
+        Service<CoapRequest, CoapResponse> svc = filterWithRoute.then(__ -> completedFuture(ok("OK")));
+        svc.apply(get("/test/1")).join();
+        svc.apply(get("/test/2")).join();
+
+        assertNull(
+                registry.find("coap.server.requests")
+                        .tag("route", "/test/1")
+                        .timer()
+        );
+        assertNull(
+                registry.find("coap.server.requests")
+                        .tag("route", "/test/2")
+                        .timer()
+        );
+        assertEquals(2, registry.find("coap.server.requests")
+                .tag("route", "/test/DEVICE_ID")
+                .timer().count()
         );
     }
 }
