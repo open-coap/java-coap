@@ -86,11 +86,6 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     }
 
     public static class RouteBuilder {
-        @FunctionalInterface
-        public interface WrapFilterProducer {
-            Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> getFilter(Method method, String uriPath);
-        }
-
         private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers = new HashMap<>();
         public Service<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND_SERVICE;
 
@@ -142,13 +137,9 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
             return this;
         }
 
-        public Service<CoapRequest, CoapResponse> build() {
-            return new RouterService(handlers, defaultHandler);
-        }
-
         public RouteBuilder wrapRoutes(WrapFilterProducer wrapperFilterProducer) {
             Map<RequestMatcher, Service<CoapRequest, CoapResponse>> wrappedRouteHandlers = new HashMap<>();
-            for(Entry<RequestMatcher, Service<CoapRequest, CoapResponse>> e : handlers.entrySet()) {
+            for (Entry<RequestMatcher, Service<CoapRequest, CoapResponse>> e : handlers.entrySet()) {
                 RequestMatcher key = e.getKey();
                 Service<CoapRequest, CoapResponse> service = e.getValue();
 
@@ -161,6 +152,15 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
 
         public RouteBuilder wrapRoutes(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilter) {
             return wrapRoutes((WrapFilterProducer) (m, u) -> wrapperFilter);
+        }
+
+        public Service<CoapRequest, CoapResponse> build() {
+            return new RouterService(handlers, defaultHandler);
+        }
+
+        @FunctionalInterface
+        public interface WrapFilterProducer {
+            Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> getFilter(Method method, String uriPath);
         }
     }
 
