@@ -45,13 +45,13 @@ class RouterServiceTest {
     }
 
     @Test
-    public void shouldWrapRoutes() throws ExecutionException, InterruptedException {
+    public void shouldFilterRoutes() throws ExecutionException, InterruptedException {
         Service<CoapRequest, CoapResponse> svc = RouterService.builder()
+                .get("/test3", simpleHandler)
+                .filter((CoapRequest req, Service<CoapRequest, CoapResponse> nextSvc) -> CompletableFuture.completedFuture(ok("42")))
                 .get("/test1", simpleHandler)
                 .post("/test1", simpleHandler)
                 .get("/test2/*", simpleHandler)
-                .wrapRoutes((CoapRequest req, Service<CoapRequest, CoapResponse> nextSvc) -> CompletableFuture.completedFuture(ok("42")))
-                .get("/test3", simpleHandler)
                 .build();
 
         assertEquals("42", svc.apply(CoapRequest.get("/test1")).get().getPayloadString());

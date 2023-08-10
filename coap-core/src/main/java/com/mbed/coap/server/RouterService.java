@@ -88,6 +88,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     public static class RouteBuilder {
         private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers = new HashMap<>();
         public Service<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND_SERVICE;
+        private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> filter = Filter.identity();
 
         public RouteBuilder get(String uriPath, Service<CoapRequest, CoapResponse> service) {
             return add(Method.GET, uriPath, service);
@@ -122,7 +123,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
         }
 
         private RouteBuilder add(Method method, String uriPath, Service<CoapRequest, CoapResponse> service) {
-            handlers.put(new RequestMatcher(method, uriPath), service);
+            handlers.put(new RequestMatcher(method, uriPath), filter.then(service));
             return this;
         }
 
@@ -137,30 +138,14 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
             return this;
         }
 
-        public RouteBuilder wrapRoutes(WrapFilterProducer wrapperFilterProducer) {
-            Map<RequestMatcher, Service<CoapRequest, CoapResponse>> wrappedRouteHandlers = new HashMap<>();
-            for (Entry<RequestMatcher, Service<CoapRequest, CoapResponse>> e : handlers.entrySet()) {
-                RequestMatcher key = e.getKey();
-                Service<CoapRequest, CoapResponse> service = e.getValue();
-
-                wrappedRouteHandlers.put(key, wrapperFilterProducer.getFilter(key.method, key.uriPath).then(service));
-            }
-            handlers.putAll(wrappedRouteHandlers);
+        public RouteBuilder filter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilterProducer) {
+            this.filter = this.filter.andThen(wrapperFilterProducer);
 
             return this;
         }
 
-        public RouteBuilder wrapRoutes(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilter) {
-            return wrapRoutes((WrapFilterProducer) (m, u) -> wrapperFilter);
-        }
-
         public Service<CoapRequest, CoapResponse> build() {
             return new RouterService(handlers, defaultHandler);
-        }
-
-        @FunctionalInterface
-        public interface WrapFilterProducer {
-            Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> getFilter(Method method, String uriPath);
         }
     }
 

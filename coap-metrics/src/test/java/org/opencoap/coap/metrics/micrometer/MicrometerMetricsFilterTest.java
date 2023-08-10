@@ -19,17 +19,19 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.utils.Service;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.concurrent.ExecutionException;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class MicrometerMetricsFilterTest {
     private final MeterRegistry registry = new SimpleMeterRegistry();
@@ -95,10 +97,21 @@ class MicrometerMetricsFilterTest {
 
     @Test
     public void shouldUseDefinedRouteForAllMeteredRequests() {
-        MicrometerMetricsFilter filterWithRoute = MicrometerMetricsFilter.builder().registry(registry).route("/test/DEVICE_ID").build();
+        MicrometerMetricsFilter filterWithRoute = MicrometerMetricsFilter.builder()
+                .resolveRoute(uriPath -> {
+                    if (uriPath.startsWith("/test/")) {
+                        return "/test/DEVICE_ID";
+                    }
+
+                    return uriPath;
+                })
+                .registry(registry)
+                .build();
+
         Service<CoapRequest, CoapResponse> svc = filterWithRoute.then(__ -> completedFuture(ok("OK")));
         svc.apply(get("/test/1")).join();
         svc.apply(get("/test/2")).join();
+        svc.apply(get("/hello")).join();
 
         assertNull(
                 registry.find("coap.server.requests")
@@ -112,6 +125,10 @@ class MicrometerMetricsFilterTest {
         );
         assertEquals(2, registry.find("coap.server.requests")
                 .tag("route", "/test/DEVICE_ID")
+                .timer().count()
+        );
+        assertEquals(1, registry.find("coap.server.requests")
+                .tag("route", "/hello")
                 .timer().count()
         );
     }
