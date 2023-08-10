@@ -29,20 +29,21 @@ import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final MeterRegistry registry;
     private final String metricName;
-    private final String route;
+    private final Function<String, String> resolveRoute;
 
     public static MicrometerMetricsFilterBuilder builder() {
         return new MicrometerMetricsFilterBuilder();
     }
 
-    MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig, String route) {
+    MicrometerMetricsFilter(MeterRegistry registry, String metricName, DistributionStatisticConfig distributionStatisticConfig, Function<String, String> resolveRoute) {
         this.registry = registry;
         this.metricName = metricName;
-        this.route = route;
+        this.resolveRoute = resolveRoute;
 
         registry.config().meterFilter(new MeterFilter() {
             @Override
@@ -67,21 +68,19 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     private List<Tag> requestTags(CoapRequest req, CoapResponse resp, Throwable err) {
-        String uriPath = req.options().getUriPath();
         return Arrays.asList(
                 Tag.of("method", req.getMethod().name()),
                 Tag.of("status", resp != null ? resp.getCode().codeToString() : "n/a"),
-                Tag.of("route", getRoute(uriPath)),
+                Tag.of("route", getRoute(req)),
                 Tag.of("throwable", err != null ? err.getClass().getCanonicalName() : "n/a")
         );
     }
 
-    private String getRoute(String uriPath) {
-        if (route != null) {
-            return route;
-        }
+    private String getRoute(CoapRequest req) {
+        String uriPath = req.options().getUriPath();
+        uriPath = uriPath != null ? uriPath : "/";
 
-        return uriPath != null ? uriPath : "/";
+        return resolveRoute.apply(uriPath);
     }
 
     public static class MicrometerMetricsFilterBuilder {
@@ -89,7 +88,7 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
         private MeterRegistry registry;
         private String metricName;
         private DistributionStatisticConfig distributionStatisticConfig;
-        private String route;
+        private Function<String, String> resolveRoute = Function.identity();
 
         MicrometerMetricsFilterBuilder() {
         }
@@ -109,8 +108,8 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
             return this;
         }
 
-        public MicrometerMetricsFilterBuilder route(String route) {
-            this.route = route;
+        public MicrometerMetricsFilterBuilder resolveRoute(Function<String, String> resolveRoute) {
+            this.resolveRoute = resolveRoute;
             return this;
         }
 
@@ -127,7 +126,7 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
                 this.distributionStatisticConfig = DistributionStatisticConfig.builder().percentiles(0.5, 0.9, 0.95, 0.99).build();
             }
 
-            return new MicrometerMetricsFilter(this.registry, this.metricName, this.distributionStatisticConfig, this.route);
+            return new MicrometerMetricsFilter(this.registry, this.metricName, this.distributionStatisticConfig, resolveRoute);
         }
     }
 }
