@@ -23,6 +23,7 @@ import org.opencoap.ssl.transport.DtlsSessionContext;
 public class DtlsTransportContext {
     public static final TransportContext.Key<Map<String, String>> DTLS_AUTHENTICATION = new TransportContext.Key<>(Collections.emptyMap());
     public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<byte[]> DTLS_CID = new TransportContext.Key<>(null);
 
     public static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {
         if (dtlsSessionContext.equals(DtlsSessionContext.EMPTY)) {
@@ -32,6 +33,9 @@ public class DtlsTransportContext {
         TransportContext dtlsContext = TransportContext.of(DTLS_AUTHENTICATION, dtlsSessionContext.getAuthenticationContext());
         if (dtlsSessionContext.getPeerCertificateSubject() != null) {
             dtlsContext = dtlsContext.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
+        }
+        if (dtlsSessionContext.getCid() != null) {
+            dtlsContext = dtlsContext.with(DTLS_CID, dtlsSessionContext.getCid());
         }
 
         return dtlsContext;
