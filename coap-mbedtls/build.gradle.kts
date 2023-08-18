@@ -6,10 +6,10 @@ description = "coap-mbedtls"
 
 dependencies {
     api(project(":coap-core"))
-    api("io.github.open-coap:kotlin-mbedtls:1.16.0")
+    api("io.github.open-coap:kotlin-mbedtls:1.17.2")
 
     testImplementation(project(":coap-netty"))
-    testImplementation("io.github.open-coap:kotlin-mbedtls-netty:1.16.0")
+    testImplementation("io.github.open-coap:kotlin-mbedtls-netty:1.17.2")
 
     testImplementation(testFixtures(project(":coap-core")))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
