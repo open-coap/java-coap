@@ -16,6 +16,7 @@
 package org.opencoap.transport.mbedtls;
 
 import com.mbed.coap.transport.TransportContext;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import org.opencoap.ssl.transport.DtlsSessionContext;
@@ -24,6 +25,7 @@ public class DtlsTransportContext {
     public static final TransportContext.Key<Map<String, String>> DTLS_AUTHENTICATION = new TransportContext.Key<>(Collections.emptyMap());
     public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
     public static final TransportContext.Key<byte[]> DTLS_CID = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<Instant> DTLS_SESSION_START_TIMESTAMP = new TransportContext.Key<>(null);
 
     public static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {
         if (dtlsSessionContext.equals(DtlsSessionContext.EMPTY)) {
@@ -36,6 +38,9 @@ public class DtlsTransportContext {
         }
         if (dtlsSessionContext.getCid() != null) {
             dtlsContext = dtlsContext.with(DTLS_CID, dtlsSessionContext.getCid());
+        }
+        if (dtlsSessionContext.getSessionStartTimestamp() != null) {
+            dtlsContext = dtlsContext.with(DTLS_SESSION_START_TIMESTAMP, dtlsSessionContext.getSessionStartTimestamp());
         }
 
         return dtlsContext;
