@@ -28,6 +28,7 @@ import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
+import com.mbed.coap.server.messaging.RequestTagSupplier;
 import java.net.InetSocketAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,9 +51,11 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .midSupplier(new MessageIdSupplierImpl(0)).blockSize(BlockSize.S_32)
+                .midSupplier(new MessageIdSupplierImpl(0))
+                .blockSize(BlockSize.S_32)
                 .notificationsReceiver(notifReceiver)
                 .retransmission(ofFixed(ofMillis(500)))
+                .requestTagSupplier(RequestTagSupplier.createSequential(100))
                 .buildClient(SERVER_ADDRESS);
     }
 
@@ -88,10 +91,10 @@ public class BlockTest {
     public void block1() throws Exception {
         String payload = "123456789012345|123456789012345|dupa";
 
-        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("123456789012345|123456789012345|").build())
+        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
                 .then(newCoapPacket(1).ack(Code.C231_CONTINUE).block1Req(0, BlockSize.S_32, true).build());
 
-        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("dupa").build())
+        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).block1Req(1, BlockSize.S_32, false).build());
 
         assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());
@@ -103,14 +106,14 @@ public class BlockTest {
 
         String payload = "123456789012345|123456789012345|dupa";
 
-        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("123456789012345|123456789012345|").build())
+        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
                 .then(newCoapPacket(1).ack(null).build(),
                         newCoapPacket(2).con(Code.C231_CONTINUE).block1Req(0, BlockSize.S_32, true).build());
 
         //important that this comes first
         transport.when(newCoapPacket(2).ack(null).build()).thenNothing();
 
-        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("dupa").build())
+        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).block1Req(1, BlockSize.S_16, false).build());
 
         assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());

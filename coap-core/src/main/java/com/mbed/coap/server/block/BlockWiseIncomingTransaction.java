@@ -27,6 +27,7 @@ import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.messaging.Capabilities;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,10 +37,12 @@ class BlockWiseIncomingTransaction {
     private final ByteArrayOutputStream payload;
     private final int maxIncomingBlockTransferSize;
     private final Capabilities csm;
+    private final Opaque requestTag;
 
     BlockWiseIncomingTransaction(CoapRequest request, int maxIncomingBlockTransferSize, Capabilities csm) {
         this.maxIncomingBlockTransferSize = maxIncomingBlockTransferSize;
         this.csm = csm;
+        this.requestTag = request.options().getRequestTag();
         Integer expectedPayloadSize = request.options().getSize1();
         BlockOption blockOption = request.options().getBlock1Req();
 
@@ -68,6 +71,10 @@ class BlockWiseIncomingTransaction {
             // should never happen
             throw new CoapCodeException(Code.C500_INTERNAL_SERVER_ERROR, e);
         }
+    }
+
+    boolean validateRequestTag(CoapRequest request) {
+        return Objects.equals(requestTag, request.options().getRequestTag());
     }
 
     Opaque getCombinedPayload() {

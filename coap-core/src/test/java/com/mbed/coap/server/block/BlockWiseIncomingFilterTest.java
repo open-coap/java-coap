@@ -18,6 +18,7 @@ package com.mbed.coap.server.block;
 
 import static com.mbed.coap.packet.BlockSize.S_16;
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapRequest.put;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.of;
@@ -25,6 +26,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Code.C204_CHANGED;
 import static com.mbed.coap.packet.Code.C205_CONTENT;
 import static com.mbed.coap.packet.Code.C231_CONTINUE;
+import static com.mbed.coap.packet.Opaque.decodeHex;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.packet.BlockSize;
+import com.mbed.coap.packet.CoapOptionsBuilder;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
@@ -161,6 +164,44 @@ class BlockWiseIncomingFilterTest {
         //BLOCK 2
         resp = service.apply(get("/xlarge").block2Res(8, BlockSize.S_1024_BERT, false).from(LOCAL_5683));
         assertEquals(coapResponse(C205_CONTENT).block2Res(8, BlockSize.S_1024_BERT, false).payload(opaqueOfSize(1808)), resp.join());
+    }
+
+    @Test
+    public void should_handle_rearranged_blocks_with_multiple_transactions() {
+        // https://datatracker.ietf.org/doc/html/draft-mattsson-core-coap-attacks-03#section-2.4.1
+        service = blockingFilter.then(req -> {
+            lastRequest = req;
+            return coapResponse(C204_CHANGED).payload("ok").toFuture();
+        });
+
+        CompletableFuture<CoapResponse> resp;
+
+        //BLOCK 1
+        resp = service.apply(
+                post("/").token(1001).block1Req(0, S_16, true).options(this::requestTag01).payload("incarcerate     ").to(LOCAL_5683)
+        );
+        assertEquals(coapResponse(C231_CONTINUE).block1Req(0, S_16, true), resp.join());
+
+        //BLOCK 2 is lost
+        // post("/").token(1002).block1Req(1, S_16, false).payload("valjean").to(LOCAL_5683)
+
+        // new transaction starts
+        //BLOCK 1
+        resp = service.apply(
+                post("/").token(1003).block1Req(0, S_16, true).payload("promote         ").to(LOCAL_5683)
+        );
+        assertEquals(coapResponse(C231_CONTINUE).block1Req(0, S_16, true), resp.join());
+
+        //BLOCK 2 from previous transaction
+        resp = service.apply(
+                post("/").token(1002).block1Req(1, S_16, false).options(this::requestTag01).payload("valjean").to(LOCAL_5683)
+        );
+
+        assertThatThrownBy(resp::join).hasCause(new CoapCodeException(Code.C413_REQUEST_ENTITY_TOO_LARGE, "Mismatch request-tag"));
+    }
+
+    private void requestTag01(CoapOptionsBuilder it) {
+        it.requestTag(decodeHex("01"));
     }
 
 }

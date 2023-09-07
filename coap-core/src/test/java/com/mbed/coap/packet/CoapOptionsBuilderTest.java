@@ -68,6 +68,8 @@ public class CoapOptionsBuilderTest {
                 .proxyScheme("http")
                 .locationPath("/location")
                 .locationQuery("par2=val2")
+                .echo(decodeHex("248618b4"))
+                .requestTag(decodeHex("da611128"))
                 .custom(1000, decodeHex("010203"))
                 .build();
 
@@ -90,6 +92,8 @@ public class CoapOptionsBuilderTest {
         expected.setProxyScheme("http");
         expected.setLocationPath("/location");
         expected.setLocationQuery("par2=val2");
+        expected.setEcho(decodeHex("248618b4"));
+        expected.setRequestTag(decodeHex("da611128"));
         expected.put(1000, decodeHex("010203"));
 
         assertEquals(expected, options);
@@ -101,14 +105,29 @@ public class CoapOptionsBuilderTest {
                 .observe(41)
                 .block2Res(2, BlockSize.S_256, false)
                 .block1Req(0, BlockSize.S_256, true)
+                .size2Res(535)
                 .build();
 
         HeaderOptions unsetOptions = CoapOptionsBuilder.from(options)
                 .unsetObserve()
                 .unsetBlock1Req()
                 .unsetBlock2Res()
+                .unsetSize2Res()
                 .build();
 
         assertEquals(new HeaderOptions(), unsetOptions);
+    }
+
+    @Test
+    void shouldRunWithIfCondition() {
+        CoapOptionsBuilder builder = options()
+                .ifNull(HeaderOptions::getAccept, o -> o.accept((short) 321));
+        assertEquals(321, builder.build().getAccept());
+
+        // when
+        builder.ifNull(HeaderOptions::getAccept, o -> o.accept((short) 43432));
+
+        // then, value not changed
+        assertEquals(321, builder.build().getAccept());
     }
 }

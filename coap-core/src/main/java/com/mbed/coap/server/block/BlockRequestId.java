@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.server.block;
 
+import com.mbed.coap.packet.CoapRequest;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
@@ -24,7 +25,11 @@ class BlockRequestId {
     private final String uriPath;
     private final InetSocketAddress sourceAddress;
 
-    public BlockRequestId(String uriPath, InetSocketAddress sourceAddress) {
+    static BlockRequestId from(CoapRequest request) {
+        return new BlockRequestId(request.options().getUriPath(), request.getPeerAddress());
+    }
+
+    private BlockRequestId(String uriPath, InetSocketAddress sourceAddress) {
         this.uriPath = uriPath;
         this.sourceAddress = sourceAddress;
     }

@@ -19,6 +19,7 @@ package com.mbed.coap.packet;
 import static com.mbed.coap.packet.BasicHeaderOptions.hasNoCacheKey;
 import static com.mbed.coap.packet.BasicHeaderOptions.isCritical;
 import static com.mbed.coap.packet.BasicHeaderOptions.isUnsave;
+import static com.mbed.coap.packet.Opaque.decodeHex;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 
-public class HeaderOptionTest {
+public class HeaderOptionsTest {
 
     @Test
     public void testEmpty() throws IOException, CoapException {
@@ -90,6 +91,8 @@ public class HeaderOptionTest {
         hdr.setUriHost("uri-host");
         hdr.setUriPort(5683);
         hdr.setUriQuery("par1=dupa&par2=dupa2");
+        hdr.setEcho(decodeHex("0102030405060708090a"));
+        hdr.setRequestTag(Opaque.of("tag-0001"));
         hdr.put(36, Opaque.variableUInt((1357)));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
