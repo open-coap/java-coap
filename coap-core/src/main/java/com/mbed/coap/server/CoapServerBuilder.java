@@ -31,6 +31,7 @@ import com.mbed.coap.server.block.BlockWiseIncomingFilter;
 import com.mbed.coap.server.block.BlockWiseNotificationFilter;
 import com.mbed.coap.server.block.BlockWiseOutgoingFilter;
 import com.mbed.coap.server.filter.CongestionControlFilter;
+import com.mbed.coap.server.filter.EchoFilter;
 import com.mbed.coap.server.filter.ResponseTimeoutFilter;
 import com.mbed.coap.server.messaging.Capabilities;
 import com.mbed.coap.server.messaging.CapabilitiesResolver;
@@ -42,6 +43,7 @@ import com.mbed.coap.server.messaging.MessageIdSupplier;
 import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
 import com.mbed.coap.server.messaging.ObservationMapper;
 import com.mbed.coap.server.messaging.PiggybackedExchangeFilter;
+import com.mbed.coap.server.messaging.RequestTagSupplier;
 import com.mbed.coap.server.messaging.RetransmissionFilter;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
@@ -76,6 +78,7 @@ public final class CoapServerBuilder {
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
+    private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
 
     CoapServerBuilder() {
     }
@@ -144,9 +147,9 @@ public final class CoapServerBuilder {
     private CapabilitiesResolver capabilities() {
         Capabilities defaultCapability;
         if (blockSize != null) {
-            defaultCapability = new Capabilities(blockSize.getSize() + 1, true);
+            defaultCapability = new Capabilities(blockSize.getSize() + 1, true, requestTagSupplier);
         } else {
-            defaultCapability = new Capabilities(maxMessageSize, false);
+            defaultCapability = new Capabilities(maxMessageSize, false, requestTagSupplier);
         }
 
         return __ -> defaultCapability;
@@ -199,6 +202,11 @@ public final class CoapServerBuilder {
         return this;
     }
 
+    public CoapServerBuilder requestTagSupplier(RequestTagSupplier requestTagSupplier) {
+        this.requestTagSupplier = requireNonNull(requestTagSupplier);
+        return this;
+    }
+
     public CoapServer build() {
         requireNonNull(coapTransport, "Missing transport");
         final boolean stopExecutor = scheduledExecutorService == null;
@@ -219,6 +227,7 @@ public final class CoapServerBuilder {
                 .andThen(new ObserveRequestFilter(observationStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(new EchoFilter())
                 .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
                 .andThen(Filter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet

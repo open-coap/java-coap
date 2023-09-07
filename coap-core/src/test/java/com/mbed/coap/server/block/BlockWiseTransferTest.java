@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.BlockSize.S_1024_BERT;
 import static com.mbed.coap.packet.BlockSize.S_16;
 import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.server.block.BlockWiseTransfer.createBlockPart;
+import static com.mbed.coap.server.block.BlockWiseTransfer.createFirstBlock;
 import static com.mbed.coap.server.block.BlockWiseTransfer.isBlockPacketValid;
 import static com.mbed.coap.server.block.BlockWiseTransfer.updateWithFirstBlock;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
@@ -42,15 +43,39 @@ public class BlockWiseTransferTest {
 
     @Test
     public void should_set_first_block_header_for_request() {
-        Capabilities csm = new Capabilities(512, true);
+        Capabilities csm = new Capabilities(512, true, () -> Opaque.of("13"));
         CoapRequest req = post("/").payload(opaqueOfSize(2000)).to(LOCAL_5683);
 
-        assertEquals(512, BlockWiseTransfer.updateWithFirstBlock(req, csm).size());
+        CoapRequest firstBlock = createFirstBlock(req, csm);
 
-        assertEquals(2000, req.options().getSize1().intValue());
-        assertEquals(new BlockOption(0, BlockSize.S_512, true), req.options().getBlock1Req());
-        assertNull(req.options().getSize2Res());
-        assertNull(req.options().getBlock2Res());
+        CoapRequest expected = post("/")
+                .options(it -> it
+                        .block1Req(0, BlockSize.S_512, true)
+                        .size1(2000)
+                        .requestTag(Opaque.of("13"))
+                )
+                .payload(opaqueOfSize(512))
+                .to(LOCAL_5683);
+        assertEquals(expected, firstBlock);
+    }
+
+    @Test
+    public void should_not_overwrite_requestTag() {
+        Capabilities csm = new Capabilities(512, true, () -> Opaque.of("13"));
+        CoapRequest req = post("/").options(it -> it.requestTag(Opaque.of("937"))).payload(opaqueOfSize(2000)).to(LOCAL_5683);
+
+        CoapRequest firstBlock = createFirstBlock(req, csm);
+
+        CoapRequest expected = post("/")
+                .options(it -> it
+                        .block1Req(0, BlockSize.S_512, true)
+                        .size1(2000)
+                        .requestTag(Opaque.of("937"))
+                )
+                .payload(opaqueOfSize(512))
+                .to(LOCAL_5683);
+
+        assertEquals(expected, firstBlock);
     }
 
     @Test
@@ -58,12 +83,16 @@ public class BlockWiseTransferTest {
         Capabilities csm = new Capabilities(3300, true);
         CoapRequest req = post("/").payload(opaqueOfSize(5000)).to(LOCAL_5683);
 
-        assertEquals(2048, BlockWiseTransfer.updateWithFirstBlock(req, csm).size());
+        CoapRequest firstBlock = createFirstBlock(req, csm);
 
-        assertEquals(5000, req.options().getSize1().intValue());
-        assertEquals(new BlockOption(0, BlockSize.S_1024_BERT, true), req.options().getBlock1Req());
-        assertNull(req.options().getSize2Res());
-        assertNull(req.options().getBlock2Res());
+        CoapRequest expected = post("/")
+                .options(it -> it
+                        .block1Req(0, BlockSize.S_1024_BERT, true)
+                        .size1(5000)
+                )
+                .payload(opaqueOfSize(2048))
+                .to(LOCAL_5683);
+        assertEquals(expected, firstBlock);
     }
 
     @Test

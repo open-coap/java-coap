@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ package com.mbed.coap.server.block;
 
 import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.CoapRequest;
+import com.mbed.coap.packet.HeaderOptions;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.server.messaging.Capabilities;
@@ -36,17 +37,24 @@ class BlockWiseTransfer {
         return createBlockPart(blockOption, resp.getPayload(), maxBlockPayload);
     }
 
-    static Opaque updateWithFirstBlock(CoapRequest request, Capabilities csm) {
-        BlockOption blockOption = new BlockOption(0, csm.getBlockSize(), true);
+    static CoapRequest createFirstBlock(CoapRequest request, Capabilities csm) {
         int payloadSize = request.getPayload().size();
-
-        request.options().setBlock1Req(blockOption);
-        request.options().setBlock2Res(null);
-        request.options().setSize1(payloadSize);
-        request.options().setSize2Res(null);
-
+        BlockOption blockOption = new BlockOption(0, csm.getBlockSize(), true);
         int maxBlockPayload = csm.getMaxOutboundPayloadSize();
-        return createBlockPart(blockOption, request.getPayload(), maxBlockPayload);
+
+        return request
+                .options(o -> o
+                        .block1Req(blockOption)
+                        .unsetBlock2Res()
+                        .size1(payloadSize)
+                        .unsetSize2Res()
+                        .ifNull(HeaderOptions::getRequestTag, __ ->
+                                o.requestTag(csm.nextRequestTag())
+                        )
+                )
+                .payload(
+                        createBlockPart(blockOption, request.getPayload(), maxBlockPayload)
+                );
     }
 
     static Opaque createBlockPart(BlockOption blockOption, Opaque fullPayload, int maxPayloadSizePerBlock) {

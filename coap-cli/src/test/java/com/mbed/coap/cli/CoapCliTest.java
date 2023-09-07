@@ -109,10 +109,13 @@ class CoapCliTest {
         assertEquals("\nReceived 29\n", sw.toString().replace("\r", ""));
 
         CoapRequest expected = CoapRequest.post("/test")
-                .query("par1", "val1")
-                .payload(Opaque.of("{\"id\":\"22da5c828e9c4f10bc57\"}"), MediaTypes.CT_APPLICATION_JSON)
-                .block1Req(1, S_16, false)
-                .proxy("http://another-uri");
+                .options(it -> it
+                        .query("par1", "val1")
+                        .block1Req(1, S_16, false)
+                        .proxyUri("http://another-uri")
+                        .requestTag(sendCommand.request.options().getRequestTag()) // it's random
+                )
+                .payload(Opaque.of("{\"id\":\"22da5c828e9c4f10bc57\"}"), MediaTypes.CT_APPLICATION_JSON);
         assertEquals(expected, sendCommand.request);
     }
 

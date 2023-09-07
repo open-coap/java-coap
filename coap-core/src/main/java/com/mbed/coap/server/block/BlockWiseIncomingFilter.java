@@ -57,20 +57,22 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
         }
 
         //block wise transaction
-        BlockRequestId blockRequestId = new BlockRequestId(request.options().getUriPath(), request.getPeerAddress());
-        BlockWiseIncomingTransaction blockRequest = blockReqMap.get(blockRequestId);
+        BlockRequestId blockRequestId = BlockRequestId.from(request);
+        BlockWiseIncomingTransaction blockRequest = (reqBlock.getNr() == 0) ? null : blockReqMap.get(blockRequestId);
 
         try {
             if (blockRequest == null && reqBlock.getNr() != 0) {
                 //Could not find previous blocks
                 LOGGER.warn("Could not find previous blocks for {}", request);
                 throw new CoapCodeException(Code.C408_REQUEST_ENTITY_INCOMPLETE, "no prev blocks");
+            } else if (blockRequest != null && !blockRequest.validateRequestTag(request)) {
+                LOGGER.warn("[{}] Mismatch request-tag: {}", request.getPeerAddress(), request.options().getRequestTag());
+                throw new CoapCodeException(Code.C408_REQUEST_ENTITY_INCOMPLETE, "Mismatch request-tag");
             } else if (blockRequest == null) {
                 //start new block-wise transaction
                 blockRequest = new BlockWiseIncomingTransaction(request, maxIncomingBlockTransferSize, capabilities.getOrDefault(request.getPeerAddress()));
                 blockReqMap.put(blockRequestId, blockRequest);
             }
-
             blockRequest.appendBlock(request);
 
         } catch (CoapCodeException e) {

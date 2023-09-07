@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.server.messaging;
 
+import static java.util.Objects.requireNonNull;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.Opaque;
 
@@ -26,27 +27,35 @@ public class Capabilities {
     // see https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09#section-5.3 for base values (5.3.1, 5.3.2)
     private static final int BASE_MAX_MESSAGE_SIZE = 1152;
     private static final boolean BASE_BLOCKWISE = false;
-    public static final Capabilities BASE = new Capabilities(BASE_MAX_MESSAGE_SIZE, BASE_BLOCKWISE);
+    public static final Capabilities BASE = new Capabilities(BASE_MAX_MESSAGE_SIZE, BASE_BLOCKWISE, RequestTagSupplier.NULL);
 
     private final boolean blockwiseTransfer;
     private final long maxMessageSize;
+    private final transient RequestTagSupplier requestTagSupplier;
 
     public static Capabilities min(Capabilities cap1, Capabilities cap2) {
         return new Capabilities(
                 Math.min(cap1.getMaxMessageSizeInt(), cap2.getMaxMessageSizeInt()),
-                cap1.blockwiseTransfer && cap2.blockwiseTransfer
+                cap1.blockwiseTransfer && cap2.blockwiseTransfer,
+                cap1.requestTagSupplier
         );
     }
 
-    public Capabilities(long maxMessageSize, boolean blockwiseTransfer) {
+    public Capabilities(long maxMessageSize, boolean blockwiseTransfer, RequestTagSupplier requestTagSupplier) {
         this.maxMessageSize = maxMessageSize;
         this.blockwiseTransfer = blockwiseTransfer;
+        this.requestTagSupplier = requireNonNull(requestTagSupplier);
+    }
+
+    public Capabilities(long maxMessageSize, boolean blockwiseTransfer) {
+        this(maxMessageSize, blockwiseTransfer, RequestTagSupplier.NULL);
     }
 
     public Capabilities withNewOptions(Long maxMessageSize, Boolean blockwiseTransfer) {
         return new Capabilities(
                 maxMessageSize != null ? maxMessageSize : this.maxMessageSize,
-                blockwiseTransfer != null ? blockwiseTransfer : this.blockwiseTransfer
+                blockwiseTransfer != null ? blockwiseTransfer : this.blockwiseTransfer,
+                requestTagSupplier
         );
     }
 
@@ -155,4 +164,7 @@ public class Capabilities {
         return "CoapTcpCSM{block=" + blockwiseTransfer + ", size=" + maxMessageSize + '}';
     }
 
+    public Opaque nextRequestTag() {
+        return requestTagSupplier.next();
+    }
 }

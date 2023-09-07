@@ -16,6 +16,8 @@
 package com.mbed.coap.packet;
 
 import java.time.Duration;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class CoapOptionsBuilder {
     private final HeaderOptions options;
@@ -90,8 +92,20 @@ public class CoapOptionsBuilder {
         return this;
     }
 
+    public CoapOptionsBuilder unsetSize2Res() {
+        options.setSize2Res(null);
+        return this;
+    }
+
     public CoapOptionsBuilder block1Req(BlockOption block) {
         options.setBlock1Req(block);
+        return this;
+    }
+
+    public CoapOptionsBuilder ifNull(Function<HeaderOptions, Object> predicate, Consumer<CoapOptionsBuilder> command) {
+        if (predicate.apply(options) == null) {
+            command.accept(this);
+        }
         return this;
     }
 
@@ -177,6 +191,16 @@ public class CoapOptionsBuilder {
 
     public CoapOptionsBuilder proxyScheme(String scheme) {
         options.setProxyScheme(scheme);
+        return this;
+    }
+
+    public CoapOptionsBuilder echo(Opaque echo) {
+        options.setEcho(echo);
+        return this;
+    }
+
+    public CoapOptionsBuilder requestTag(Opaque requestTag) {
+        options.setRequestTag(requestTag);
         return this;
     }
 }

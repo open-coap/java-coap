@@ -28,6 +28,7 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
+import com.mbed.coap.server.messaging.RequestTagSupplier;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterEach;
@@ -45,8 +46,12 @@ public class SeparateResponseTest {
         MockCoapTransport serverTransport = new MockCoapTransport();
         server = serverTransport.client();
 
-        client = CoapServer.builder().transport(serverTransport).midSupplier(new MessageIdSupplierImpl(0)).blockSize(S_32)
+        client = CoapServer.builder()
+                .transport(serverTransport)
+                .midSupplier(new MessageIdSupplierImpl(0))
+                .blockSize(S_32)
                 .retransmission(ofFixed(ofMillis(500)))
+                .requestTagSupplier(RequestTagSupplier.createSequential(100))
                 .buildClient(SERVER_ADDRESS);
     }
 
@@ -84,15 +89,15 @@ public class SeparateResponseTest {
     public void shouldResponseWithSeparateResponseBlock1_withoutEmptyAck() throws Exception {
         //given
         CompletableFuture<CoapResponse> futResp = client.send(post("/path1").token(123).payload("aaaaaaaaa|aaaaaaaaa|aaaaaaaaa|aaaaaaaaa|"));
-        server.verifyReceived(newCoapPacket(SERVER_ADDRESS).mid(1).token(123).post().uriPath("/path1").block1Req(0, S_32, true).size1(40).payload("aaaaaaaaa|aaaaaaaaa|aaaaaaaaa|aa"));
+        server.verifyReceived(newCoapPacket(SERVER_ADDRESS).mid(1).token(123).post().uriPath("/path1").block1Req(0, S_32, true).size1(40).reqTag("65").payload("aaaaaaaaa|aaaaaaaaa|aaaaaaaaa|aa"));
 
         //when
         server.send(newCoapPacket(SERVER_ADDRESS).mid(1).token(123).ack(Code.C231_CONTINUE).block1Req(0, S_32, true));
-        server.verifyReceived(newCoapPacket(SERVER_ADDRESS).mid(2).token(123).post().uriPath("/path1").block1Req(1, S_32, false).payload("aaaaaaa|"));
+        server.verifyReceived(newCoapPacket(SERVER_ADDRESS).mid(2).token(123).post().uriPath("/path1").block1Req(1, S_32, false).reqTag("65").payload("aaaaaaa|"));
 
         //and, separate response
         server.send(newCoapPacket(SERVER_ADDRESS).emptyAck(2));
-        server.send(newCoapPacket(SERVER_ADDRESS).mid(3).token(123).con(Code.C201_CREATED).block1Req(1, S_32, false).payload("ok"));
+        server.send(newCoapPacket(SERVER_ADDRESS).mid(3).token(123).con(Code.C201_CREATED).block1Req(1, S_32, false).reqTag("65").payload("ok"));
 
         //then
         assertEquals("ok", futResp.get().getPayloadString());

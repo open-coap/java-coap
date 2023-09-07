@@ -15,6 +15,7 @@
  */
 package protocolTests;
 
+import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.decodeHex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,11 +23,15 @@ import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Code;
+import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
 import com.mbed.coap.server.filter.EtagGeneratorFilter;
 import com.mbed.coap.transport.InMemoryCoapTransport;
 import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +45,8 @@ public class ClientTest {
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
                 .route(RouterService.builder()
-                        .get("/test", req -> ok("OK!").toFuture()))
+                        .get("/test", req -> ok("OK!").toFuture())
+                        .post("/fresh", this::handleFresh))
                 .build()
                 .start();
 
@@ -65,4 +71,26 @@ public class ClientTest {
 
         client.close();
     }
+
+    @Test
+    void shouldRequestFreshResource() throws IOException {
+        CoapClient client = CoapServer.builder()
+                .transport(InMemoryCoapTransport.create())
+                .buildClient(InMemoryCoapTransport.createAddress(5683));
+
+        CompletableFuture<CoapResponse> resp = client.send(CoapRequest.post("/fresh"));
+
+        assertEquals("is fresh", resp.join().getPayloadString());
+    }
+
+    private CompletableFuture<CoapResponse> handleFresh(CoapRequest request) {
+        if (!Objects.equals(request.options().getEcho(), Opaque.of("13"))) {
+            return coapResponse(Code.C401_UNAUTHORIZED)
+                    .options(it -> it.echo(Opaque.of("13"))).toFuture();
+        }
+
+        return coapResponse(Code.C201_CREATED).payload("is fresh").toFuture();
+    }
+
+
 }

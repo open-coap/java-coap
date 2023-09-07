@@ -57,8 +57,7 @@ class BlockWiseCallback {
 
         if (request.getMethod() != null && csm.useBlockTransfer(requestPayload)) {
             //request that needs to use blocks
-            Opaque newPayload = BlockWiseTransfer.updateWithFirstBlock(request, csm);
-            this.request = request.payload(newPayload);
+            this.request = BlockWiseTransfer.createFirstBlock(request, csm);
             numberOfBertBlocks = csm.getBlockSize().numberOfBlocksPerMessage(csm.getMaxOutboundPayloadSize());
 
         } else {

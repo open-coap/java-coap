@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.utils.Validations.require;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,6 +24,7 @@ import java.util.Objects;
  * Implements CoAP additional header options from
  * - RFC 7959 (Block-Wise Transfers)
  * - draft-ietf-core-observe-09
+ * - RFC 9175 (Echo, Request-Tag, and Token Processing)
  */
 public class HeaderOptions extends BasicHeaderOptions {
 
@@ -30,10 +32,14 @@ public class HeaderOptions extends BasicHeaderOptions {
     private static final byte BLOCK_1_REQ = 27;
     private static final byte BLOCK_2_RES = 23;
     private static final byte SIZE_2_RES = 28;
+    private static final int ECHO = 252;
+    private static final int REQUEST_TAG = 292;
     private Integer observe;
     private BlockOption block1Req;
     private BlockOption block2Res;
     private Integer size2Res;
+    private Opaque echo;
+    private Opaque requestTag;
 
     @Override
     public boolean parseOption(int type, Opaque data) {
@@ -49,6 +55,12 @@ public class HeaderOptions extends BasicHeaderOptions {
                 break;
             case SIZE_2_RES:
                 setSize2Res(data.toInt());
+                break;
+            case ECHO:
+                setEcho(data);
+                break;
+            case REQUEST_TAG:
+                setRequestTag(data);
                 break;
             default:
                 return super.parseOption(type, data);
@@ -76,6 +88,12 @@ public class HeaderOptions extends BasicHeaderOptions {
         if (size2Res != null) {
             l.add(RawOption.fromUint(SIZE_2_RES, size2Res.longValue()));
         }
+        if (echo != null) {
+            l.add(new RawOption(ECHO, echo));
+        }
+        if (requestTag != null) {
+            l.add(new RawOption(REQUEST_TAG, requestTag));
+        }
 
         return l;
     }
@@ -95,6 +113,12 @@ public class HeaderOptions extends BasicHeaderOptions {
         }
         if (size2Res != null) {
             sb.append(" sz2:").append(size2Res);
+        }
+        if (echo != null) {
+            sb.append(" Echo:").append(echo.toHex());
+        }
+        if (requestTag != null) {
+            sb.append(" Req-tag:").append(requestTag.toHex());
         }
 
     }
@@ -148,6 +172,24 @@ public class HeaderOptions extends BasicHeaderOptions {
         this.size2Res = size2Res;
     }
 
+    public void setEcho(Opaque echo) {
+        require(echo == null || echo.size() <= 40);
+        this.echo = echo;
+    }
+
+    public Opaque getEcho() {
+        return echo;
+    }
+
+    public void setRequestTag(Opaque requestTag) {
+        require(requestTag == null || requestTag.size() <= 8);
+        this.requestTag = requestTag;
+    }
+
+    public Opaque getRequestTag() {
+        return requestTag;
+    }
+
     public HeaderOptions duplicate() {
         HeaderOptions opts = new HeaderOptions();
         super.duplicate(opts);
@@ -156,6 +198,7 @@ public class HeaderOptions extends BasicHeaderOptions {
         opts.block1Req = block1Req;
         opts.block2Res = block2Res;
         opts.size2Res = size2Res;
+        opts.echo = echo;
 
         return opts;
     }
@@ -174,6 +217,12 @@ public class HeaderOptions extends BasicHeaderOptions {
 
         HeaderOptions that = (HeaderOptions) o;
 
+        if (!Objects.equals(echo, that.echo)) {
+            return false;
+        }
+        if (!Objects.equals(requestTag, that.requestTag)) {
+            return false;
+        }
         if (!Objects.equals(observe, that.observe)) {
             return false;
         }
@@ -189,6 +238,8 @@ public class HeaderOptions extends BasicHeaderOptions {
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (echo != null ? echo.hashCode() : 0);
+        result = 31 * result + (requestTag != null ? requestTag.hashCode() : 0);
         result = 31 * result + (observe != null ? observe.hashCode() : 0);
         result = 31 * result + (block1Req != null ? block1Req.hashCode() : 0);
         result = 31 * result + (block2Res != null ? block2Res.hashCode() : 0);
