@@ -199,6 +199,7 @@ public class HeaderOptions extends BasicHeaderOptions {
         opts.block2Res = block2Res;
         opts.size2Res = size2Res;
         opts.echo = echo;
+        opts.requestTag = requestTag;
 
         return opts;
     }

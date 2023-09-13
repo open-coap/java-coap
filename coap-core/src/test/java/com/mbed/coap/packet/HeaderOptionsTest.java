@@ -91,8 +91,6 @@ public class HeaderOptionsTest {
         hdr.setUriHost("uri-host");
         hdr.setUriPort(5683);
         hdr.setUriQuery("par1=dupa&par2=dupa2");
-        hdr.setEcho(decodeHex("0102030405060708090a"));
-        hdr.setRequestTag(Opaque.of("tag-0001"));
         hdr.put(36, Opaque.variableUInt((1357)));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -105,6 +103,8 @@ public class HeaderOptionsTest {
         System.out.println(hdr2);
         assertTrue(hdr.equals(hdr2));
 
+        // duplicate
+        assertEquals(hdr, hdr.duplicate());
     }
 
     @Test
@@ -171,13 +171,17 @@ public class HeaderOptionsTest {
         hdr.setBlock1Req(new BlockOption(2, BlockSize.S_16, true));
         hdr.setBlock2Res(new BlockOption(4, BlockSize.S_1024, false));
         hdr.setObserve(4321);
+        hdr.setEcho(decodeHex("0102030405060708090a"));
+        hdr.setRequestTag(Opaque.of("tag-0001"));
 
         HeaderOptions hdr2 = deserialize(serialize(hdr));
 
         System.out.println(hdr);
         System.out.println(hdr2);
-        assertTrue(hdr.equals(hdr2));
+        assertEquals(hdr, hdr2);
 
+        // duplicate
+        assertEquals(hdr, hdr.duplicate());
     }
 
     @Test
