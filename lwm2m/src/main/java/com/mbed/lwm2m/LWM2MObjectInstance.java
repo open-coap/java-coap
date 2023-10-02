@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+@Deprecated
 public class LWM2MObjectInstance {
 
     private final LWM2MID id;

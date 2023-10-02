@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
+@Deprecated
 public class LWM2MResourceInstance {
 
     private static Charset defaultCharset = Charset.defaultCharset();

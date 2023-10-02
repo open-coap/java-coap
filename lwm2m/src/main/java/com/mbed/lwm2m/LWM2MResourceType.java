@@ -15,6 +15,7 @@
  */
 package com.mbed.lwm2m;
 
+@Deprecated
 public enum LWM2MResourceType {
 
     STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJECTLINK

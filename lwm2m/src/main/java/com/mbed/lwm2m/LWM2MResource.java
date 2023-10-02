@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class LWM2MResource extends LWM2MResourceInstance {
 
     private List<LWM2MResourceInstance> instances;
