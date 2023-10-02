@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapResponse.badRequest;
 import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.Networks.localhost;
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -153,7 +154,7 @@ public class MbedtlsNettyTest {
         assertEquals(badRequest(), coapClient.sendSync(get("/dtls-ctx").query("key", "dev-id")));
 
         // when
-        serverTransport.getChannel().writeAndFlush(new SessionAuthenticationContext(cliAddress, "dev-id", "dev01"));
+        serverTransport.getChannel().writeAndFlush(new SessionAuthenticationContext(cliAddress, singletonMap("dev-id", "dev01")));
 
         // then
         assertEquals(ok("dev01"), coapClient.sendSync(get("/dtls-ctx").query("key", "dev-id")));

@@ -7,15 +7,15 @@ description = "coap-netty"
 
 dependencies {
     api(project(":coap-core"))
-    api("io.netty:netty-handler:4.1.93.Final")
+    api("io.netty:netty-handler:4.1.99.Final")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
     testImplementation(testFixtures(project(":coap-core")))
     testImplementation("ch.qos.logback:logback-classic:1.3.5")
 
-    jmhImplementation("io.netty:netty-all:4.1.93.Final")
+    jmhImplementation("io.netty:netty-all:4.1.99.Final")
 }
 
 tasks {
