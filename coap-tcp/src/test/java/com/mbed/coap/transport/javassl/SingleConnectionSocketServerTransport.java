@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class SingleConnectionSocketServerTransport extends BlockingCoapTransport implements CoapTcpTransport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SingleConnectionSSLSocketServerTransport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SingleConnectionSocketServerTransport.class);
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     final ServerSocket serverSocket;
@@ -65,7 +65,7 @@ public class SingleConnectionSocketServerTransport extends BlockingCoapTransport
 
     private void connect() {
         try {
-            LOGGER.debug("SSLSocketServer is listening on " + serverSocket.getLocalSocketAddress());
+            LOGGER.debug("ServerSocket is listening on " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
 
             //connected with client

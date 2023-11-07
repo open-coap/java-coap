@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SocketClientTransport extends BlockingCoapTransport implements CoapTcpTransport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SSLSocketClientTransport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketClientTransport.class);
 
     protected final InetSocketAddress destination;
     protected OutputStream outputStream;
