@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Deprecated
-public class LWM2MResource extends LWM2MResourceInstance {
+public final class LWM2MResource extends LWM2MResourceInstance {
 
     private List<LWM2MResourceInstance> instances;
 
@@ -54,7 +54,7 @@ public class LWM2MResource extends LWM2MResourceInstance {
         this (id, Arrays.asList(instances));
     }
 
-    public final boolean hasNestedInstances() {
+    public boolean hasNestedInstances() {
         return instances != null && !instances.isEmpty();
     }
 

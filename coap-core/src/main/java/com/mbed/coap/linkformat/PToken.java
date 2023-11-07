@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 
-public class PToken implements CharSequence, Serializable {
+public final class PToken implements CharSequence, Serializable {
 
     private static final int validRangeStart = 33; //'!'
     private static final int validRangeStop = 126; //'~'

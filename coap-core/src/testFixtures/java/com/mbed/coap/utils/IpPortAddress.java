@@ -1,4 +1,5 @@
-/**
+/*
+ * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +26,7 @@ import java.util.Arrays;
  * Container class for raw IP and port without hostname. Avoids deterministic
  * problem of serializing InetSocketAddress with hostname.
  */
-public class IpPortAddress implements Serializable {
+public final class IpPortAddress implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final byte[] ip;

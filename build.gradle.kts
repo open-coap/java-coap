@@ -6,12 +6,12 @@ plugins {
     id("maven-publish")
     id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
-    id("com.github.ben-manes.versions") version "0.48.0"
+    id("com.github.ben-manes.versions") version "0.49.0"
     id("pmd")
-    id("com.github.spotbugs") version "5.1.3"
+    id("com.github.spotbugs") version "5.2.3"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("com.adarshr.test-logger") version "3.2.0"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 allprojects {

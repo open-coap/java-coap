@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class BlockWiseCallback {
+final class BlockWiseCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockWiseCallback.class);
     private static final int MAX_BLOCK_RESOURCE_CHANGE = 3;
 

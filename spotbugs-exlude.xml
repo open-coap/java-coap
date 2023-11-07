@@ -54,5 +54,9 @@
         <Class name="com.mbed.coap.server.observe.ObserversManager"/>
         <Bug pattern="WMI_WRONG_MAP_ITERATOR"/>
     </Match>
+    <Match>
+        <Class name="com.mbed.lwm2m.LWM2MResourceInstance"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
 
 </FindBugsFilter>

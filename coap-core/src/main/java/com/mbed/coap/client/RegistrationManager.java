@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RegistrationManager {
+public final class RegistrationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationManager.class);
     private final Duration minRetryDelay;
     private final Duration maxRetryDelay;
@@ -128,7 +128,7 @@ public class RegistrationManager {
         register();
     }
 
-    protected void registrationFailed(String errMessage) {
+    void registrationFailed(String errMessage) {
         lastRetryDelay = nextDelay(lastRetryDelay);
         registrationLocation = Optional.empty();
         scheduledExecutor.schedule((Runnable) this::register, lastRetryDelay.getSeconds(), TimeUnit.SECONDS);
