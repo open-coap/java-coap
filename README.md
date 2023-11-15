@@ -50,7 +50,7 @@ This project started as a fork from https://github.com/PelionIoT/java-coap, but 
 Runtime requirements
 ------------
 
-* JRE 8, 11, 17
+* JRE 8, 17, 21
 
 Using the Library
 -----------------
@@ -65,6 +65,8 @@ dependencies {
   implementation("io.github.open-coap:coap-core:VERSION")
   implementation("io.github.open-coap:coap-mbedtls:VERSION") // for DTLS support
   implementation("io.github.open-coap:coap-tcp:VERSION")     // for coap over tcp support
+  implementation("io.github.open-coap:coap-metrics:VERSION") // for micrometer integration
+  implementation("io.github.open-coap:coap-netty:VERSION")   // for netty integration
 }
 ```
 
@@ -111,7 +113,7 @@ client = CoapServer.builder()
             return true; // return false to terminate observation
         })
         // (optional) set custom observation relation store, for example one that will use external storage
-        .observationRelationsStore(new HashMapObservationRelations())
+        .observationsStore(new HashMapObservationsStore())
         // (optional) define maximum block size
         .blockSize(BlockSize.S_1024)
         // (optional) set maximum response timeout, default for every request
@@ -164,7 +166,7 @@ client.close();
 
 ```java
 // define subscription manager for observable resources
-InboundSubscriptionManager subscriptionManager = new InboundSubscriptionManager();
+ObserversManager observersManager = new ObserversManager();
 
 server = CoapServer.builder()
         // configure with plain text UDP transport, listening on port 5683
@@ -180,13 +182,13 @@ server = CoapServer.builder()
                     return coapResponse(Code.C204_CHANGED).toFuture();
                 })
                 // observable resource
-                .get("/sensors/temperature", subscriptionManager.then(req ->
-                        completedFuture(CoapResponse.ok("21C"))
+                .get("/sensors/temperature", observersManager.then(req ->
+                        CoapResponse.ok("21C").toFuture()
                 ))
         )
         .build();
 
-subscriptionManager.init(server);
+observersManager.init(server);
 server.start();
 ```
 
