@@ -17,7 +17,6 @@ package com.mbed.coap.server;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
@@ -41,7 +40,7 @@ class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapRespo
 
         CoapRequest obsReq;
         if (req.getToken().isEmpty()) {
-            obsReq = req.withToken(Opaque.variableUInt(nextToken.incrementAndGet()));
+            obsReq = req.modify().token(nextToken.incrementAndGet()).build();
         } else {
             obsReq = req;
         }

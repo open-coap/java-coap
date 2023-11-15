@@ -26,6 +26,8 @@ import static com.mbed.coap.packet.CoapResponseTest.newOptions;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.decodeHex;
+import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
+import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -41,6 +43,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class CoapRequestTest {
+    private static final TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
 
     @Test
     void shouldCreatePing() {
@@ -88,6 +91,19 @@ class CoapRequestTest {
     }
 
     @Test
+    void shouldModifyTransportContext() {
+        CoapRequest request = CoapRequest.delete("/test").token(1023).build();
+
+        // when
+        CoapRequest request2 = request.modify()
+                .context(DUMMY_KEY, "test")
+                .build();
+
+        // then
+        assertEquals("test", request2.getTransContext(DUMMY_KEY));
+    }
+
+    @Test
     public void equalsAndHashTest() {
         EqualsVerifier.forClass(CoapRequest.class).suppress(Warning.NONFINAL_FIELDS)
                 .usingGetClass()
@@ -115,9 +131,17 @@ class CoapRequestTest {
                     .size1(342)
                     .observe()
                     .payload("perse", MediaTypes.CT_TEXT_PLAIN)
+                    .context(RESPONSE_TIMEOUT, ofSeconds(12))
+                    .context(DUMMY_KEY, "test")
                     .from(LOCAL_5683);
 
-            CoapRequest expected = new CoapRequest(Method.GET, Opaque.ofBytes(0xB1, 0x97), new HeaderOptions(), Opaque.of("perse"), LOCAL_5683, TransportContext.EMPTY);
+            CoapRequest expected = new CoapRequest(
+                    Method.GET,
+                    Opaque.ofBytes(0xB1, 0x97),
+                    new HeaderOptions(), Opaque.of("perse"),
+                    LOCAL_5683,
+                    TransportContext.of(RESPONSE_TIMEOUT, ofSeconds(12)).with(DUMMY_KEY, "test")
+            );
             expected.options().setUriPath("/0/1/2");
             expected.options().setAccept(CT_APPLICATION_JSON);
             expected.options().setObserve(0);

@@ -85,7 +85,7 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
             removeBlockRequest(blockRequestId);
 
             //last block received
-            final CoapRequest coapRequest = request.withPayload(blockRequest.getCombinedPayload());
+            final CoapRequest coapRequest = request.modify().payload(blockRequest.getCombinedPayload()).build();
             return service
                     .apply(coapRequest)
                     .thenApply(resp -> adjustPayloadSize(coapRequest, resp));
