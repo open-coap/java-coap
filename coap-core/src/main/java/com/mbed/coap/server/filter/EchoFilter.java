@@ -33,7 +33,7 @@ public class EchoFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse
                     if (resp.getCode() == Code.C401_UNAUTHORIZED && resp.options().getEcho() != null) {
                         // server required freshness verification, retry with echo
 
-                        CoapRequest requestWithEcho = request.withOptions(it -> it.echo(resp.options().getEcho()));
+                        CoapRequest requestWithEcho = request.modify().options(it -> it.echo(resp.options().getEcho())).build();
                         return service.apply(requestWithEcho);
                     } else {
                         return completedFuture(resp);

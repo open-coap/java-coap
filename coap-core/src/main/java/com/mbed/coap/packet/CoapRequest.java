@@ -169,22 +169,30 @@ public final class CoapRequest {
 
 
     // ---  MODIFIERS ---
+    @Deprecated
     public CoapRequest withToken(Opaque newToken) {
         return new CoapRequest(method, newToken, options, payload, peerAddress, transContext);
     }
 
+    @Deprecated
     public CoapRequest withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
         CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
         optionsFunc.accept(optionsBuilder);
         return new CoapRequest(method, token, optionsBuilder.build(), payload, peerAddress, transContext);
     }
 
+    @Deprecated
     public CoapRequest withPayload(Opaque newPayload) {
         return new CoapRequest(method, token, options, newPayload, peerAddress, transContext);
     }
 
+    @Deprecated
     public CoapRequest withAddress(InetSocketAddress newPeerAddress) {
         return new CoapRequest(method, token, options, payload, newPeerAddress, transContext);
+    }
+
+    public Builder modify() {
+        return new Builder(method, token, CoapOptionsBuilder.from(options), payload, peerAddress, transContext);
     }
 
     public static class Builder {
@@ -199,6 +207,15 @@ public final class CoapRequest {
             this.method = method;
             this.options = CoapOptionsBuilder.options();
             this.options.uriPath(uriPath);
+        }
+
+        private Builder(Method method, Opaque token, CoapOptionsBuilder options, Opaque payload, InetSocketAddress peerAddress, TransportContext transContext) {
+            this.method = method;
+            this.token = token;
+            this.options = options;
+            this.payload = payload;
+            this.peerAddress = peerAddress;
+            this.transContext = transContext;
         }
 
         public CoapRequest build() {
