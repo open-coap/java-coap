@@ -58,5 +58,9 @@
         <Class name="com.mbed.lwm2m.LWM2MResourceInstance"/>
         <Bug pattern="CT_CONSTRUCTOR_THROW"/>
     </Match>
+    <Match>
+        <Package name="com.mbed.lwm2m.model"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
 
 </FindBugsFilter>
