@@ -29,5 +29,5 @@ jobs:
         with:
           arguments: build jacocoTestReport -i
           cache-read-only: false
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         if: matrix.java == '11'
