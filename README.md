@@ -148,7 +148,7 @@ CompletableFuture<CoapResponse> futureResponse2 = client.send(CoapRequest
                 .maxAge(Duration.ofHours(1))
         )
         .payload("{\"power\": \"on\"}", MediaTypes.CT_APPLICATION_JSON)
-        .context(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
+        .addContext(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
 );
 futureResponse2.thenAccept(resp ->
         // .. handle response

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundSimpleRequest() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).context(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).addContext(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(120).uriPath("/test2"));
 
         // when
@@ -117,7 +117,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundRequestWithBlocks() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).context(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).addContext(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(32).uriPath("/large2"));
 
         // when

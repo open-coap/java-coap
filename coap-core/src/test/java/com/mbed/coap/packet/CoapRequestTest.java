@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,7 +96,7 @@ class CoapRequestTest {
 
         // when
         CoapRequest request2 = request.modify()
-                .context(DUMMY_KEY, "test")
+                .addContext(DUMMY_KEY, "test")
                 .build();
 
         // then
@@ -131,8 +131,8 @@ class CoapRequestTest {
                     .size1(342)
                     .observe()
                     .payload("perse", MediaTypes.CT_TEXT_PLAIN)
-                    .context(RESPONSE_TIMEOUT, ofSeconds(12))
-                    .context(DUMMY_KEY, "test")
+                    .addContext(RESPONSE_TIMEOUT, ofSeconds(12))
+                    .addContext(DUMMY_KEY, "test")
                     .from(LOCAL_5683);
 
             CoapRequest expected = new CoapRequest(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -274,7 +274,7 @@ public final class CoapRequest {
             return this;
         }
 
-        public <T> Builder context(TransportContext.Key<T> key, T value) {
+        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
             transContext = transContext.with(key, value);
             return this;
         }

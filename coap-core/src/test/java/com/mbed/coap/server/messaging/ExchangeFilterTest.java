@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ class ExchangeFilterTest {
     @Test
     void nonConfirmableExchange() {
         // given
-        CoapRequest req = get("/13").token(19).context(NON_CONFIRMABLE, true).from(LOCAL_5683);
+        CoapRequest req = get("/13").token(19).addContext(NON_CONFIRMABLE, true).from(LOCAL_5683);
         resp = service.apply(req);
         assertEquals(1, exchangeFilter.transactions());
 
