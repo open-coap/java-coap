@@ -51,11 +51,12 @@ public class BlockTransferOnDemandTest {
     public void setUp() throws IOException {
 
         server = CoapServer.builder()
-                .maxIncomingBlockTransferSize(MAX_DATA)
-                .blockSize(BlockSize.S_16)
+                //.maxIncomingBlockTransferSize(MAX_DATA)
+                //.blockSize(BlockSize.S_16)
                 .transport(InMemoryCoapTransport.create(5683))
                 .route(RouterService.builder()
                         .get("/man", new ManualBlockTransferCoapResource())
+                        .get("/missing-second-block", new MissingSecondBlock())
                         .build()
                 )
                 .build();
@@ -63,7 +64,7 @@ public class BlockTransferOnDemandTest {
         server.start();
 
         client = CoapServer.builder()
-                .maxIncomingBlockTransferSize(MAX_DATA)
+                //.maxIncomingBlockTransferSize(MAX_DATA)
                 .transport(InMemoryCoapTransport.create())
                 .buildClient(localhost(5683));
     }
@@ -81,6 +82,18 @@ public class BlockTransferOnDemandTest {
         assertEquals(1, resp.options().getBlock2Res().getNr());
     }
 
+    @Test
+    public void MissingBlockTest() throws ExecutionException, InterruptedException, CoapException {
+        CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_16));
+        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").build(), resp);
+    }
+
+    @Test
+    public void MissingBlockTest2() throws ExecutionException, InterruptedException, CoapException {
+        CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32));
+        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").build(), resp);
+    }
+
     private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {
 
         @Override
@@ -92,6 +105,21 @@ public class BlockTransferOnDemandTest {
             } else {
                 // last packet
                 return coapResponse(Code.C205_CONTENT).block2Res(1, BlockSize.S_16, false).payload("-plus-some").toFuture();
+            }
+
+        }
+    }
+
+    private class MissingSecondBlock implements Service<CoapRequest, CoapResponse> {
+
+        @Override
+        public CompletableFuture<CoapResponse> apply(CoapRequest req) {
+            int blockNr = req.options().getBlock2Res() == null ? 0 : req.options().getBlock2Res().getNr();
+
+            if (blockNr == 0) {
+                return coapResponse(Code.C205_CONTENT).block2Res(0, req.options().getBlock2Res().getBlockSize(), true).payload("32B-of-data-here32B-of-data-here").toFuture();
+            } else {
+                return coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").toFuture();
             }
 
         }
