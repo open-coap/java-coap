@@ -20,7 +20,6 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.utils.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.BlockSize;
@@ -87,9 +86,8 @@ public class BlockTransferOnDemandTest {
 
     @Test
     public void MissingBlockTest2() throws ExecutionException, InterruptedException, CoapException {
-        assertThrows(CoapException.class, () ->
-                client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32))
-        );
+        CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32));
+        assertEquals(Code.C404_NOT_FOUND, resp.getCode());
     }
 
     private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {
@@ -117,7 +115,7 @@ public class BlockTransferOnDemandTest {
             if (blockNr == 0) {
                 return coapResponse(Code.C205_CONTENT).block2Res(0, req.options().getBlock2Res().getBlockSize(), true).payload(payload).toFuture();
             } else {
-                return coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is biig error32bit").toFuture();
+                return coapResponse(Code.C404_NOT_FOUND).payload("This is exactly a 35 characters!!!!").toFuture();
             }
 
         }

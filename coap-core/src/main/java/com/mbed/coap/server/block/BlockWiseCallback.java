@@ -138,7 +138,7 @@ final class BlockWiseCallback {
         LOGGER.trace("Received CoAP block [{}]", blResponse.options().getBlock2Res());
 
         if (response != null && !response.getCode().isError() && blResponse.getCode().isError()) {
-            return failedFuture(new CoapBlockException("CoAP status code changed into error during block transfer: " + response.getCode() + " -> " + blResponse.getCode()));
+            return completedFuture(blResponse);
         }
 
         String errMsg = verifyBlockResponse(request.options().getBlock2Res(), blResponse);
