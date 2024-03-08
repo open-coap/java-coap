@@ -96,4 +96,13 @@ public enum Code {
     public boolean isSignaling() {
         return coapCode >>> 5 == 7;
     }
+
+    public boolean isError() {
+        return coapCode >>> 5 == 4 || coapCode >>> 5 == 5;
+    }
+
+    public boolean isSuccess() {
+        return coapCode >>> 5 == 2;
+    }
+
 }

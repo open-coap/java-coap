@@ -137,6 +137,10 @@ final class BlockWiseCallback {
     private CompletableFuture<CoapResponse> receiveBlock2(CoapResponse blResponse) {
         LOGGER.trace("Received CoAP block [{}]", blResponse.options().getBlock2Res());
 
+        if (response != null && !response.getCode().isError() && blResponse.getCode().isError()) {
+            return failedFuture(new CoapBlockException("CoAP status code changed into error during block transfer: " + response.getCode() + " -> " + blResponse.getCode()));
+        }
+
         String errMsg = verifyBlockResponse(request.options().getBlock2Res(), blResponse);
         if (errMsg != null) {
             return failedFuture(new CoapBlockException(errMsg));
@@ -147,8 +151,8 @@ final class BlockWiseCallback {
         } else {
             this.response = CoapResponse.of(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options())
                     .withOptions(o -> o.block2Res(blResponse.options().getBlock2Res()));
-
         }
+
         if (hasResourceChanged(blResponse)) {
             return restartBlockTransfer(blResponse);
         }

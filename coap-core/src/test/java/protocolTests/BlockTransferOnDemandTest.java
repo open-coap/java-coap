@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.utils.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.packet.BlockSize;
@@ -42,8 +43,6 @@ import org.junit.jupiter.api.Test;
  * Block1 header option block transfer size limit tests.
  */
 public class BlockTransferOnDemandTest {
-    private static final int MAX_DATA = 32;
-
     private CoapServer server = null;
     private CoapClient client = null;
 
@@ -51,8 +50,6 @@ public class BlockTransferOnDemandTest {
     public void setUp() throws IOException {
 
         server = CoapServer.builder()
-                //.maxIncomingBlockTransferSize(MAX_DATA)
-                //.blockSize(BlockSize.S_16)
                 .transport(InMemoryCoapTransport.create(5683))
                 .route(RouterService.builder()
                         .get("/man", new ManualBlockTransferCoapResource())
@@ -64,7 +61,6 @@ public class BlockTransferOnDemandTest {
         server.start();
 
         client = CoapServer.builder()
-                //.maxIncomingBlockTransferSize(MAX_DATA)
                 .transport(InMemoryCoapTransport.create())
                 .buildClient(localhost(5683));
     }
@@ -85,13 +81,15 @@ public class BlockTransferOnDemandTest {
     @Test
     public void MissingBlockTest() throws ExecutionException, InterruptedException, CoapException {
         CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_16));
-        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").build(), resp);
+
+        assertEquals(coapResponse(Code.C500_INTERNAL_SERVER_ERROR).build(), resp);
     }
 
     @Test
     public void MissingBlockTest2() throws ExecutionException, InterruptedException, CoapException {
-        CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32));
-        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").build(), resp);
+        assertThrows(CoapException.class, () ->
+                client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32))
+        );
     }
 
     private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {
@@ -115,11 +113,11 @@ public class BlockTransferOnDemandTest {
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
             int blockNr = req.options().getBlock2Res() == null ? 0 : req.options().getBlock2Res().getNr();
-
+            String payload = req.options().getBlock2Res().getBlockSize() == BlockSize.S_16 ? "16B-of-data-here" : "32B-of-data-here32B-of-data-here";
             if (blockNr == 0) {
-                return coapResponse(Code.C205_CONTENT).block2Res(0, req.options().getBlock2Res().getBlockSize(), true).payload("32B-of-data-here32B-of-data-here").toFuture();
+                return coapResponse(Code.C205_CONTENT).block2Res(0, req.options().getBlock2Res().getBlockSize(), true).payload(payload).toFuture();
             } else {
-                return coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is errorthis").toFuture();
+                return coapResponse(Code.C404_NOT_FOUND).payload("this is errorthis is biig error32bit").toFuture();
             }
 
         }
