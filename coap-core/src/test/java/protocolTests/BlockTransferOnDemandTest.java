@@ -87,7 +87,7 @@ public class BlockTransferOnDemandTest {
     @Test
     public void MissingBlockTest2() throws ExecutionException, InterruptedException, CoapException {
         CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32));
-        assertEquals(Code.C404_NOT_FOUND, resp.getCode());
+        assertEquals(coapResponse(Code.C404_NOT_FOUND).block2Res(1, BlockSize.S_32, false).payload("!!!").build(), resp); // bit nonsensical payload, but cannot be fixed
     }
 
     private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {
