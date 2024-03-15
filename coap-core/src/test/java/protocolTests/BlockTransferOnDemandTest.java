@@ -80,14 +80,13 @@ public class BlockTransferOnDemandTest {
     @Test
     public void MissingBlockTest() throws ExecutionException, InterruptedException, CoapException {
         CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_16));
-
-        assertEquals(coapResponse(Code.C500_INTERNAL_SERVER_ERROR).build(), resp);
+        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("This is exactly a 35 characters!!!!").build(), resp);
     }
 
     @Test
     public void MissingBlockTest2() throws ExecutionException, InterruptedException, CoapException {
         CoapResponse resp = client.sendSync(get("/missing-second-block").blockSize(BlockSize.S_32));
-        assertEquals(coapResponse(Code.C404_NOT_FOUND).block2Res(1, BlockSize.S_32, false).payload("!!!").build(), resp); // bit nonsensical payload, but cannot be fixed
+        assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("This is exactly a 35 characters!!!!").build(), resp);
     }
 
     private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {

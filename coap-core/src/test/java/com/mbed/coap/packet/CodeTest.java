@@ -16,7 +16,9 @@
  */
 package com.mbed.coap.packet;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 public class CodeTest {
@@ -48,5 +50,50 @@ public class CodeTest {
         assertFalse(Code.C203_VALID.isSignaling());
         assertFalse(Code.C405_METHOD_NOT_ALLOWED.isSignaling());
         assertFalse(Code.C503_SERVICE_UNAVAILABLE.isSignaling());
+    }
+
+    @Test
+    public void testIsError() {
+        assertTrue(Code.C400_BAD_REQUEST.isError());
+        assertTrue(Code.C401_UNAUTHORIZED.isError());
+        assertTrue(Code.C402_BAD_OPTION.isError());
+        assertTrue(Code.C403_FORBIDDEN.isError());
+        assertTrue(Code.C404_NOT_FOUND.isError());
+        assertTrue(Code.C405_METHOD_NOT_ALLOWED.isError());
+        assertTrue(Code.C406_NOT_ACCEPTABLE.isError());
+        assertTrue(Code.C408_REQUEST_ENTITY_INCOMPLETE.isError());
+        assertTrue(Code.C409_CONFLICT.isError());
+        assertTrue(Code.C412_PRECONDITION_FAILED.isError());
+        assertTrue(Code.C413_REQUEST_ENTITY_TOO_LARGE.isError());
+        assertTrue(Code.C415_UNSUPPORTED_MEDIA_TYPE.isError());
+        assertTrue(Code.C422_UNPROCESSABLE_ENTITY.isError());
+        assertTrue(Code.C500_INTERNAL_SERVER_ERROR.isError());
+        assertTrue(Code.C501_NOT_IMPLEMENTED.isError());
+        assertTrue(Code.C502_BAD_GATEWAY.isError());
+        assertTrue(Code.C503_SERVICE_UNAVAILABLE.isError());
+        assertTrue(Code.C504_GATEWAY_TIMEOUT.isError());
+        assertTrue(Code.C505_PROXYING_NOT_SUPPORTED.isError());
+
+        assertFalse(Code.C203_VALID.isError());
+        assertFalse(Code.C231_CONTINUE.isError());
+        assertFalse(Code.C701_CSM.isError());
+        assertFalse(Code.C702_PING.isError());
+    }
+
+    @Test
+    public void testIsSuccess() {
+        assertTrue(Code.C201_CREATED.isSuccess());
+        assertTrue(Code.C202_DELETED.isSuccess());
+        assertTrue(Code.C203_VALID.isSuccess());
+        assertTrue(Code.C204_CHANGED.isSuccess());
+        assertTrue(Code.C205_CONTENT.isSuccess());
+        assertTrue(Code.C231_CONTINUE.isSuccess());
+
+        assertFalse(Code.C405_METHOD_NOT_ALLOWED.isSuccess());
+        assertFalse(Code.C412_PRECONDITION_FAILED.isSuccess());
+        assertFalse(Code.C701_CSM.isSuccess());
+        assertFalse(Code.C705_ABORT.isSuccess());
+        assertFalse(Code.C500_INTERNAL_SERVER_ERROR.isSuccess());
+        assertFalse(Code.C503_SERVICE_UNAVAILABLE.isSuccess());
     }
 }

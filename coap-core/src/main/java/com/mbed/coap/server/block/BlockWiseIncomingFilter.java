@@ -32,7 +32,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.management.RuntimeErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +115,10 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     public CoapResponse adjustPayloadSize(CoapRequest req, CoapResponse resp) {
+        if (resp.getCode().isError()) {
+            return resp;
+        }
+
         resp.options().setBlock1Req(req.options().getBlock1Req());
         if (resp.options().getBlock2Res() == null) {
 
@@ -145,10 +148,8 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
         if (blTo + 1 >= resp.getPayload().size()) {
             blTo = resp.getPayload().size();
             block2Res = new BlockOption(block2Res.getNr(), block2Res.getBlockSize(), false);
-        } else if (!resp.getCode().isError()) {
-            block2Res = new BlockOption(block2Res.getNr(), block2Res.getBlockSize(), true);
         } else {
-            throw new RuntimeErrorException(new Error(), "Too big payload for error response.");
+            block2Res = new BlockOption(block2Res.getNr(), block2Res.getBlockSize(), true);
         }
 
         int newLength = blTo - blFrom;
