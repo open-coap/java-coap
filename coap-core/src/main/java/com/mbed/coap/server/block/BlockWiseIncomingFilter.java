@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -115,6 +115,10 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     public CoapResponse adjustPayloadSize(CoapRequest req, CoapResponse resp) {
+        if (resp.getCode().isError()) {
+            return resp;
+        }
+
         resp.options().setBlock1Req(req.options().getBlock1Req());
         if (resp.options().getBlock2Res() == null) {
 
@@ -147,6 +151,7 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
         } else {
             block2Res = new BlockOption(block2Res.getNr(), block2Res.getBlockSize(), true);
         }
+
         int newLength = blTo - blFrom;
         if (newLength < 0) {
             newLength = 0;

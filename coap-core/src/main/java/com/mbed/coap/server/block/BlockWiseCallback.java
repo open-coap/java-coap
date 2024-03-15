@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -137,6 +137,10 @@ final class BlockWiseCallback {
     private CompletableFuture<CoapResponse> receiveBlock2(CoapResponse blResponse) {
         LOGGER.trace("Received CoAP block [{}]", blResponse.options().getBlock2Res());
 
+        if (response != null && !response.getCode().isError() && blResponse.getCode().isError()) {
+            return completedFuture(blResponse);
+        }
+
         String errMsg = verifyBlockResponse(request.options().getBlock2Res(), blResponse);
         if (errMsg != null) {
             return failedFuture(new CoapBlockException(errMsg));
@@ -147,8 +151,8 @@ final class BlockWiseCallback {
         } else {
             this.response = CoapResponse.of(blResponse.getCode(), response.getPayload().concat(blResponse.getPayload()), response.options())
                     .withOptions(o -> o.block2Res(blResponse.options().getBlock2Res()));
-
         }
+
         if (hasResourceChanged(blResponse)) {
             return restartBlockTransfer(blResponse);
         }
