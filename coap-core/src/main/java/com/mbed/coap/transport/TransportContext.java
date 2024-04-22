@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package com.mbed.coap.transport;
 
 import static java.util.Objects.requireNonNull;
 import java.time.Duration;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public final class TransportContext {
+public final class TransportContext implements Iterable<TransportContext.Key<?>> {
 
     private final Key key;
     private final Object value;
@@ -66,6 +68,17 @@ public final class TransportContext {
         return new TransportContext(requireNonNull(key), requireNonNull(value), this);
     }
 
+    public TransportContext with(TransportContext otherCtx) {
+        if (otherCtx.equals(EMPTY)) {
+            return this;
+        }
+        TransportContext mergedContext = this.with(otherCtx.key, otherCtx.value);
+        if (otherCtx.next == null) {
+            return mergedContext;
+        }
+        return mergedContext.with(otherCtx.next);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -81,6 +94,28 @@ public final class TransportContext {
     @Override
     public int hashCode() {
         return Objects.hash(key, value, next);
+    }
+
+    @Override
+    public Iterator<Key<?>> iterator() {
+        return new Iterator<Key<?>>() {
+            private TransportContext current = TransportContext.this;
+
+            @Override
+            public boolean hasNext() {
+                return current != null;
+            }
+
+            @Override
+            public Key<?> next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                Key<?> key = current.key;
+                current = current.next;
+                return key;
+            }
+        };
     }
 
     public static final class Key<T> {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,14 @@
  */
 package com.mbed.coap.transport;
 
+import static com.mbed.coap.transport.TransportContext.EMPTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
@@ -39,11 +45,59 @@ public class TransportContextTest {
     }
 
     @Test
+    void merge() {
+        TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111");
+        TransportContext ctx2 = TransportContext.of(DUMMY_KEY2, "222");
+
+        TransportContext ctx3 = ctx1.with(ctx2);
+
+        assertEquals("111", ctx3.get(DUMMY_KEY));
+        assertEquals("222", ctx3.get(DUMMY_KEY2));
+    }
+
+    @Test
+    void mergeWithEmpty() {
+        TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111");
+
+        assertEquals(ctx1, ctx1.with(EMPTY));
+        assertEquals(ctx1, EMPTY.with(ctx1));
+    }
+
+    @Test
+    void mergeAndOverWrite() {
+        TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111").with(DUMMY_KEY2, "222");
+        TransportContext ctx2 = TransportContext.of(DUMMY_KEY, "aaa");
+
+        TransportContext ctx3 = ctx1.with(ctx2);
+
+        assertEquals("aaa", ctx3.get(DUMMY_KEY));
+        assertEquals("222", ctx3.get(DUMMY_KEY2));
+    }
+
+    @Test
+    void listKeys() {
+        TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111").with(DUMMY_KEY2, "222");
+
+        Iterator<TransportContext.Key<?>> iterator = ctx1.iterator();
+
+        assertTrue(iterator.hasNext());
+        assertEquals(DUMMY_KEY2, iterator.next());
+
+        assertTrue(iterator.hasNext());
+        assertEquals(DUMMY_KEY, iterator.next());
+
+        assertFalse(iterator.hasNext());
+        assertThrows(NoSuchElementException.class, iterator::next);
+    }
+
+    @Test
     void empty() {
-        TransportContext trans = TransportContext.EMPTY;
+        TransportContext trans = EMPTY;
         assertNull(trans.get(DUMMY_KEY));
         assertEquals("default-val", trans.getOrDefault(DUMMY_KEY2, "default-val"));
         assertEquals("na", trans.get(DUMMY_KEY2));
+
+        assertEquals(EMPTY, EMPTY.with(EMPTY));
     }
 
     @Test
@@ -51,7 +105,7 @@ public class TransportContextTest {
         EqualsVerifier.forClass(TransportContext.class)
                 .suppress(Warning.NONFINAL_FIELDS)
                 .usingGetClass()
-                .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
+                .withPrefabValues(TransportContext.class, EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
                 .verify();
     }
 

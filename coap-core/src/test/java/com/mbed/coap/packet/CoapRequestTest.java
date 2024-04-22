@@ -26,6 +26,7 @@ import static com.mbed.coap.packet.CoapResponseTest.newOptions;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
 import static com.mbed.coap.packet.Opaque.EMPTY;
 import static com.mbed.coap.packet.Opaque.decodeHex;
+import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
 import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -96,11 +97,13 @@ class CoapRequestTest {
 
         // when
         CoapRequest request2 = request.modify()
-                .addContext(DUMMY_KEY, "test")
+                .addContext(NON_CONFIRMABLE, true)
+                .addContext(TransportContext.of(DUMMY_KEY, "test"))
                 .build();
 
         // then
         assertEquals("test", request2.getTransContext(DUMMY_KEY));
+        assertEquals(true, request2.getTransContext(NON_CONFIRMABLE));
     }
 
     @Test
