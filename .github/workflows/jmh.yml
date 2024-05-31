@@ -16,16 +16,12 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
       - name: Build
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: jmhJar
-          cache-read-only: false
+        run: ./gradlew jmhJar
       - name: Run benchmarks
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: jmh
-          cache-read-only: false
+        run: ./gradlew jmh
       - name: print summary
         run: |
           echo '### JMH report' >> $GITHUB_STEP_SUMMARY

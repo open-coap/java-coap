@@ -24,10 +24,12 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'corretto'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: build jacocoTestReport -i
-          cache-read-only: false
+        run: ./gradlew build jacocoTestReport -i
       - uses: codecov/codecov-action@v4
-        if: matrix.java == '11'
+        if: matrix.java == '21'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
