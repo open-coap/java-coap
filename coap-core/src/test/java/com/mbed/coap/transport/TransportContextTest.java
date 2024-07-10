@@ -16,13 +16,10 @@
 package com.mbed.coap.transport;
 
 import static com.mbed.coap.transport.TransportContext.EMPTY;
+import static org.assertj.core.util.Sets.set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
@@ -32,6 +29,7 @@ public class TransportContextTest {
 
     private TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
     private TransportContext.Key<String> DUMMY_KEY2 = new TransportContext.Key<>("na");
+    private TransportContext.Key<String> DUMMY_KEY3 = new TransportContext.Key<>(null);
 
     @Test
     void test() {
@@ -53,6 +51,7 @@ public class TransportContextTest {
 
         assertEquals("111", ctx3.get(DUMMY_KEY));
         assertEquals("222", ctx3.get(DUMMY_KEY2));
+        assertEquals(set(DUMMY_KEY, DUMMY_KEY2), ctx3.keys());
     }
 
     @Test
@@ -61,33 +60,21 @@ public class TransportContextTest {
 
         assertEquals(ctx1, ctx1.with(EMPTY));
         assertEquals(ctx1, EMPTY.with(ctx1));
+        assertEquals(set(DUMMY_KEY), ctx1.keys());
     }
 
     @Test
     void mergeAndOverWrite() {
         TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111").with(DUMMY_KEY2, "222");
-        TransportContext ctx2 = TransportContext.of(DUMMY_KEY, "aaa");
+        TransportContext ctx2 = TransportContext.of(DUMMY_KEY, "aaa").with(DUMMY_KEY3, "333");
 
         TransportContext ctx3 = ctx1.with(ctx2);
 
         assertEquals("aaa", ctx3.get(DUMMY_KEY));
         assertEquals("222", ctx3.get(DUMMY_KEY2));
-    }
+        assertEquals("333", ctx3.get(DUMMY_KEY3));
 
-    @Test
-    void listKeys() {
-        TransportContext ctx1 = TransportContext.of(DUMMY_KEY, "111").with(DUMMY_KEY2, "222");
-
-        Iterator<TransportContext.Key<?>> iterator = ctx1.iterator();
-
-        assertTrue(iterator.hasNext());
-        assertEquals(DUMMY_KEY2, iterator.next());
-
-        assertTrue(iterator.hasNext());
-        assertEquals(DUMMY_KEY, iterator.next());
-
-        assertFalse(iterator.hasNext());
-        assertThrows(NoSuchElementException.class, iterator::next);
+        assertEquals(set(DUMMY_KEY, DUMMY_KEY2, DUMMY_KEY3), ctx3.keys());
     }
 
     @Test
@@ -107,6 +94,16 @@ public class TransportContextTest {
                 .usingGetClass()
                 .withPrefabValues(TransportContext.class, EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
                 .verify();
+    }
+
+    @Test
+    public void equalsAndHashKeys() {
+        assertEquals(DUMMY_KEY, DUMMY_KEY);
+
+        assertNotEquals(DUMMY_KEY, DUMMY_KEY2);
+        assertNotEquals(DUMMY_KEY, DUMMY_KEY3);
+
+        assertNotEquals(new TransportContext.Key<String>(null), new TransportContext.Key<String>(null));
     }
 
 }

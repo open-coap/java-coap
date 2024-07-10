@@ -17,11 +17,11 @@ package com.mbed.coap.transport;
 
 import static java.util.Objects.requireNonNull;
 import java.time.Duration;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-public final class TransportContext implements Iterable<TransportContext.Key<?>> {
+public final class TransportContext {
 
     private final Key key;
     private final Object value;
@@ -96,26 +96,17 @@ public final class TransportContext implements Iterable<TransportContext.Key<?>>
         return Objects.hash(key, value, next);
     }
 
-    @Override
-    public Iterator<Key<?>> iterator() {
-        return new Iterator<Key<?>>() {
-            private TransportContext current = TransportContext.this;
+    public Set<Key<?>> keys() {
+        Set<Key<?>> keys = new HashSet<>();
+        addKey(keys);
+        return keys;
+    }
 
-            @Override
-            public boolean hasNext() {
-                return current != null;
-            }
-
-            @Override
-            public Key<?> next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                Key<?> key = current.key;
-                current = current.next;
-                return key;
-            }
-        };
+    private void addKey(Set<Key<?>> keys) {
+        keys.add(key);
+        if (next != null) {
+            next.addKey(keys);
+        }
     }
 
     public static final class Key<T> {
@@ -123,23 +114,6 @@ public final class TransportContext implements Iterable<TransportContext.Key<?>>
 
         public Key(T defaultValue) {
             this.defaultValue = defaultValue;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Key<?> key = (Key<?>) o;
-            return Objects.equals(defaultValue, key.defaultValue);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(defaultValue);
         }
     }
 }
