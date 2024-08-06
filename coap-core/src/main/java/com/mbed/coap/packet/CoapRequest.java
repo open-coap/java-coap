@@ -279,6 +279,11 @@ public final class CoapRequest {
             return this;
         }
 
+        public <T> Builder addContext(TransportContext context) {
+            transContext = transContext.with(context);
+            return this;
+        }
+
         public Builder address(InetSocketAddress address) {
             this.peerAddress = address;
             return this;

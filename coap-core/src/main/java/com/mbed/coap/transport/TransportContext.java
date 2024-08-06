@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package com.mbed.coap.transport;
 
 import static java.util.Objects.requireNonNull;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public final class TransportContext {
 
@@ -66,6 +68,17 @@ public final class TransportContext {
         return new TransportContext(requireNonNull(key), requireNonNull(value), this);
     }
 
+    public TransportContext with(TransportContext otherCtx) {
+        if (otherCtx.equals(EMPTY)) {
+            return this;
+        }
+        TransportContext mergedContext = this.with(otherCtx.key, otherCtx.value);
+        if (otherCtx.next == null) {
+            return mergedContext;
+        }
+        return mergedContext.with(otherCtx.next);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -83,28 +96,24 @@ public final class TransportContext {
         return Objects.hash(key, value, next);
     }
 
+    public Set<Key<?>> keys() {
+        Set<Key<?>> keys = new HashSet<>();
+        addKey(keys);
+        return keys;
+    }
+
+    private void addKey(Set<Key<?>> keys) {
+        keys.add(key);
+        if (next != null) {
+            next.addKey(keys);
+        }
+    }
+
     public static final class Key<T> {
         private final T defaultValue;
 
         public Key(T defaultValue) {
             this.defaultValue = defaultValue;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Key<?> key = (Key<?>) o;
-            return Objects.equals(defaultValue, key.defaultValue);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(defaultValue);
         }
     }
 }
