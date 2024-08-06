@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
- * SPDX-License-Identifier: Apache-2.0
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.spotbugs.snom.Effort
 
@@ -24,7 +8,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.0.15"
+    id("com.github.spotbugs") version "6.0.19"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -106,7 +90,7 @@ subprojects {
     }
 
     pmd {
-        toolVersion = "6.53.0"
+        toolVersion = "6.55.0"
         isConsoleOutput = true
         ruleSets = emptyList()
         ruleSetFiles = files(rootProject.file("pmd-rules.xml"))
