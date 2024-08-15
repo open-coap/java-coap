@@ -27,12 +27,15 @@ import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
+import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class CoapRequestConverterTest {
+    private static final TransportContext.Key<Boolean> DUMMY_KEY_IN = new TransportContext.Key<>(false);
+    private static final TransportContext.Key<Boolean> DUMMY_KEY_OUT = new TransportContext.Key<>(false);
     private CoapRequestConverter conv = new CoapRequestConverter(() -> 20);
     private Service<CoapRequest, CoapResponse> service = Mockito.mock(Service.class);
 
@@ -64,5 +67,20 @@ class CoapRequestConverterTest {
         );
 
         assertEquals(newCoapPacket(LOCAL_5683).non(Code.C205_CONTENT).mid(20).token(13).payload("ok").build(), resp.join());
+    }
+
+    @Test
+    void shouldUseTransportContextFromResponse() {
+        given(service.apply(eq(
+                post("/test2").token(13).payload("test").addContext(DUMMY_KEY_IN, true).to(LOCAL_5683))
+        )).willReturn(
+                ok("ok").addContext(DUMMY_KEY_OUT, true).toFuture()
+        );
+
+        CompletableFuture<CoapPacket> resp = conv.apply(
+                newCoapPacket(LOCAL_5683).mid(1300).token(13).post().uriPath("/test2").payload("test").context(TransportContext.of(DUMMY_KEY_IN, true)).build(), service
+        );
+
+        assertEquals(newCoapPacket(LOCAL_5683).ack(Code.C205_CONTENT).mid(1300).token(13).payload("ok").context(TransportContext.of(DUMMY_KEY_IN, true).with(DUMMY_KEY_OUT, true)).build(), resp.join());
     }
 }

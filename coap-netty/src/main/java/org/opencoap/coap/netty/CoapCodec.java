@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,29 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageCodec;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Sharable
 public class CoapCodec extends MessageToMessageCodec<DatagramPacket, CoapPacket> {
 
     private final Function<DatagramPacket, TransportContext> contextResolver;
+    private final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter;
 
     public static final Function<DatagramPacket, TransportContext> EMPTY_RESOLVER = __ -> TransportContext.EMPTY;
+    public static final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> DEFAULT_CONVERTER = (coapPacket, ctx) -> {
+        ByteBuf buf = ctx.alloc().buffer(coapPacket.getPayload().size() + 128);
+        CoapSerializer.serialize(coapPacket, new ByteBufOutputStream(buf));
+        return new DatagramPacket(buf, coapPacket.getRemoteAddress());
+    };
 
     public CoapCodec(Function<DatagramPacket, TransportContext> contextResolver) {
+        this(contextResolver, DEFAULT_CONVERTER);
+    }
+
+    public CoapCodec(Function<DatagramPacket, TransportContext> contextResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
         this.contextResolver = requireNonNull(contextResolver);
+        this.coapToDatagramConverter = requireNonNull(coapToDatagramConverter);
     }
 
     @Override
@@ -50,9 +62,6 @@ public class CoapCodec extends MessageToMessageCodec<DatagramPacket, CoapPacket>
 
     @Override
     protected void encode(ChannelHandlerContext ctx, CoapPacket msg, List<Object> out) throws Exception {
-        ByteBuf buf = ctx.alloc().buffer(msg.getPayload().size() + 128);
-        CoapSerializer.serialize(msg, new ByteBufOutputStream(buf));
-
-        out.add(new DatagramPacket(buf, msg.getRemoteAddress()));
+        out.add(coapToDatagramConverter.apply(msg, ctx));
     }
 }

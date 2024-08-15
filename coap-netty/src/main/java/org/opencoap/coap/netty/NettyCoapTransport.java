@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class NettyCoapTransport implements CoapTransport {
@@ -35,11 +36,17 @@ public class NettyCoapTransport implements CoapTransport {
     private Channel channel;
     private final Bootstrap bootstrap;
     private final Function<DatagramPacket, TransportContext> contextResolver;
+    private final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter;
     private CompletableFuture<CoapPacket> receivePromise = new CompletableFuture<>();
 
     public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, TransportContext> contextResolver) {
+        this(bootstrap, contextResolver, CoapCodec.DEFAULT_CONVERTER);
+    }
+
+    public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, TransportContext> contextResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
         this.bootstrap = bootstrap;
         this.contextResolver = requireNonNull(contextResolver);
+        this.coapToDatagramConverter = requireNonNull(coapToDatagramConverter);
     }
 
     @Override
@@ -50,7 +57,7 @@ public class NettyCoapTransport implements CoapTransport {
     void init(Channel channel) {
         this.channel = channel;
         this.channel.pipeline()
-                .addLast("coap-codec", new CoapCodec(contextResolver))
+                .addLast("coap-codec", new CoapCodec(contextResolver, coapToDatagramConverter))
                 .addLast("coap-inbound", new CoapInbound());
     }
 

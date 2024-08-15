@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,25 +26,27 @@ public class CoapResponse {
     private final Code code;
     private final HeaderOptions options;
     private final Opaque payload;
+    private final TransportContext transContext;
 
-    private CoapResponse(Code code, Opaque payload, HeaderOptions options) {
+    private CoapResponse(Code code, Opaque payload, HeaderOptions options, TransportContext transContext) {
         this.code = code;
         this.payload = Objects.requireNonNull(payload);
         this.options = Objects.requireNonNull(options);
+        this.transContext = transContext;
     }
 
     // --- STATIC CONSTRUCTORS ---
 
     public static CoapResponse of(Code code) {
-        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions());
+        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions(), TransportContext.EMPTY);
     }
 
     public static CoapResponse of(Code code, Opaque payload) {
-        return new CoapResponse(code, payload, new HeaderOptions());
+        return new CoapResponse(code, payload, new HeaderOptions(), TransportContext.EMPTY);
     }
 
     public static CoapResponse of(Code code, Opaque payload, HeaderOptions options) {
-        return new CoapResponse(code, payload, options);
+        return new CoapResponse(code, payload, options, TransportContext.EMPTY);
     }
 
     public static CoapResponse of(Code code, String description) {
@@ -107,6 +109,18 @@ public class CoapResponse {
         return toSeparate(token, peerAddress, TransportContext.EMPTY);
     }
 
+    public TransportContext getTransContext() {
+        return transContext;
+    }
+
+    public <T> T getTransContext(TransportContext.Key<T> key) {
+        return transContext.get(key);
+    }
+
+    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
+        return transContext.getOrDefault(key, defaultValue);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -116,12 +130,12 @@ public class CoapResponse {
             return false;
         }
         CoapResponse that = (CoapResponse) o;
-        return Objects.equals(code, that.code) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload);
+        return Objects.equals(code, that.code) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload) && Objects.equals(transContext, that.transContext);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(code, options);
+        int result = Objects.hash(code, options, transContext);
         result = 31 * result + Objects.hashCode(payload);
         return result;
     }
@@ -142,26 +156,27 @@ public class CoapResponse {
     // ---  IMMUTABLE MODIFIERS ---
 
     public CoapResponse withPayload(Opaque newPayload) {
-        return new CoapResponse(code, newPayload, options);
+        return new CoapResponse(code, newPayload, options, transContext);
     }
 
     public CoapResponse withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
         CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
         optionsFunc.accept(optionsBuilder);
-        return new CoapResponse(code, payload, optionsBuilder.build());
+        return new CoapResponse(code, payload, optionsBuilder.build(), transContext);
     }
 
     public static class Builder {
         private final Code code;
         private final CoapOptionsBuilder options = CoapOptionsBuilder.options();
         private Opaque payload = Opaque.EMPTY;
+        private TransportContext transContext = TransportContext.EMPTY;
 
         private Builder(Code code) {
             this.code = code;
         }
 
         public CoapResponse build() {
-            return new CoapResponse(code, payload, options.build());
+            return new CoapResponse(code, payload, options.build(), transContext);
         }
 
         public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
@@ -188,6 +203,21 @@ public class CoapResponse {
         public Builder payload(String payload, short contentFormat) {
             options.contentFormat(contentFormat);
             return payload(Opaque.of(payload));
+        }
+
+        public Builder context(TransportContext newTransportContext) {
+            this.transContext = newTransportContext;
+            return this;
+        }
+
+        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
+            transContext = transContext.with(key, value);
+            return this;
+        }
+
+        public <T> Builder addContext(TransportContext context) {
+            transContext = transContext.with(context);
+            return this;
         }
 
         public Builder options(Consumer<CoapOptionsBuilder> builder) {
