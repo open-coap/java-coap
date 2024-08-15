@@ -42,6 +42,8 @@ import org.junit.jupiter.api.Test;
 
 
 class CoapResponseTest {
+    private static final TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
+    private static final TransportContext.Key<String> DUMMY_KEY2 = new TransportContext.Key<>(null);
 
     @Test
     void staticFactory() {
@@ -88,6 +90,20 @@ class CoapResponseTest {
         assertEquals("CoapResponse[400, ETag:6565]", CoapResponse.badRequest().etag(Opaque.of("ee")).build().toString());
         assertEquals("CoapResponse[205, ContTp:0, pl(3):616161]", CoapResponse.ok("aaa", CT_TEXT_PLAIN).build().toString());
         assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", coapResponse(C400_BAD_REQUEST).payload("{\"error\":123}").contentFormat(CT_APPLICATION_JSON).build().toString());
+    }
+
+    @Test
+    void shouldAccessTransportContext() {
+        // when
+        CoapResponse response = CoapResponse.ok()
+                .context(TransportContext.EMPTY)
+                .addContext(DUMMY_KEY, "test")
+                .addContext(TransportContext.of(DUMMY_KEY2, "test2"))
+                .build();
+
+        // then
+        assertEquals("test", response.getTransContext(DUMMY_KEY));
+        assertEquals("test2", response.getTransContext(DUMMY_KEY2));
     }
 
     @Nested
