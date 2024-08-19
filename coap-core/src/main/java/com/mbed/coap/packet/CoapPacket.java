@@ -97,11 +97,11 @@ public class CoapPacket {
     }
 
     public CoapResponse toCoapResponse() {
-        return CoapResponse.of(code, payload, options);
+        return CoapResponse.of(code, payload, options).withContext(this.transportContext);
     }
 
     public SeparateResponse toSeparateResponse() {
-        return toCoapResponse().toSeparate(getToken(), getRemoteAddress(), getTransportContext());
+        return toCoapResponse().toSeparate(getToken(), getRemoteAddress());
     }
 
     public InetSocketAddress getRemoteAddress() {

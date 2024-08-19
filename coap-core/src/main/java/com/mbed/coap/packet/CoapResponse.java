@@ -107,7 +107,7 @@ public class CoapResponse {
     }
 
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
-        return toSeparate(token, peerAddress, TransportContext.EMPTY);
+        return new SeparateResponse(this, token, peerAddress);
     }
 
     public TransportContext getTransContext() {
@@ -180,6 +180,7 @@ public class CoapResponse {
             return new CoapResponse(code, payload, options.build(), transContext);
         }
 
+        @Deprecated
         public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
             return build().toSeparate(token, peerAddress, transContext);
         }
