@@ -23,13 +23,16 @@ public class SeparateResponse {
     private final CoapResponse response;
     private final Opaque token;
     private final InetSocketAddress peerAddress;
-    private final TransportContext transContext;
 
-    public SeparateResponse(CoapResponse response, Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
+    public SeparateResponse(CoapResponse response, Opaque token, InetSocketAddress peerAddress) {
         this.response = Objects.requireNonNull(response);
         this.token = Objects.requireNonNull(token);
         this.peerAddress = peerAddress;
-        this.transContext = Objects.requireNonNull(transContext);
+    }
+
+    @Deprecated
+    public SeparateResponse(CoapResponse response, Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
+        this(response.withContext(transContext), token, peerAddress);
     }
 
     @Override
@@ -46,15 +49,15 @@ public class SeparateResponse {
     }
 
     public TransportContext getTransContext() {
-        return transContext;
+        return response.getTransContext();
     }
 
     public <T> T getTransContext(TransportContext.Key<T> key) {
-        return transContext.get(key);
+        return response.getTransContext().get(key);
     }
 
     public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
-        return transContext.getOrDefault(key, defaultValue);
+        return response.getTransContext().getOrDefault(key, defaultValue);
     }
 
     public Code getCode() {
@@ -82,19 +85,19 @@ public class SeparateResponse {
             return false;
         }
         SeparateResponse that = (SeparateResponse) o;
-        return Objects.equals(response, that.response) && Objects.equals(token, that.token) && Objects.equals(peerAddress, that.peerAddress) && Objects.equals(transContext, that.transContext);
+        return Objects.equals(response, that.response) && Objects.equals(token, that.token) && Objects.equals(peerAddress, that.peerAddress);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(response, token, peerAddress, transContext);
+        return Objects.hash(response, token, peerAddress);
     }
 
     public SeparateResponse withPayload(Opaque newPayload) {
-        return new SeparateResponse(response.withPayload(newPayload), token, peerAddress, transContext);
+        return new SeparateResponse(response.withPayload(newPayload), token, peerAddress);
     }
 
     public SeparateResponse duplicate() {
-        return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()), token, peerAddress, transContext);
+        return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()).withContext(response.getTransContext()), token, peerAddress);
     }
 }

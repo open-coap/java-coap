@@ -32,7 +32,7 @@ public class CoapResponse {
         this.code = code;
         this.payload = Objects.requireNonNull(payload);
         this.options = Objects.requireNonNull(options);
-        this.transContext = transContext;
+        this.transContext = Objects.requireNonNull(transContext);
     }
 
     // --- STATIC CONSTRUCTORS ---
@@ -101,8 +101,9 @@ public class CoapResponse {
         return payload.toUtf8String();
     }
 
+    @Deprecated
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
-        return new SeparateResponse(this, token, peerAddress, transContext);
+        return new SeparateResponse(this.withContext(transContext), token, peerAddress);
     }
 
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
