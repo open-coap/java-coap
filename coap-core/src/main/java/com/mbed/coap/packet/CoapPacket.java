@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,11 +97,11 @@ public class CoapPacket {
     }
 
     public CoapResponse toCoapResponse() {
-        return CoapResponse.of(code, payload, options);
+        return CoapResponse.of(code, payload, options).withContext(this.transportContext);
     }
 
     public SeparateResponse toSeparateResponse() {
-        return toCoapResponse().toSeparate(getToken(), getRemoteAddress(), getTransportContext());
+        return toCoapResponse().toSeparate(getToken(), getRemoteAddress());
     }
 
     public InetSocketAddress getRemoteAddress() {
@@ -181,7 +181,7 @@ public class CoapPacket {
 
     public CoapPacket createResponseFrom(CoapResponse coapResponse) {
         CoapPacket response = new CoapPacket(this.getRemoteAddress());
-        response.setTransportContext(this.transportContext);
+        response.setTransportContext(this.transportContext.with(coapResponse.getTransContext()));
         response.setCode(coapResponse.getCode());
         response.setToken(getToken());
         response.setPayload(coapResponse.getPayload());

@@ -78,7 +78,7 @@ public class CoapTcpDispatcher implements CoapTcpListener {
 
         // RESPONSE
         if (packet.getCode() != null) {
-            SeparateResponse resp = packet.toCoapResponse().toSeparate(packet.getToken(), packet.getRemoteAddress(), packet.getTransportContext());
+            SeparateResponse resp = packet.toCoapResponse().toSeparate(packet.getToken(), packet.getRemoteAddress());
             if (outboundHandler.apply(resp)) {
                 return;
             }

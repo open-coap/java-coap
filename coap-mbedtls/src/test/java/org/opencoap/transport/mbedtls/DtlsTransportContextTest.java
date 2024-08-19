@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@ package org.opencoap.transport.mbedtls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_AUTHENTICATION;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_CID;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_PEER_CERTIFICATE_SUBJECT;
+import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_EXPIRATION_HINT;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_START_TIMESTAMP;
 import com.mbed.coap.transport.TransportContext;
 import java.time.Instant;
@@ -39,6 +41,7 @@ public class DtlsTransportContextTest {
         assertNull(transCtx.get(DTLS_PEER_CERTIFICATE_SUBJECT));
         assertNull(transCtx.get(DTLS_CID));
         assertNull(transCtx.get(DTLS_SESSION_START_TIMESTAMP));
+        assertFalse(transCtx.get(DTLS_SESSION_EXPIRATION_HINT));
 
         assertEquals(transCtx, TransportContext.EMPTY);
     }
@@ -46,7 +49,7 @@ public class DtlsTransportContextTest {
     @Test
     void shouldConvertDtlsSessionContext() {
         TransportContext transCtx = DtlsTransportContext.toTransportContext(
-                new DtlsSessionContext(Collections.singletonMap("a", "b"), "CN:aa", new byte[]{1, 2}, Instant.ofEpochSecond(123456789))
+                new DtlsSessionContext(Collections.singletonMap("a", "b"), "CN:aa", new byte[]{1, 2}, Instant.ofEpochSecond(123456789), true)
         );
 
         assertEquals("b", transCtx.get(DTLS_AUTHENTICATION).get("a"));
@@ -54,5 +57,6 @@ public class DtlsTransportContextTest {
         assertEquals("CN:aa", transCtx.get(DTLS_PEER_CERTIFICATE_SUBJECT));
         assertEquals(Instant.ofEpochSecond(123456789), transCtx.get(DTLS_SESSION_START_TIMESTAMP));
         assertArrayEquals(new byte[]{1, 2}, transCtx.get(DTLS_CID));
+        assertTrue(transCtx.get(DTLS_SESSION_EXPIRATION_HINT));
     }
 }
