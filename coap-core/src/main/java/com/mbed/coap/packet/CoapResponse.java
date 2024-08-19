@@ -117,10 +117,6 @@ public class CoapResponse {
         return transContext.get(key);
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
-        return transContext.getOrDefault(key, defaultValue);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -163,6 +159,10 @@ public class CoapResponse {
         CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
         optionsFunc.accept(optionsBuilder);
         return new CoapResponse(code, payload, optionsBuilder.build(), transContext);
+    }
+
+    public CoapResponse withContext(TransportContext otherTransContext) {
+        return new CoapResponse(code, payload, options, transContext.with(otherTransContext));
     }
 
     public static class Builder {

@@ -16,8 +16,10 @@
 package org.opencoap.transport.mbedtls;
 
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponse.badRequest;
 import static com.mbed.coap.packet.CoapResponse.ok;
+import static com.mbed.coap.packet.Code.C201_CREATED;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Networks.localhost;
@@ -54,6 +56,8 @@ import io.netty.util.concurrent.Promise;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -108,7 +112,15 @@ public class MbedtlsNettyTest {
                             }
 
                         })
-                        .get("/ctx-hint", __ -> ok("OK!").context(TransportContext.of(DTLS_SESSION_EXPIRATION_HINT, true)).toFuture())
+                        .post("/dtls-ctx", req -> {
+                            String key = req.options().getUriQueryMap().get("key");
+                            HashMap<String, String> authCtx = new HashMap<>(req.getTransContext(DTLS_AUTHENTICATION));
+                            authCtx.put(key, req.getPayload().toUtf8String());
+                            return CoapResponse.coapResponse(C201_CREATED)
+                                    .payload(authCtx.get(key))
+                                    .addContext(DTLS_AUTHENTICATION, authCtx)
+                                    .toFuture();
+                        })
                 )
                 .build().start();
         srvAddress = localhost(server.getLocalSocketAddress().getPort());
@@ -206,12 +218,12 @@ public class MbedtlsNettyTest {
                 });
 
         // when client sends a request
-        coapClient.sendSync(get("/ctx-hint"));
+        coapClient.sendSync(post("/dtls-ctx").query("key", "foo").payload("bar"));
 
-        // then server should see the DTLS context on the response message
+        // then server should see updated DTLS context on the response message
         DtlsSessionContext respCtx = coapResponseDtlsContextPromise.get(1, TimeUnit.SECONDS);
+        assertEquals("bar", respCtx.getAuthenticationContext().get("foo"));
         assertEquals("dev01", respCtx.getAuthenticationContext().get("dev-id"));
-        assertTrue(respCtx.getSessionExpirationHint());
 
         coapClient.close();
         serverTransport.getChannel().pipeline().remove("test-handler");
