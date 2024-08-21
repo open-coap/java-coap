@@ -26,7 +26,7 @@ import com.mbed.coap.utils.Service;
 import org.junit.jupiter.api.Test;
 
 class DtlsSessionExpirationFilterTest {
-    private final Service<CoapRequest, CoapResponse> service = (new DtlsSessionExpirationFilter()).then(coapRequest -> completedFuture(of(Code.C201_CREATED)));
+    private final Service<CoapRequest, CoapResponse> service = (new DtlsSessionSuspensionFilter()).then(coapRequest -> completedFuture(of(Code.C201_CREATED)));
 
     @Test
     void shouldReturnBadRequestWhenRequestIsConfirmable() {
@@ -37,6 +37,6 @@ class DtlsSessionExpirationFilterTest {
     void shouldReturnResponseWithExpirationHint() {
         CoapResponse resp = service.apply(CoapRequest.get("/test").context(TransportContext.of(TransportContext.NON_CONFIRMABLE, true)).build()).join();
         assertEquals(Code.C201_CREATED, resp.getCode());
-        assertTrue(resp.getTransContext().get(DtlsTransportContext.DTLS_SESSION_EXPIRATION_HINT));
+        assertTrue(resp.getTransContext().get(DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT));
     }
 }

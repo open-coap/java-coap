@@ -74,7 +74,7 @@ public class MbedtlsCoapTransport implements CoapTransport {
     @Override
     public CompletableFuture<Boolean> sendPacket(CoapPacket coapPacket) {
         ByteBuffer buf = ByteBuffer.wrap(CoapSerializer.serialize(coapPacket));
-        return dtlsTransport.send(new Packet<>(buf, coapPacket.getRemoteAddress()));
+        return dtlsTransport.send(new Packet<>(buf, coapPacket.getRemoteAddress(), DtlsTransportContext.toDtlsSessionContext(coapPacket.getTransportContext())));
     }
 
     @Override

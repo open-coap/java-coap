@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_AUTHENTICATION;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_CID;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_PEER_CERTIFICATE_SUBJECT;
-import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_EXPIRATION_HINT;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_START_TIMESTAMP;
+import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT;
 import com.mbed.coap.transport.TransportContext;
 import java.time.Instant;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class DtlsTransportContextTest {
         assertNull(transCtx.get(DTLS_PEER_CERTIFICATE_SUBJECT));
         assertNull(transCtx.get(DTLS_CID));
         assertNull(transCtx.get(DTLS_SESSION_START_TIMESTAMP));
-        assertFalse(transCtx.get(DTLS_SESSION_EXPIRATION_HINT));
+        assertFalse(transCtx.get(DTLS_SESSION_SUSPENSION_HINT));
 
         assertEquals(transCtx, TransportContext.EMPTY);
     }
@@ -57,6 +57,6 @@ public class DtlsTransportContextTest {
         assertEquals("CN:aa", transCtx.get(DTLS_PEER_CERTIFICATE_SUBJECT));
         assertEquals(Instant.ofEpochSecond(123456789), transCtx.get(DTLS_SESSION_START_TIMESTAMP));
         assertArrayEquals(new byte[]{1, 2}, transCtx.get(DTLS_CID));
-        assertTrue(transCtx.get(DTLS_SESSION_EXPIRATION_HINT));
+        assertTrue(transCtx.get(DTLS_SESSION_SUSPENSION_HINT));
     }
 }
