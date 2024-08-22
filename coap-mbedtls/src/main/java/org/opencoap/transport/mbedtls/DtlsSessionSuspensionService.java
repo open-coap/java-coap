@@ -16,25 +16,20 @@
 package org.opencoap.transport.mbedtls;
 
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.transport.TransportContext;
-import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 
-public class DtlsSessionSuspensionFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
-
+public class DtlsSessionSuspensionService implements Service<CoapRequest, CoapResponse> {
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request) {
         if (!request.getTransContext(NON_CONFIRMABLE)) {
             return CoapResponse.badRequest().toFuture();
         }
 
-        return service
-                .apply(request)
-                .thenCompose(resp -> completedFuture(resp.withContext(TransportContext.of(DTLS_SESSION_SUSPENSION_HINT, true))));
+        return CoapResponse.ok().addContext(TransportContext.of(DTLS_SESSION_SUSPENSION_HINT, true)).toFuture();
     }
 }
