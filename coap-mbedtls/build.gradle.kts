@@ -6,8 +6,8 @@ description = "coap-mbedtls"
 
 dependencies {
     api(project(":coap-core"))
-    api("io.github.open-coap:kotlin-mbedtls:1.27.0")
-    api("io.github.open-coap:kotlin-mbedtls-netty:1.27.0")
+    api("io.github.open-coap:kotlin-mbedtls:1.28.0")
+    api("io.github.open-coap:kotlin-mbedtls-netty:1.28.0")
 
     testImplementation(project(":coap-netty"))
 

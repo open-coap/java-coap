@@ -181,7 +181,7 @@ public class CoapPacket {
 
     public CoapPacket createResponseFrom(CoapResponse coapResponse) {
         CoapPacket response = new CoapPacket(this.getRemoteAddress());
-        response.setTransportContext(this.transportContext.with(coapResponse.getTransContext()));
+        response.setTransportContext(coapResponse.getTransContext());
         response.setCode(coapResponse.getCode());
         response.setToken(getToken());
         response.setPayload(coapResponse.getPayload());

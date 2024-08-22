@@ -34,7 +34,7 @@ public class DtlsTransportContext {
     public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
     public static final TransportContext.Key<byte[]> DTLS_CID = new TransportContext.Key<>(null);
     public static final TransportContext.Key<Instant> DTLS_SESSION_START_TIMESTAMP = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<Boolean> DTLS_SESSION_EXPIRATION_HINT = new TransportContext.Key<>(false);
+    public static final TransportContext.Key<Boolean> DTLS_SESSION_SUSPENSION_HINT = new TransportContext.Key<>(false);
 
     public static final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> DTLS_COAP_TO_DATAGRAM_CONVERTER = (coapPacket, ctx) -> {
         ByteBuf buf = ctx.alloc().buffer(coapPacket.getPayload().size() + 128);
@@ -49,7 +49,7 @@ public class DtlsTransportContext {
 
         TransportContext dtlsContext = TransportContext
                 .of(DTLS_AUTHENTICATION, dtlsSessionContext.getAuthenticationContext())
-                .with(DTLS_SESSION_EXPIRATION_HINT, dtlsSessionContext.getSessionExpirationHint());
+                .with(DTLS_SESSION_SUSPENSION_HINT, dtlsSessionContext.getSessionSuspensionHint());
         if (dtlsSessionContext.getPeerCertificateSubject() != null) {
             dtlsContext = dtlsContext.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
         }
@@ -69,7 +69,7 @@ public class DtlsTransportContext {
                 transportContext.get(DTLS_PEER_CERTIFICATE_SUBJECT),
                 transportContext.get(DTLS_CID),
                 transportContext.get(DTLS_SESSION_START_TIMESTAMP),
-                transportContext.get(DTLS_SESSION_EXPIRATION_HINT)
+                transportContext.get(DTLS_SESSION_SUSPENSION_HINT)
         );
     }
 }

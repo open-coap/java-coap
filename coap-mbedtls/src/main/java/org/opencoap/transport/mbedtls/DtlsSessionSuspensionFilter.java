@@ -17,7 +17,7 @@ package org.opencoap.transport.mbedtls;
 
 import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_EXPIRATION_HINT;
+import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.transport.TransportContext;
@@ -25,7 +25,7 @@ import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.util.concurrent.CompletableFuture;
 
-public class DtlsSessionExpirationFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class DtlsSessionSuspensionFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
@@ -35,6 +35,6 @@ public class DtlsSessionExpirationFilter implements Filter.SimpleFilter<CoapRequ
 
         return service
                 .apply(request)
-                .thenCompose(resp -> completedFuture(resp.withContext(TransportContext.of(DTLS_SESSION_EXPIRATION_HINT, true))));
+                .thenCompose(resp -> completedFuture(resp.withContext(TransportContext.of(DTLS_SESSION_SUSPENSION_HINT, true))));
     }
 }

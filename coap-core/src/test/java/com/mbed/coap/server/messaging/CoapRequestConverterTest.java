@@ -81,6 +81,6 @@ class CoapRequestConverterTest {
                 newCoapPacket(LOCAL_5683).mid(1300).token(13).post().uriPath("/test2").payload("test").context(TransportContext.of(DUMMY_KEY_IN, true)).build(), service
         );
 
-        assertEquals(newCoapPacket(LOCAL_5683).ack(Code.C205_CONTENT).mid(1300).token(13).payload("ok").context(TransportContext.of(DUMMY_KEY_IN, true).with(DUMMY_KEY_OUT, true)).build(), resp.join());
+        assertEquals(newCoapPacket(LOCAL_5683).ack(Code.C205_CONTENT).mid(1300).token(13).payload("ok").context(TransportContext.of(DUMMY_KEY_OUT, true)).build(), resp.join());
     }
 }

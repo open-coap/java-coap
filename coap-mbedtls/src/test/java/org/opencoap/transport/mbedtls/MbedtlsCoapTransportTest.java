@@ -38,6 +38,7 @@ import com.mbed.coap.transport.TransportContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,8 +71,10 @@ class MbedtlsCoapTransportTest {
                         })
                         .post("/auth", it -> {
                             String name = it.options().getUriQueryMap().get("name");
-                            dtlsServer.putSessionAuthenticationContext(it.getPeerAddress(), "auth", name);
-                            return completedFuture(CoapResponse.of(Code.C201_CREATED));
+
+                            HashMap<String, String> authCtx = new HashMap<>();
+                            authCtx.put("auth", name);
+                            return CoapResponse.coapResponse(Code.C201_CREATED).addContext(DTLS_AUTHENTICATION, authCtx).toFuture();
                         })
                         .get("/auth", it -> {
                             String name = it.getTransContext(DTLS_AUTHENTICATION).get("auth");

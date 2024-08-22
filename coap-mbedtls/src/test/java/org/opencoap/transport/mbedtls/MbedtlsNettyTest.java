@@ -23,15 +23,12 @@ import static com.mbed.coap.packet.Code.C201_CREATED;
 import static com.mbed.coap.packet.Opaque.of;
 import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Networks.localhost;
-import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_AUTHENTICATION;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_COAP_TO_DATAGRAM_CONVERTER;
-import static org.opencoap.transport.mbedtls.DtlsTransportContext.DTLS_SESSION_EXPIRATION_HINT;
 import static org.opencoap.transport.mbedtls.DtlsTransportContext.toTransportContext;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
@@ -39,7 +36,6 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
-import com.mbed.coap.transport.TransportContext;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -57,7 +53,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -72,7 +67,6 @@ import org.opencoap.ssl.netty.DatagramPacketWithContext;
 import org.opencoap.ssl.netty.DtlsChannelHandler;
 import org.opencoap.ssl.netty.DtlsClientHandshakeChannelHandler;
 import org.opencoap.ssl.netty.NettyTransportAdapter;
-import org.opencoap.ssl.netty.SessionAuthenticationContext;
 import org.opencoap.ssl.transport.DtlsSessionContext;
 import org.opencoap.ssl.transport.SessionWriter;
 import org.opencoap.ssl.transport.Transport;
@@ -114,7 +108,7 @@ public class MbedtlsNettyTest {
                         })
                         .post("/dtls-ctx", req -> {
                             String key = req.options().getUriQueryMap().get("key");
-                            HashMap<String, String> authCtx = new HashMap<>(req.getTransContext(DTLS_AUTHENTICATION));
+                            HashMap<String, String> authCtx = new HashMap<>();
                             authCtx.put(key, req.getPayload().toUtf8String());
                             return CoapResponse.coapResponse(C201_CREATED)
                                     .payload(authCtx.get(key))
@@ -176,12 +170,11 @@ public class MbedtlsNettyTest {
         CoapClient coapClient = CoapServer.builder()
                 .transport(clientTrans)
                 .buildClient(srvAddress);
-        InetSocketAddress cliAddress = localhost(clientTrans.getLocalSocketAddress().getPort());
 
         assertEquals(badRequest(), coapClient.sendSync(get("/dtls-ctx").query("key", "dev-id")));
 
         // when
-        serverTransport.getChannel().writeAndFlush(new SessionAuthenticationContext(cliAddress, singletonMap("dev-id", "dev01")));
+        coapClient.sendSync(post("/dtls-ctx").query("key", "dev-id").payload("dev01"));
 
         // then
         assertEquals(ok("dev01"), coapClient.sendSync(get("/dtls-ctx").query("key", "dev-id")));
@@ -203,7 +196,7 @@ public class MbedtlsNettyTest {
         coapClient.sendSync(get("/test"));
 
         // when DTLS context is set for the client's session
-        serverTransport.getChannel().writeAndFlush(new SessionAuthenticationContext(cliAddress, singletonMap("dev-id", "dev01")));
+        coapClient.sendSync(post("/dtls-ctx").query("key", "dev-id").payload("dev01"));
 
         serverTransport.getChannel().pipeline().addAfter(
                 "DTLS",
@@ -220,10 +213,9 @@ public class MbedtlsNettyTest {
         // when client sends a request
         coapClient.sendSync(post("/dtls-ctx").query("key", "foo").payload("bar"));
 
-        // then server should see updated DTLS context on the response message
+        // then server should see DTLS context on the response message
         DtlsSessionContext respCtx = coapResponseDtlsContextPromise.get(1, TimeUnit.SECONDS);
         assertEquals("bar", respCtx.getAuthenticationContext().get("foo"));
-        assertEquals("dev01", respCtx.getAuthenticationContext().get("dev-id"));
 
         coapClient.close();
         serverTransport.getChannel().pipeline().remove("test-handler");
