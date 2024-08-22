@@ -16,7 +16,6 @@
 package org.opencoap.transport.mbedtls;
 
 import static com.mbed.coap.packet.CoapResponse.of;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -25,8 +24,8 @@ import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 import org.junit.jupiter.api.Test;
 
-class DtlsSessionExpirationFilterTest {
-    private final Service<CoapRequest, CoapResponse> service = (new DtlsSessionSuspensionFilter()).then(coapRequest -> completedFuture(of(Code.C201_CREATED)));
+class DtlsSessionSuspensionServiceTest {
+    private final Service<CoapRequest, CoapResponse> service = new DtlsSessionSuspensionService();
 
     @Test
     void shouldReturnBadRequestWhenRequestIsConfirmable() {
@@ -36,7 +35,7 @@ class DtlsSessionExpirationFilterTest {
     @Test
     void shouldReturnResponseWithExpirationHint() {
         CoapResponse resp = service.apply(CoapRequest.get("/test").context(TransportContext.of(TransportContext.NON_CONFIRMABLE, true)).build()).join();
-        assertEquals(Code.C201_CREATED, resp.getCode());
+        assertEquals(Code.C205_CONTENT, resp.getCode());
         assertTrue(resp.getTransContext().get(DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT));
     }
 }
