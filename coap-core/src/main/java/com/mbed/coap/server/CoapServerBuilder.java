@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -137,11 +137,11 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    private PutOnlyMap<CoapRequestId, CoapPacket> getOrCreateDuplicateDetectorCache() {
-        if (duplicateDetectionCache == null) {
-            duplicateDetectionCache = new DefaultDuplicateDetectorCache("Default cache", duplicationMaxSize, scheduledExecutorService);
+    private PutOnlyMap<CoapRequestId, CoapPacket> getOrCreateDuplicateDetectorCache(ScheduledExecutorService scheduledExecutorService) {
+        if (duplicateDetectionCache != null) {
+            return duplicateDetectionCache;
         }
-        return duplicateDetectionCache;
+        return new DefaultDuplicateDetectorCache("Default cache", duplicationMaxSize, scheduledExecutorService);
     }
 
     private CapabilitiesResolver capabilities() {
@@ -208,13 +208,11 @@ public final class CoapServerBuilder {
     }
 
     public CoapServer build() {
-        requireNonNull(coapTransport, "Missing transport");
+        CoapTransport coapTransport = requireNonNull(this.coapTransport, "Missing transport");
         final boolean stopExecutor = scheduledExecutorService == null;
-        if (scheduledExecutorService == null) {
-            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        }
+        final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
+        Timer timer = toTimer(effectiveExecutorService);
 
-        Timer timer = toTimer(scheduledExecutorService);
         Service<CoapPacket, Boolean> sender = packet -> coapTransport.sendPacket(packet)
                 .whenComplete((__, throwable) -> logSent(packet, throwable));
 
@@ -248,7 +246,7 @@ public final class CoapServerBuilder {
                 .then(sender);
 
         // INBOUND
-        PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache();
+        PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
         Service<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
@@ -271,7 +269,7 @@ public final class CoapServerBuilder {
             piggybackedExchangeFilter.stop();
             duplicateDetectorCache.stop();
             if (stopExecutor) {
-                scheduledExecutorService.shutdown();
+                effectiveExecutorService.shutdown();
             }
         });
 
