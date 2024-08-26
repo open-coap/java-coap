@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,12 @@
  */
 package com.mbed.coap.server;
 
+import static com.mbed.coap.transport.InMemoryCoapTransport.create;
+import static com.mbed.coap.utils.Networks.localhost;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import com.mbed.coap.client.CoapClient;
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 import org.junit.jupiter.api.Test;
@@ -54,5 +58,24 @@ public class CoapServerBuilderTest {
         assertThrows(IllegalArgumentException.class, () ->
                 CoapServer.builder().responseTimeout(Duration.ofMillis(-1))
         );
+    }
+
+    @Test
+    public void shouldReuseBuilder() throws Exception {
+        CoapServer server = new CoapServerBuilder()
+                .transport(create(5683))
+                .build().start();
+
+        // when, builder is created
+        CoapServerBuilder builder = CoapServer.builder();
+
+        // then, it can be reused multiple times
+        CoapClient client1 = builder.transport(create()).buildClient(localhost(5683));
+        CoapClient client2 = builder.transport(create()).buildClient(localhost(5683));
+        assertNotNull(client1.ping().get());
+        assertNotNull(client2.ping().get());
+
+        client1.close();
+        server.stop();
     }
 }
