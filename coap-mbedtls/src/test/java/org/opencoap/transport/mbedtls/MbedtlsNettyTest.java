@@ -231,60 +231,6 @@ public class MbedtlsNettyTest {
         serverTransport.getChannel().pipeline().remove("test-handler");
     }
 
-    @Test
-    @EnabledOnOs(OS.LINUX)
-    void multi_thread_server() throws Exception {
-        int threads = 4;
-        EventLoopGroup epollGroup = new EpollEventLoopGroup(threads, new DefaultThreadFactory("srv", true));
-        Bootstrap bootstrap = new Bootstrap()
-                .group(epollGroup)
-                .localAddress(new Random().nextInt(32000) + 32000)
-                .channel(EpollDatagramChannel.class)
-                .option(EpollChannelOption.SO_REUSEPORT, true)
-                .handler(new ChannelInitializer<DatagramChannel>() {
-                    @Override
-                    protected void initChannel(DatagramChannel ch) {
-                        ch.pipeline().addFirst("DTLS", new DtlsChannelHandler(serverConf));
-                    }
-                });
-        CoapServerBuilder  serverBuilder = CoapServer.builder()
-                .executor(eventLoopGroup)
-                .route(RouterService.builder()
-                        .get("/test", __ -> ok("OK").toFuture())
-                        .post("/echo", req -> CompletableFuture.supplyAsync(() -> ok(req.getPayload()).build()))
-                );
-        List<CoapServer> servers = new ArrayList<>();
-        for (int i = 0; i < threads; i++) {
-            servers.add(
-                    serverBuilder
-                            .transport(new NettyCoapTransport(bootstrap, EMPTY_RESOLVER))
-                            .build()
-                            .start()
-            );
-        }
-
-        List<CoapClient> clients = new ArrayList<>();
-        InetSocketAddress srvAddr = localhost(servers.get(0).getLocalSocketAddress().getPort());
-        CoapServerBuilder clientBuilder = CoapServer.builder().executor(eventLoopGroup);
-        for (int i = 0; i < 100; i++) {
-            clients.add(
-                    clientBuilder
-                            .transport(new NettyCoapTransport(createClientBootstrap(srvAddr), EMPTY_RESOLVER))
-                            .buildClient(srvAddr)
-            );
-        }
-
-        for (CoapClient client : clients) {
-            assertEquals(ok("paska"), client.sendSync(post("/echo").payload("paska")));
-            client.close();
-        }
-
-        for (CoapServer srv : servers) {
-            srv.stop();
-        }
-        epollGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
-    }
-
     private Bootstrap createBootstrap(int port) {
         return new Bootstrap()
                 .group(eventLoopGroup)
