@@ -21,6 +21,7 @@ import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
 import static com.mbed.coap.utils.Timer.toTimer;
 import static com.mbed.coap.utils.Validations.require;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapPacket;
@@ -55,13 +56,16 @@ import com.mbed.coap.utils.Timer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class CoapServerBuilder {
     private static final long DELAYED_TRANSACTION_TIMEOUT_MS = 120000; //2 minutes
 
-    private CoapTransport coapTransport;
+    private Supplier<CoapTransport> coapTransport;
     private int duplicationMaxSize = 10000;
     private PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectionCache;
     private ScheduledExecutorService scheduledExecutorService;
@@ -91,6 +95,11 @@ public final class CoapServerBuilder {
     }
 
     public CoapServerBuilder transport(CoapTransport coapTransport) {
+        requireNonNull(coapTransport);
+        return transport(() -> coapTransport);
+    }
+
+    public CoapServerBuilder transport(Supplier<CoapTransport> coapTransport) {
         this.coapTransport = requireNonNull(coapTransport);
         return this;
     }
@@ -208,7 +217,7 @@ public final class CoapServerBuilder {
     }
 
     public CoapServer build() {
-        CoapTransport coapTransport = requireNonNull(this.coapTransport, "Missing transport");
+        CoapTransport coapTransport = requireNonNull(this.coapTransport.get(), "Missing transport");
         final boolean stopExecutor = scheduledExecutorService == null;
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
         Timer timer = toTimer(effectiveExecutorService);
@@ -277,6 +286,14 @@ public final class CoapServerBuilder {
 
     public CoapClient buildClient(InetSocketAddress target) throws IOException {
         return CoapClient.create(target, build().start());
+    }
+
+    public CoapServerGroup buildGroup(int size) {
+        List<CoapServer> servers = Stream.generate(this::build)
+                .limit(size)
+                .collect(toList());
+
+        return new CoapServerGroup(servers);
     }
 
 }
