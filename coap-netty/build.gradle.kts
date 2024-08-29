@@ -14,6 +14,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":coap-core")))
     testImplementation("ch.qos.logback:logback-classic:1.3.14")
+    testImplementation("io.netty:netty-transport-native-epoll:4.1.112.Final:linux-x86_64")
 
     jmhImplementation("io.netty:netty-all:4.1.112.Final")
     jmh("org.openjdk.jmh:jmh-core:1.37")
