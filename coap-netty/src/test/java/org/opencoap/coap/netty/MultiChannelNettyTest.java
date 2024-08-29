@@ -117,7 +117,7 @@ public class MultiChannelNettyTest {
         return new Bootstrap()
                 .group(eventLoopGroup)
                 .option(UnixChannelOption.SO_REUSEPORT, true)
-                .localAddress(65001) // bind multiple times on single port
+                .localAddress(0) // bind multiple times on single port
                 .channel(EpollDatagramChannel.class)
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
