@@ -22,14 +22,14 @@ import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.CoapServerBuilder;
+import com.mbed.coap.server.CoapServerGroup;
 import com.mbed.coap.server.RouterService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -37,43 +37,64 @@ import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.unix.UnixChannelOption;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MultiChannelNettyTest {
     private static final int THREADS = 3;
-    private final Bootstrap bootstrap = createBootstrap();
+    private Bootstrap bootstrap;
 
     @Test
-    void test() throws Exception {
-        CoapServerBuilder builder = CoapServer.builder()
-                .route(RouterService.builder()
-                        .get("/test", __ -> ok("OK").toFuture())
-                );
-        MultiCoapServer coapServer = MultiCoapServer.create(builder, bootstrap).start();
-        assertTrue(coapServer.isRunning());
+    void testNio() throws Exception {
+        bootstrap = createNioBootstrap();
+        CoapServerGroup coapServer = createServer();
 
-        // verify that all channels are working
-        for (int i = 0; i < THREADS; i++) {
-            CoapClient client = CoapServer.builder()
-                    .transport(udp())
-                    .buildClient(localhost(coapServer.getLocalPorts().get(i)));
-
-            assertTrue(client.ping().get());
-            assertEquals(ok("OK"), client.sendSync(get("/test")));
-        }
+        verifyClients(coapServer.getLocalPorts());
 
         coapServer.stop();
         assertFalse(coapServer.isRunning());
     }
 
-    private Bootstrap createBootstrap() {
-        if (Epoll.isAvailable()) {
-            return createEpollBootstrap();
-        }
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void testEpoll() throws Exception {
+        bootstrap = createEpollBootstrap();
+        CoapServerGroup coapServer = createServer();
+        // make sure that all channels are bound to the same port
+        assertTrue(coapServer.getLocalPorts().stream().distinct().count() == 1);
 
-        return createNioBootstrap();
+        verifyClients(coapServer.getLocalPorts());
+
+        coapServer.stop();
+        assertFalse(coapServer.isRunning());
+    }
+
+    private void verifyClients(List<Integer> serverPorts) throws Exception {
+        // verify that all channels are working
+        for (int i = 0; i < THREADS; i++) {
+            CoapClient client = CoapServer.builder()
+                    .transport(udp())
+                    .buildClient(localhost(serverPorts.get(i)));
+
+            assertTrue(client.ping().get());
+            assertEquals(ok("OK"), client.sendSync(get("/test")));
+            client.close();
+        }
+    }
+
+    private CoapServerGroup createServer() throws IOException {
+        return CoapServer.builder()
+                .route(RouterService.builder()
+                        .get("/test", __ -> ok("OK").toFuture())
+                )
+                .transport(() -> new NettyCoapTransport(bootstrap, EMPTY_RESOLVER))
+                .buildGroup(THREADS)
+                .start();
     }
 
     private Bootstrap createNioBootstrap() {

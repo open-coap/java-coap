@@ -13,49 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencoap.coap.netty;
+package com.mbed.coap.server;
 
 import static com.mbed.coap.utils.Validations.require;
 import static java.util.stream.Collectors.toList;
-import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.CoapServerBuilder;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.EventLoopGroup;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
-public class MultiCoapServer {
-
+public class CoapServerGroup {
     private final List<CoapServer> servers;
 
-    private MultiCoapServer(List<CoapServer> servers) {
+    CoapServerGroup(List<CoapServer> servers) {
         require(!servers.isEmpty(), "At least one server required");
         this.servers = servers;
     }
 
-    public static MultiCoapServer create(CoapServerBuilder builder, Bootstrap bootstrap) {
-        return create(builder, bootstrap, Integer.MAX_VALUE);
-    }
-
-    public static MultiCoapServer create(CoapServerBuilder builder, Bootstrap bootstrap, int limitInstances) {
-        EventLoopGroup eventLoopGroup = bootstrap.config().group();
-
-        // create as many servers as there are executors in the event loop group
-        List<CoapServer> servers = StreamSupport.stream(eventLoopGroup.spliterator(), false)
-                .limit(limitInstances)
-                .map(executor -> builder
-                        .transport(new NettyCoapTransport(bootstrap, EMPTY_RESOLVER))
-                        .executor(executor)
-                        .build()
-                )
-                .collect(toList());
-
-        return new MultiCoapServer(servers);
-    }
-
-    public MultiCoapServer start() throws IOException {
+    public CoapServerGroup start() throws IOException {
         for (CoapServer server : servers) {
             server.start();
         }

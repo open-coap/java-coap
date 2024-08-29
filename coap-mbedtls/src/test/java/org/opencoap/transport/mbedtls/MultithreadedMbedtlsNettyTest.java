@@ -27,7 +27,7 @@ import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.exception.CoapException;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.CoapServerBuilder;
+import com.mbed.coap.server.CoapServerGroup;
 import com.mbed.coap.server.RouterService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -49,7 +49,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
-import org.opencoap.coap.netty.MultiCoapServer;
 import org.opencoap.coap.netty.NettyCoapTransport;
 import org.opencoap.ssl.PskAuth;
 import org.opencoap.ssl.SslConfig;
@@ -100,11 +99,13 @@ public class MultithreadedMbedtlsNettyTest {
     @Test
     void multi_thread_server() throws Exception {
         Set<String> usedThreads = new HashSet<>();
-        CoapServerBuilder serverBuilder = CoapServer.builder()
+        CoapServerGroup server = CoapServer.builder()
+                .transport(() -> new NettyCoapTransport(serverBootstrap, EMPTY_RESOLVER))
                 .route(RouterService.builder()
                         .get("/currentThread", req -> supplyAsync(() -> ok(currentThread().getName()).build(), eventLoopGroup))
-                );
-        MultiCoapServer server = MultiCoapServer.create(serverBuilder, serverBootstrap).start();
+                )
+                .buildGroup(threads)
+                .start();
 
 
         await().pollInterval(Duration.ZERO).atMost(ofSeconds(30)).until(() -> {
