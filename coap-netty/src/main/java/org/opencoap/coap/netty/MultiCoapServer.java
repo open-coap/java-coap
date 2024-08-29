@@ -68,6 +68,10 @@ public class MultiCoapServer {
         }
     }
 
+    public boolean isRunning() {
+        return servers.stream().allMatch(CoapServer::isRunning);
+    }
+
     public List<Integer> getLocalPorts() {
         return servers.stream().map(server -> server.getLocalSocketAddress().getPort()).collect(toList());
     }

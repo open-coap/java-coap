@@ -20,6 +20,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Networks.localhost;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mbed.coap.client.CoapClient;
 import com.mbed.coap.server.CoapServer;
@@ -51,6 +52,7 @@ public class MultiChannelNettyTest {
                         .get("/test", __ -> ok("OK").toFuture())
                 );
         MultiCoapServer coapServer = MultiCoapServer.create(builder, bootstrap).start();
+        assertTrue(coapServer.isRunning());
 
         // verify that all channels are working
         for (int i = 0; i < THREADS; i++) {
@@ -63,6 +65,7 @@ public class MultiChannelNettyTest {
         }
 
         coapServer.stop();
+        assertFalse(coapServer.isRunning());
     }
 
     private Bootstrap createBootstrap() {
