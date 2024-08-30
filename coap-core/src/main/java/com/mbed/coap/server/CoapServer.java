@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class CoapServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoapServer.class);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    private final CoapTransport transport;
+    final CoapTransport transport;
     private final Consumer<CoapPacket> dispatcher;
     private final Service<CoapRequest, CoapResponse> outboundService;
     private final Service<SeparateResponse, Boolean> outboundResponseService;
@@ -128,5 +128,9 @@ public class CoapServer {
 
     public Service<SeparateResponse, Boolean> outboundResponseService() {
         return outboundResponseService;
+    }
+
+    CoapTransport getTransport() {
+        return transport;
     }
 }

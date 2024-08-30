@@ -38,6 +38,7 @@ class CoapServerGroupTest {
     void test() throws Exception {
         // given
         CoapServerGroup servers = builder.buildGroup(3).start();
+        assertEquals(3, servers.getTransports().size());
         CoapClient client = builder.buildClient(localhost(10_001));
         CoapClient client2 = builder.buildClient(localhost(10_003));
 

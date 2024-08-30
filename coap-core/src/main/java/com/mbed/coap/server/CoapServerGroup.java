@@ -17,6 +17,7 @@ package com.mbed.coap.server;
 
 import static com.mbed.coap.utils.Validations.require;
 import static java.util.stream.Collectors.toList;
+import com.mbed.coap.transport.CoapTransport;
 import java.io.IOException;
 import java.util.List;
 
@@ -47,5 +48,9 @@ public class CoapServerGroup {
 
     public List<Integer> getLocalPorts() {
         return servers.stream().map(server -> server.getLocalSocketAddress().getPort()).collect(toList());
+    }
+
+    public List<CoapTransport> getTransports() {
+        return servers.stream().map(CoapServer::getTransport).collect(toList());
     }
 }
