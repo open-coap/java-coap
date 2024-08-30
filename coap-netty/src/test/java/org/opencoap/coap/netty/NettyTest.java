@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -83,13 +84,14 @@ public class NettyTest {
     @Test
     void should_exchange_messages_with_multiple_clients() throws Exception {
         // given
+        InetSocketAddress serverAddress = localhost(server.getLocalSocketAddress().getPort());
         List<CoapClient> clients = new ArrayList(10);
         for (int i = 0; i < 10; i++) {
             clients.add(
                     CoapServer.builder()
-                            .transport(new NettyCoapTransport(createBootstrap(0), EMPTY_RESOLVER))
+                            .transport(new NettyCoapTransport(createBootstrap(0).remoteAddress(serverAddress), EMPTY_RESOLVER))
                             .executor(eventLoopGroup)
-                            .buildClient(localhost(server.getLocalSocketAddress().getPort()))
+                            .buildClient(serverAddress)
             );
         }
 

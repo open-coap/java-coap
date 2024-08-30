@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
@@ -61,27 +60,14 @@ import org.opencoap.ssl.transport.SessionWriter;
 @EnabledOnOs(OS.LINUX)
 public class MultithreadedMbedtlsNettyTest {
     private final int threads = 4;
-    private final int serverPort = new Random().nextInt(32000) + 32000;
     private final EventLoopGroup eventLoopGroup = new EpollEventLoopGroup(threads, new DefaultThreadFactory("pool", true));
 
     private final SslConfig clientConf = SslConfig.client(new PskAuth("test", of("secret").getBytes()));
     private final SslConfig serverConf = SslConfig.server(new PskAuth("test", of("secret").getBytes()));
 
-    private final Bootstrap clientBootstrap = new Bootstrap()
-            .group(eventLoopGroup)
-            .localAddress(0)
-            .channel(EpollDatagramChannel.class)
-            .handler(new ChannelInitializer<DatagramChannel>() {
-                @Override
-                protected void initChannel(DatagramChannel ch) {
-                    InetSocketAddress destinationAddress = localhost(serverPort);
-                    ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress, SessionWriter.NO_OPS));
-                }
-            });
-
     private final Bootstrap serverBootstrap = new Bootstrap()
             .group(eventLoopGroup)
-            .localAddress(serverPort)
+            .localAddress(0)
             .channel(EpollDatagramChannel.class)
             .option(UnixChannelOption.SO_REUSEPORT, true)
             .handler(new ChannelInitializer<DatagramChannel>() {
@@ -120,10 +106,22 @@ public class MultithreadedMbedtlsNettyTest {
     }
 
     private String connectAndReadCurrentThreadName() throws IOException, CoapException {
+        InetSocketAddress serverAddress = localhost(((InetSocketAddress) serverBootstrap.config().localAddress()).getPort());
+        Bootstrap clientBootstrap = new Bootstrap()
+                .group(eventLoopGroup)
+                .remoteAddress(serverAddress)
+                .channel(EpollDatagramChannel.class)
+                .handler(new ChannelInitializer<DatagramChannel>() {
+                    @Override
+                    protected void initChannel(DatagramChannel ch) {
+                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(serverAddress), serverAddress, SessionWriter.NO_OPS));
+                    }
+                });
+
         CoapClient client = CoapServer.builder()
                 .executor(eventLoopGroup)
                 .transport(new NettyCoapTransport(clientBootstrap, EMPTY_RESOLVER))
-                .buildClient(localhost(serverPort));
+                .buildClient(serverAddress);
 
         String threadName = client.sendSync(get("/currentThread")).getPayloadString();
         client.close();

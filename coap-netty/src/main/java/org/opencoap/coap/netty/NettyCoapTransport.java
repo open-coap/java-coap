@@ -26,6 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.unix.UnixChannelOption;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -51,7 +52,24 @@ public class NettyCoapTransport implements CoapTransport {
 
     @Override
     public void start() {
-        init(bootstrap.bind().syncUninterruptibly().channel());
+        if (bootstrap.config().remoteAddress() != null) {
+            init(bootstrap.connect().syncUninterruptibly().channel());
+        } else {
+            init(bootstrap.bind().syncUninterruptibly().channel());
+
+            // for random port update bootstrap with actual port but only if SO_REUSEPORT is enabled
+            if (bindToRandomPort() && reusePortIsEnabled()) {
+                bootstrap.localAddress(channel.localAddress());
+            }
+        }
+    }
+
+    private Boolean reusePortIsEnabled() {
+        return (Boolean) bootstrap.config().options().getOrDefault(UnixChannelOption.SO_REUSEPORT, Boolean.FALSE);
+    }
+
+    private boolean bindToRandomPort() {
+        return ((InetSocketAddress) bootstrap.config().localAddress()).getPort() == 0;
     }
 
     void init(Channel channel) {
