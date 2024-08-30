@@ -237,7 +237,7 @@ public class MbedtlsNettyTest {
     private Bootstrap createClientBootstrap(InetSocketAddress destinationAddress) {
         return new Bootstrap()
                 .group(eventLoopGroup)
-                .localAddress(0)
+                .remoteAddress(destinationAddress)
                 .channel(NioDatagramChannel.class)
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override

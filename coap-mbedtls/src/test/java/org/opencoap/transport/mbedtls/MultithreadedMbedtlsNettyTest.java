@@ -109,7 +109,7 @@ public class MultithreadedMbedtlsNettyTest {
         InetSocketAddress serverAddress = localhost(((InetSocketAddress) serverBootstrap.config().localAddress()).getPort());
         Bootstrap clientBootstrap = new Bootstrap()
                 .group(eventLoopGroup)
-                .localAddress(0)
+                .remoteAddress(serverAddress)
                 .channel(EpollDatagramChannel.class)
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override

@@ -52,11 +52,15 @@ public class NettyCoapTransport implements CoapTransport {
 
     @Override
     public void start() {
-        init(bootstrap.bind().syncUninterruptibly().channel());
+        if (bootstrap.config().remoteAddress() != null) {
+            init(bootstrap.connect().syncUninterruptibly().channel());
+        } else {
+            init(bootstrap.bind().syncUninterruptibly().channel());
 
-        // for random port update bootstrap with actual port but only if SO_REUSEPORT is enabled
-        if (bindToRandomPort() && reusePortIsEnabled()) {
-            bootstrap.localAddress(channel.localAddress());
+            // for random port update bootstrap with actual port but only if SO_REUSEPORT is enabled
+            if (bindToRandomPort() && reusePortIsEnabled()) {
+                bootstrap.localAddress(channel.localAddress());
+            }
         }
     }
 
