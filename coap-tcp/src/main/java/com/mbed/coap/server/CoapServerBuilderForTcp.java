@@ -16,35 +16,26 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.transport.CoapTransport.logSent;
-import static java.util.Objects.requireNonNull;
 import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.CoapTcpPacketConverter;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.SeparateResponse;
+import com.mbed.coap.packet.*;
 import com.mbed.coap.server.block.BlockWiseIncomingFilter;
 import com.mbed.coap.server.block.BlockWiseNotificationFilter;
 import com.mbed.coap.server.block.BlockWiseOutgoingFilter;
 import com.mbed.coap.server.filter.CongestionControlFilter;
-import com.mbed.coap.server.messaging.Capabilities;
-import com.mbed.coap.server.messaging.CapabilitiesStorage;
-import com.mbed.coap.server.messaging.CapabilitiesStorageImpl;
-import com.mbed.coap.server.messaging.CoapTcpDispatcher;
-import com.mbed.coap.server.messaging.PayloadSizeVerifier;
-import com.mbed.coap.server.messaging.TcpExchangeFilter;
+import com.mbed.coap.server.messaging.*;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transport.CoapTcpTransport;
+import com.mbed.coap.transport.LoggingCoapTransport;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 public class CoapServerBuilderForTcp {
     private CoapTcpTransport coapTransport;
@@ -58,6 +49,7 @@ public class CoapServerBuilderForTcp {
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationsStore = ObservationsStore.ALWAYS_EMPTY;
+    private Boolean isTransportLoggingEnabled = true;
 
     CoapServerBuilderForTcp() {
         csmStorage = new CapabilitiesStorageImpl();
@@ -129,14 +121,17 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
+    public CoapServerBuilderForTcp transportLogging(Boolean transportLogging) {
+        this.isTransportLoggingEnabled = requireNonNull(transportLogging);
+        return this;
+    }
+
     public CoapClient buildClient(InetSocketAddress target) throws IOException {
         return CoapClient.create(target, build().start(), r -> r.getCode() == Code.C703_PONG);
     }
 
     public CoapServer build() {
-        Service<CoapPacket, Boolean> sender = packet -> coapTransport
-                .sendPacket(packet)
-                .whenComplete((__, throwable) -> logSent(packet, throwable));
+        Service<CoapPacket, Boolean> sender = (isTransportLoggingEnabled ? new LoggingCoapTransport(coapTransport) : coapTransport)::sendPacket;
 
         // NOTIFICATION
         Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
@@ -182,5 +177,4 @@ public class CoapServerBuilderForTcp {
     private boolean hasRoute() {
         return !Objects.equals(route, RouterService.NOT_FOUND_SERVICE);
     }
-
 }

@@ -15,17 +15,18 @@
  */
 package com.mbed.coap.server.messaging;
 
-import static com.mbed.coap.transport.CoapTransport.logReceived;
-import static com.mbed.coap.utils.FutureHelpers.logError;
-import static com.mbed.coap.utils.FutureHelpers.logErrorIgnoreCancelled;
-import static java.util.Objects.requireNonNull;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.MessageType;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.utils.Service;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Function;
+
+import static com.mbed.coap.utils.FutureHelpers.logError;
+import static com.mbed.coap.utils.FutureHelpers.logErrorIgnoreCancelled;
+import static java.util.Objects.requireNonNull;
 
 public final class CoapDispatcher {
 
@@ -38,8 +39,8 @@ public final class CoapDispatcher {
     private final Function<SeparateResponse, Boolean> handleSeparateResponse;
 
     public CoapDispatcher(Service<CoapPacket, Boolean> sender,
-            Service<CoapPacket, CoapPacket> observationHandler, Service<CoapPacket, CoapPacket> inboundService,
-            Function<CoapPacket, Boolean> handleResponse, Function<SeparateResponse, Boolean> handleSeparateResponse) {
+                          Service<CoapPacket, CoapPacket> observationHandler, Service<CoapPacket, CoapPacket> inboundService,
+                          Function<CoapPacket, Boolean> handleResponse, Function<SeparateResponse, Boolean> handleSeparateResponse) {
 
         this.sender = sender;
         this.observationHandler = requireNonNull(observationHandler);
@@ -49,7 +50,6 @@ public final class CoapDispatcher {
     }
 
     public void handle(CoapPacket packet) {
-        logReceived(packet);
         if (handlePing(packet)) {
             return;
         }

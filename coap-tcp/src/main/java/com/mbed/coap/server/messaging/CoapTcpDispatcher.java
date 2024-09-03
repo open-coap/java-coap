@@ -15,22 +15,16 @@
  */
 package com.mbed.coap.server.messaging;
 
-import static com.mbed.coap.transport.CoapTransport.logReceived;
-import static com.mbed.coap.utils.FutureHelpers.logError;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.packet.SeparateResponse;
-import com.mbed.coap.packet.SignalingOptions;
-import com.mbed.coap.packet.SignallingHeaderOptions;
+import com.mbed.coap.packet.*;
 import com.mbed.coap.transport.CoapTcpListener;
 import com.mbed.coap.utils.Service;
-import java.net.InetSocketAddress;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.function.Function;
+
+import static com.mbed.coap.utils.FutureHelpers.logError;
 
 public class CoapTcpDispatcher implements CoapTcpListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoapTcpDispatcher.class);
@@ -43,8 +37,8 @@ public class CoapTcpDispatcher implements CoapTcpListener {
     private final Function<SeparateResponse, Boolean> observationHandler;
 
     public CoapTcpDispatcher(Service<CoapPacket, Boolean> sender, CapabilitiesStorage csmStorage, Capabilities ownCapability,
-            Service<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
-            Function<SeparateResponse, Boolean> observationHandler) {
+                             Service<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
+                             Function<SeparateResponse, Boolean> observationHandler) {
         this.csmStorage = csmStorage;
         this.ownCapability = ownCapability;
         this.sender = sender;
@@ -54,8 +48,6 @@ public class CoapTcpDispatcher implements CoapTcpListener {
     }
 
     public void handle(CoapPacket packet) {
-        logReceived(packet);
-
         // EMPTY (healthcheck)
         if (packet.getCode() == null && packet.getMethod() == null) {
             // ignore
