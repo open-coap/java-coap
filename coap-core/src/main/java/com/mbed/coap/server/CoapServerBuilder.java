@@ -84,7 +84,7 @@ public final class CoapServerBuilder {
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
-    private Boolean isTransportLoggingEnabled = true;
+    private boolean isTransportLoggingEnabled = true;
 
     CoapServerBuilder() {
     }
@@ -223,8 +223,8 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder transportLogging(Boolean transportLogging) {
-        this.isTransportLoggingEnabled = requireNonNull(transportLogging);
+    public CoapServerBuilder transportLogging(boolean isTransportLoggingEnabled) {
+        this.isTransportLoggingEnabled = isTransportLoggingEnabled;
         return this;
     }
 
