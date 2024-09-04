@@ -15,7 +15,6 @@
  */
 package com.mbed.coap.server.messaging;
 
-import static com.mbed.coap.transport.CoapTransport.logReceived;
 import static com.mbed.coap.utils.FutureHelpers.logError;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapRequest;
@@ -54,8 +53,6 @@ public class CoapTcpDispatcher implements CoapTcpListener {
     }
 
     public void handle(CoapPacket packet) {
-        logReceived(packet);
-
         // EMPTY (healthcheck)
         if (packet.getCode() == null && packet.getMethod() == null) {
             // ignore

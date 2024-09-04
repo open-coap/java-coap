@@ -15,7 +15,6 @@
  */
 package com.mbed.coap.server.messaging;
 
-import static com.mbed.coap.transport.CoapTransport.logReceived;
 import static com.mbed.coap.utils.FutureHelpers.logError;
 import static com.mbed.coap.utils.FutureHelpers.logErrorIgnoreCancelled;
 import static java.util.Objects.requireNonNull;
@@ -49,7 +48,6 @@ public final class CoapDispatcher {
     }
 
     public void handle(CoapPacket packet) {
-        logReceived(packet);
         if (handlePing(packet)) {
             return;
         }

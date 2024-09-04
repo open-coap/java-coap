@@ -16,7 +16,6 @@
  */
 package com.mbed.coap.server;
 
-import static com.mbed.coap.transport.CoapTransport.logSent;
 import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
 import static com.mbed.coap.utils.Timer.toTimer;
 import static com.mbed.coap.utils.Validations.require;
@@ -50,6 +49,7 @@ import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transmission.RetransmissionBackOff;
 import com.mbed.coap.transport.CoapTransport;
+import com.mbed.coap.transport.LoggingCoapTransport;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import com.mbed.coap.utils.Timer;
@@ -80,9 +80,11 @@ public final class CoapServerBuilder {
     private int maxQueueSize = 100;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
+    private Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
+    private boolean isTransportLoggingEnabled = true;
 
     CoapServerBuilder() {
     }
@@ -115,6 +117,11 @@ public final class CoapServerBuilder {
 
     public CoapServerBuilder routeFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter) {
         this.routeFilter = requireNonNull(routeFilter);
+        return this;
+    }
+
+    public CoapServerBuilder inboundRequestFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter) {
+        this.inboundRequestFilter = requireNonNull(inboundRequestFilter);
         return this;
     }
 
@@ -216,14 +223,19 @@ public final class CoapServerBuilder {
         return this;
     }
 
+    public CoapServerBuilder transportLogging(boolean isTransportLoggingEnabled) {
+        this.isTransportLoggingEnabled = isTransportLoggingEnabled;
+        return this;
+    }
+
     public CoapServer build() {
-        CoapTransport coapTransport = requireNonNull(this.coapTransport.get(), "Missing transport");
+        CoapTransport realTransport = requireNonNull(this.coapTransport.get(), "Missing transport");
+        CoapTransport coapTransport = isTransportLoggingEnabled ? new LoggingCoapTransport(realTransport) : realTransport;
         final boolean stopExecutor = scheduledExecutorService == null;
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
         Timer timer = toTimer(effectiveExecutorService);
 
-        Service<CoapPacket, Boolean> sender = packet -> coapTransport.sendPacket(packet)
-                .whenComplete((__, throwable) -> logSent(packet, throwable));
+        Service<CoapPacket, Boolean> sender = coapTransport::sendPacket;
 
         // OUTBOUND
         ExchangeFilter exchangeFilter = new ExchangeFilter();
@@ -259,6 +271,7 @@ public final class CoapServerBuilder {
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
         Service<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
+                .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
                 .andThen(new CriticalOptionVerifier())
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
@@ -295,5 +308,4 @@ public final class CoapServerBuilder {
 
         return new CoapServerGroup(servers);
     }
-
 }
