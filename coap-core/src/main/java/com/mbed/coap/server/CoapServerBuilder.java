@@ -80,7 +80,7 @@ public final class CoapServerBuilder {
     private int maxQueueSize = 100;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
-    private Filter.SimpleFilter<CoapRequest, CoapResponse> requestFilter = Filter.identity();
+    private Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
@@ -120,8 +120,8 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder requestFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> requestFilter) {
-        this.requestFilter = requireNonNull(requestFilter);
+    public CoapServerBuilder inboundRequestFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter) {
+        this.inboundRequestFilter = requireNonNull(inboundRequestFilter);
         return this;
     }
 
@@ -271,7 +271,7 @@ public final class CoapServerBuilder {
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
         Service<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
-                .andThen(requestFilter)
+                .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
                 .andThen(new CriticalOptionVerifier())
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
