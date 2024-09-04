@@ -16,7 +16,6 @@
 package com.mbed.coap.transport;
 
 import com.mbed.coap.packet.CoapPacket;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;

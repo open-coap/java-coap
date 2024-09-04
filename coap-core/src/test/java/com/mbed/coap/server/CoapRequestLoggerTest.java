@@ -15,6 +15,10 @@
  */
 package com.mbed.coap.server;
 
+import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -22,16 +26,10 @@ import ch.qos.logback.core.read.ListAppender;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.utils.Filter;
+import java.net.InetSocketAddress;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CoapRequestLoggerTest {
     private Logger logger = (Logger) LoggerFactory.getLogger(CoapRequestLoggerTest.class);

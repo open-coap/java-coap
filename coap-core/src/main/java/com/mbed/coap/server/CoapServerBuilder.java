@@ -16,15 +16,35 @@
  */
 package com.mbed.coap.server;
 
+import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
+import static com.mbed.coap.utils.Timer.toTimer;
+import static com.mbed.coap.utils.Validations.require;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.*;
+import com.mbed.coap.packet.BlockSize;
+import com.mbed.coap.packet.CoapPacket;
+import com.mbed.coap.packet.CoapRequest;
+import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.server.block.BlockWiseIncomingFilter;
 import com.mbed.coap.server.block.BlockWiseNotificationFilter;
 import com.mbed.coap.server.block.BlockWiseOutgoingFilter;
 import com.mbed.coap.server.filter.CongestionControlFilter;
 import com.mbed.coap.server.filter.EchoFilter;
 import com.mbed.coap.server.filter.ResponseTimeoutFilter;
-import com.mbed.coap.server.messaging.*;
+import com.mbed.coap.server.messaging.Capabilities;
+import com.mbed.coap.server.messaging.CapabilitiesResolver;
+import com.mbed.coap.server.messaging.CoapDispatcher;
+import com.mbed.coap.server.messaging.CoapRequestConverter;
+import com.mbed.coap.server.messaging.DuplicateDetector;
+import com.mbed.coap.server.messaging.ExchangeFilter;
+import com.mbed.coap.server.messaging.MessageIdSupplier;
+import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
+import com.mbed.coap.server.messaging.ObservationMapper;
+import com.mbed.coap.server.messaging.PiggybackedExchangeFilter;
+import com.mbed.coap.server.messaging.RequestTagSupplier;
+import com.mbed.coap.server.messaging.RetransmissionFilter;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transmission.RetransmissionBackOff;
@@ -33,7 +53,6 @@ import com.mbed.coap.transport.LoggingCoapTransport;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import com.mbed.coap.utils.Timer;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -42,12 +61,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static com.mbed.coap.transport.TransportContext.RESPONSE_TIMEOUT;
-import static com.mbed.coap.utils.Timer.toTimer;
-import static com.mbed.coap.utils.Validations.require;
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 
 public final class CoapServerBuilder {
     private static final long DELAYED_TRANSACTION_TIMEOUT_MS = 120000; //2 minutes

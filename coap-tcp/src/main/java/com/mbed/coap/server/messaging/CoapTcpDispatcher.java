@@ -15,16 +15,21 @@
  */
 package com.mbed.coap.server.messaging;
 
-import com.mbed.coap.packet.*;
+import static com.mbed.coap.utils.FutureHelpers.logError;
+import com.mbed.coap.packet.CoapPacket;
+import com.mbed.coap.packet.CoapRequest;
+import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Code;
+import com.mbed.coap.packet.Opaque;
+import com.mbed.coap.packet.SeparateResponse;
+import com.mbed.coap.packet.SignalingOptions;
+import com.mbed.coap.packet.SignallingHeaderOptions;
 import com.mbed.coap.transport.CoapTcpListener;
 import com.mbed.coap.utils.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.util.function.Function;
-
-import static com.mbed.coap.utils.FutureHelpers.logError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CoapTcpDispatcher implements CoapTcpListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoapTcpDispatcher.class);

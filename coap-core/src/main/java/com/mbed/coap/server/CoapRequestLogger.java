@@ -19,17 +19,16 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.slf4j.event.Level;
-import org.slf4j.spi.LoggingEventBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.slf4j.event.Level;
+import org.slf4j.spi.LoggingEventBuilder;
 
 public class CoapRequestLogger implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final LoggingEventBuilder loggingEventBuilder;

@@ -15,18 +15,16 @@
  */
 package com.mbed.coap.server.messaging;
 
+import static com.mbed.coap.utils.FutureHelpers.logError;
+import static com.mbed.coap.utils.FutureHelpers.logErrorIgnoreCancelled;
+import static java.util.Objects.requireNonNull;
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.MessageType;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.utils.Service;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Function;
-
-import static com.mbed.coap.utils.FutureHelpers.logError;
-import static com.mbed.coap.utils.FutureHelpers.logErrorIgnoreCancelled;
-import static java.util.Objects.requireNonNull;
 
 public final class CoapDispatcher {
 

@@ -16,12 +16,11 @@
 package com.mbed.coap.transport;
 
 import com.mbed.coap.packet.CoapPacket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LoggingCoapTransport implements CoapTransport {
     private static Logger LOGGER = LoggerFactory.getLogger(LoggingCoapTransport.class);
