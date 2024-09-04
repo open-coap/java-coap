@@ -37,8 +37,8 @@ public final class CoapDispatcher {
     private final Function<SeparateResponse, Boolean> handleSeparateResponse;
 
     public CoapDispatcher(Service<CoapPacket, Boolean> sender,
-                          Service<CoapPacket, CoapPacket> observationHandler, Service<CoapPacket, CoapPacket> inboundService,
-                          Function<CoapPacket, Boolean> handleResponse, Function<SeparateResponse, Boolean> handleSeparateResponse) {
+            Service<CoapPacket, CoapPacket> observationHandler, Service<CoapPacket, CoapPacket> inboundService,
+            Function<CoapPacket, Boolean> handleResponse, Function<SeparateResponse, Boolean> handleSeparateResponse) {
 
         this.sender = sender;
         this.observationHandler = requireNonNull(observationHandler);

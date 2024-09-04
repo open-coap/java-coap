@@ -42,8 +42,8 @@ public class CoapTcpDispatcher implements CoapTcpListener {
     private final Function<SeparateResponse, Boolean> observationHandler;
 
     public CoapTcpDispatcher(Service<CoapPacket, Boolean> sender, CapabilitiesStorage csmStorage, Capabilities ownCapability,
-                             Service<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
-                             Function<SeparateResponse, Boolean> observationHandler) {
+            Service<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
+            Function<SeparateResponse, Boolean> observationHandler) {
         this.csmStorage = csmStorage;
         this.ownCapability = ownCapability;
         this.sender = sender;
