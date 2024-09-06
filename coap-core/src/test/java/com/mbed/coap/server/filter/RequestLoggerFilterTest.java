@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.*;
 
 import static com.mbed.coap.packet.CoapRequest.get;
+import static com.mbed.coap.server.filter.RequestLoggerFilter.Builder.DEFAULT_FORMATTER;
 import static com.mbed.coap.utils.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,6 +50,13 @@ class RequestLoggerFilterTest {
     }
 
     @Test
+    void defaultFormatterShouldWork() {
+        String logMsg = DEFAULT_FORMATTER.apply(get("/").address(new InetSocketAddress("1.1.1.1", 31337)).build(), CoapResponse.ok().build(), 123);
+
+        assertEquals("[/1.1.1.1:31337] CoapRequest[GET] -> CoapResponse[205] (123ms)", logMsg);
+    }
+
+    @Test
     void shouldLogRequestAndResponseWithDefaultMessage() {
         // given
         Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(logFilterBuilder.build());
@@ -63,22 +71,21 @@ class RequestLoggerFilterTest {
         assertTrue(logEvent.getMessage().contains("205"));
     }
 
+
     @Test
     void shouldLogRequestAndResponseWithCustomParameters() {
         // given
         Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(
                 logFilterBuilder
-                        .msgFormatter((req, resp, __) -> String.format("[%s] %s %s -> %s", req.getPeerAddress(), req.getMethod(), req.options().getUriPath(), resp.getCode().codeToString()))
+                        .msgFormatter((req, resp, __) -> String.format("%s %s -> %s", req.getPeerAddress(), req.getMethod(), req.options().getUriPath(), resp.getCode().codeToString()))
                         .logLevel(DEBUG)
                         .build()
         );
-        filter.apply(
-                get("/dupa").address(new InetSocketAddress("1.1.1.1", 31337)), __ -> CoapResponse.ok().toFuture()
-        ).join();
+        filter.apply(get("/dupa"), __ -> CoapResponse.ok().toFuture()).join();
 
         // then
         ILoggingEvent logEvent = listAppender.list.get(0);
         assertEquals(Level.DEBUG, logEvent.getLevel());
-        assertEquals("[/1.1.1.1:31337] GET /dupa -> 205", logEvent.getMessage());
+        assertEquals("GET /dupa -> 205", logEvent.getMessage());
     }
 }
