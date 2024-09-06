@@ -31,6 +31,10 @@ public class LoggingCoapTransport implements CoapTransport {
         this.transport = transport;
     }
 
+    public CoapTransport getTransport() {
+        return transport;
+    }
+
     @Override
     public void start() throws IOException {
         transport.start();
