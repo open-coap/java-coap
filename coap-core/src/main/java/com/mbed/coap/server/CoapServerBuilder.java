@@ -80,7 +80,7 @@ public final class CoapServerBuilder {
     private int maxQueueSize = 100;
     private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
-    private Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
@@ -120,7 +120,7 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder inboundRequestFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> inboundRequestFilter) {
+    public CoapServerBuilder inboundRequestFilter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> inboundRequestFilter) {
         this.inboundRequestFilter = requireNonNull(inboundRequestFilter);
         return this;
     }
