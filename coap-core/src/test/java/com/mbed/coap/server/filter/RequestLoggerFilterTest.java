@@ -77,7 +77,7 @@ class RequestLoggerFilterTest {
         // given
         Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(
                 logFilterBuilder
-                        .msgFormatter((req, resp, __) -> String.format("%s %s -> %s", req.getPeerAddress(), req.getMethod(), req.options().getUriPath(), resp.getCode().codeToString()))
+                        .msgFormatter((req, resp, __) -> String.format("%s %s -> %s", req.getMethod(), req.options().getUriPath(), resp.getCode().codeToString()))
                         .logLevel(DEBUG)
                         .build()
         );

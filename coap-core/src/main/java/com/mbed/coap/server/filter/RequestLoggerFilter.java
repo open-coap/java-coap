@@ -50,7 +50,7 @@ public class RequestLoggerFilter implements Filter.SimpleFilter<CoapRequest, Coa
     }
 
     public static class Builder {
-        public static Formatter DEFAULT_FORMATTER = (req, resp, duration) -> String.format("[%s] %s -> %s (%dms)", req.getPeerAddress(), req, resp, duration);
+        public final static Formatter DEFAULT_FORMATTER = (req, resp, duration) -> String.format("[%s] %s -> %s (%dms)", req.getPeerAddress(), req, resp, duration);
 
         private Logger logger = LoggerFactory.getLogger(RequestLoggerFilter.class);
         private Level logLevel = Level.INFO;
