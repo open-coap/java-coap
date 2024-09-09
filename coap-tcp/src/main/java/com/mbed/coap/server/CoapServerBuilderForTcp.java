@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +140,7 @@ public class CoapServerBuilderForTcp {
     }
 
     public CoapServer build() {
-        Service<CoapPacket, Boolean> sender = (isTransportLoggingEnabled ? new LoggingCoapTransport(coapTransport) : coapTransport)::sendPacket;
+        Service<CoapPacket, Boolean> sender = (isTransportLoggingEnabled ? LoggingCoapTransport.wrap(coapTransport) : coapTransport)::sendPacket;
 
         // NOTIFICATION
         Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()

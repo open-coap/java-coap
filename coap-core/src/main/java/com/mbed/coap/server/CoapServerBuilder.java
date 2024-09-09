@@ -230,7 +230,7 @@ public final class CoapServerBuilder {
 
     public CoapServer build() {
         CoapTransport realTransport = requireNonNull(this.coapTransport.get(), "Missing transport");
-        CoapTransport coapTransport = isTransportLoggingEnabled ? new LoggingCoapTransport(realTransport) : realTransport;
+        CoapTransport coapTransport = isTransportLoggingEnabled ? LoggingCoapTransport.wrap(realTransport) : realTransport;
         final boolean stopExecutor = scheduledExecutorService == null;
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
         Timer timer = toTimer(effectiveExecutorService);
