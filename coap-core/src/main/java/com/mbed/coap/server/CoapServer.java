@@ -22,6 +22,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.SeparateResponse;
 import com.mbed.coap.transport.CoapTransport;
+import com.mbed.coap.transport.LoggingCoapTransport;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class CoapServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoapServer.class);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    final CoapTransport transport;
+    private final CoapTransport transport;
     private final Consumer<CoapPacket> dispatcher;
     private final Service<CoapRequest, CoapResponse> outboundService;
     private final Service<SeparateResponse, Boolean> outboundResponseService;
@@ -131,6 +132,6 @@ public class CoapServer {
     }
 
     CoapTransport getTransport() {
-        return transport;
+        return LoggingCoapTransport.unwrap(transport);
     }
 }

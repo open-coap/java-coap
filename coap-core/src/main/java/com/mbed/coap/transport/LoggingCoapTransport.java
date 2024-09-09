@@ -23,11 +23,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingCoapTransport implements CoapTransport {
-    private static Logger LOGGER = LoggerFactory.getLogger(LoggingCoapTransport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingCoapTransport.class);
 
     private final CoapTransport transport;
 
-    public LoggingCoapTransport(CoapTransport transport) {
+    public static LoggingCoapTransport wrap(CoapTransport transport) {
+        if (transport instanceof LoggingCoapTransport) {
+            return (LoggingCoapTransport) transport;
+        }
+        return new LoggingCoapTransport(transport);
+    }
+
+    public static CoapTransport unwrap(CoapTransport transport) {
+        if (transport instanceof LoggingCoapTransport) {
+            return ((LoggingCoapTransport) transport).getTransport();
+        }
+        return transport;
+    }
+
+    private LoggingCoapTransport(CoapTransport transport) {
         this.transport = transport;
     }
 
