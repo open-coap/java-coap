@@ -177,7 +177,14 @@ public class BasicHeaderOptions {
         if (unrecognizedOptions == null) {
             unrecognizedOptions = new HashMap<>();
         }
-        unrecognizedOptions.put(optionNumber, new RawOption(optionNumber, data));
+        if (data != null) {
+            unrecognizedOptions.put(optionNumber, new RawOption(optionNumber, data));
+        } else {
+            unrecognizedOptions.remove(optionNumber);
+        }
+        if (unrecognizedOptions.isEmpty()) {
+            unrecognizedOptions = null;
+        }
         return true;
     }
 

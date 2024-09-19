@@ -173,6 +173,7 @@ public class HeaderOptionsTest {
         hdr.setObserve(4321);
         hdr.setEcho(decodeHex("0102030405060708090a"));
         hdr.setRequestTag(Opaque.of("tag-0001"));
+        hdr.setCorrelationTag("RequestId1234");
 
         HeaderOptions hdr2 = deserialize(serialize(hdr));
 
@@ -344,6 +345,15 @@ public class HeaderOptionsTest {
 
         hdr3.setObserve(1234);
         hdr4.setObserve(1234);
+        assertTrue(hdr3.equals(hdr4));
+
+        hdr3.setCorrelationTag("1234");
+        hdr4.setCorrelationTag("12345");
+        assertNotEquals(hdr3.hashCode(), hdr4.hashCode());
+        assertFalse(hdr3.equals(hdr4));
+
+        hdr3.setCorrelationTag("1234");
+        hdr4.setCorrelationTag("1234");
         assertTrue(hdr3.equals(hdr4));
     }
 
