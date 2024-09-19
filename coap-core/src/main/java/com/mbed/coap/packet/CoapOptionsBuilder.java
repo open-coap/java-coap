@@ -97,6 +97,17 @@ public class CoapOptionsBuilder {
         return this;
     }
 
+    public CoapOptionsBuilder unsetCorrelationTag() {
+        options.setCorrelationTag(null);
+        return this;
+    }
+
+    public CoapOptionsBuilder unsetCustom(int optionNumber) {
+        options.put(optionNumber, null);
+        return this;
+    }
+
+
     public CoapOptionsBuilder block1Req(BlockOption block) {
         options.setBlock1Req(block);
         return this;
@@ -203,4 +214,10 @@ public class CoapOptionsBuilder {
         options.setRequestTag(requestTag);
         return this;
     }
+
+    public CoapOptionsBuilder correlationTag(String correlationTag) {
+        options.setCorrelationTag(correlationTag);
+        return this;
+    }
+
 }

@@ -71,6 +71,7 @@ public class CoapOptionsBuilderTest {
                 .echo(decodeHex("248618b4"))
                 .requestTag(decodeHex("da611128"))
                 .custom(1000, decodeHex("010203"))
+                .correlationTag("RequestId123")
                 .build();
 
         HeaderOptions expected = new HeaderOptions();
@@ -95,6 +96,7 @@ public class CoapOptionsBuilderTest {
         expected.setEcho(decodeHex("248618b4"));
         expected.setRequestTag(decodeHex("da611128"));
         expected.put(1000, decodeHex("010203"));
+        expected.setCorrelationTag("RequestId123");
 
         assertEquals(expected, options);
     }
@@ -106,6 +108,7 @@ public class CoapOptionsBuilderTest {
                 .block2Res(2, BlockSize.S_256, false)
                 .block1Req(0, BlockSize.S_256, true)
                 .size2Res(535)
+                .custom(65000, Opaque.of("custom"))
                 .build();
 
         HeaderOptions unsetOptions = CoapOptionsBuilder.from(options)
@@ -113,6 +116,7 @@ public class CoapOptionsBuilderTest {
                 .unsetBlock1Req()
                 .unsetBlock2Res()
                 .unsetSize2Res()
+                .unsetCustom(65000)
                 .build();
 
         assertEquals(new HeaderOptions(), unsetOptions);

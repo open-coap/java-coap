@@ -34,12 +34,14 @@ public class HeaderOptions extends BasicHeaderOptions {
     private static final byte SIZE_2_RES = 28;
     private static final int ECHO = 252;
     private static final int REQUEST_TAG = 292;
+    private static final int OPEN_COAP_CORRELATION_TAG = 29643; // open-coap specific option for request tracing
     private Integer observe;
     private BlockOption block1Req;
     private BlockOption block2Res;
     private Integer size2Res;
     private Opaque echo;
     private Opaque requestTag;
+    private String correlationTag;
 
     @Override
     public boolean parseOption(int type, Opaque data) {
@@ -61,6 +63,9 @@ public class HeaderOptions extends BasicHeaderOptions {
                 break;
             case REQUEST_TAG:
                 setRequestTag(data);
+                break;
+            case OPEN_COAP_CORRELATION_TAG:
+                setCorrelationTag(data.toUtf8String());
                 break;
             default:
                 return super.parseOption(type, data);
@@ -94,6 +99,9 @@ public class HeaderOptions extends BasicHeaderOptions {
         if (requestTag != null) {
             l.add(new RawOption(REQUEST_TAG, requestTag));
         }
+        if (correlationTag != null) {
+            l.add(new RawOption(OPEN_COAP_CORRELATION_TAG, Opaque.of(correlationTag)));
+        }
 
         return l;
     }
@@ -119,6 +127,9 @@ public class HeaderOptions extends BasicHeaderOptions {
         }
         if (requestTag != null) {
             sb.append(" Req-tag:").append(requestTag.toHex());
+        }
+        if (correlationTag != null) {
+            sb.append(" Corr-tag:").append(correlationTag);
         }
 
     }
@@ -190,6 +201,15 @@ public class HeaderOptions extends BasicHeaderOptions {
         return requestTag;
     }
 
+    void setCorrelationTag(String corrTag) {
+        require(corrTag == null || corrTag.length() <= 36);
+        this.correlationTag = corrTag;
+    }
+
+    public String getCorrelationTag() {
+        return correlationTag;
+    }
+
     public HeaderOptions duplicate() {
         HeaderOptions opts = new HeaderOptions();
         super.duplicate(opts);
@@ -200,6 +220,7 @@ public class HeaderOptions extends BasicHeaderOptions {
         opts.size2Res = size2Res;
         opts.echo = echo;
         opts.requestTag = requestTag;
+        opts.correlationTag = correlationTag;
 
         return opts;
     }
@@ -218,6 +239,9 @@ public class HeaderOptions extends BasicHeaderOptions {
 
         HeaderOptions that = (HeaderOptions) o;
 
+        if (!Objects.equals(correlationTag, that.correlationTag)) {
+            return false;
+        }
         if (!Objects.equals(echo, that.echo)) {
             return false;
         }
@@ -233,12 +257,14 @@ public class HeaderOptions extends BasicHeaderOptions {
         if (!Objects.equals(block2Res, that.block2Res)) {
             return false;
         }
+
         return Objects.equals(size2Res, that.size2Res);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (correlationTag != null ? correlationTag.hashCode() : 0);
         result = 31 * result + (echo != null ? echo.hashCode() : 0);
         result = 31 * result + (requestTag != null ? requestTag.hashCode() : 0);
         result = 31 * result + (observe != null ? observe.hashCode() : 0);
