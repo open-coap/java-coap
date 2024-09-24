@@ -522,6 +522,13 @@ public class HeaderOptionsTest {
         assertEquals("?param1=val1&q&param2=val2 Loc:?q", h2.toString());
     }
 
+    @Test
+    void correlationOptionShouldBeElectiveAndSafeToForward() {
+        assertFalse(isCritical(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(isUnsave(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(hasNoCacheKey(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
+    }
+
     private static byte[] serialize(BasicHeaderOptions hdr) throws IOException, CoapException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         hdr.serialize(baos);
