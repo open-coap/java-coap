@@ -25,6 +25,15 @@ import java.util.Objects;
  * - RFC 7959 (Block-Wise Transfers)
  * - draft-ietf-core-observe-09
  * - RFC 9175 (Echo, Request-Tag, and Token Processing)
+ * <p/>
+ * And custom:
+ * <pre>
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    | No. | C | U | N | R | Name           | Format | Length | Default  |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    |29644|   |   |   |   | Correlation-tag| opaque | 0-36   | (none)   |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ * </pre>
  */
 public class HeaderOptions extends BasicHeaderOptions {
 
@@ -34,7 +43,7 @@ public class HeaderOptions extends BasicHeaderOptions {
     private static final byte SIZE_2_RES = 28;
     private static final int ECHO = 252;
     private static final int REQUEST_TAG = 292;
-    private static final int OPEN_COAP_CORRELATION_TAG = 29643; // open-coap specific option for request tracing
+    public static final int OPEN_COAP_CORRELATION_TAG = 29644; // open-coap specific option for request tracing
     private Integer observe;
     private BlockOption block1Req;
     private BlockOption block2Res;
