@@ -75,6 +75,10 @@ subprojects {
             }
         }
 
+        withType<Javadoc> {
+            (options as CoreJavadocOptions).addBooleanOption("Xdoclint:accessibility,html,syntax,reference", true)
+        }
+
         create<Jar>("sourceJar") {
             archiveClassifier.set("sources")
             from(projSourceSets["main"].allSource)
