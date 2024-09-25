@@ -28,7 +28,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build with Gradle
-        run: ./gradlew build jacocoTestReport -i
+        run: ./gradlew build jacocoTestReport javadoc -i
       - uses: codecov/codecov-action@v4
         if: matrix.java == '21'
         env:

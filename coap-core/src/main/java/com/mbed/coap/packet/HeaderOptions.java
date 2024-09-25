@@ -25,7 +25,7 @@ import java.util.Objects;
  * - RFC 7959 (Block-Wise Transfers)
  * - draft-ietf-core-observe-09
  * - RFC 9175 (Echo, Request-Tag, and Token Processing)
- * <p/>
+ * <p>
  * And custom:
  * <pre>
  *    +-----+---+---+---+---+----------------+--------+--------+----------+
