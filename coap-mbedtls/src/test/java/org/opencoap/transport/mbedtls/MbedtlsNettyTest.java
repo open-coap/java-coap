@@ -242,7 +242,7 @@ public class MbedtlsNettyTest {
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
-                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(destinationAddress), destinationAddress, SessionWriter.NO_OPS));
+                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf, SessionWriter.NO_OPS));
                     }
                 });
     }
