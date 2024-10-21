@@ -114,7 +114,7 @@ public class MultithreadedMbedtlsNettyTest {
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
-                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf.newContext(serverAddress), serverAddress, SessionWriter.NO_OPS));
+                        ch.pipeline().addFirst("DTLS", new DtlsClientHandshakeChannelHandler(clientConf, SessionWriter.NO_OPS));
                     }
                 });
 
