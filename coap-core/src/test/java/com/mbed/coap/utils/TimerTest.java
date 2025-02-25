@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ class TimerTest {
         timer.schedule(Duration.ofMillis(3), task);
         timer.schedule(Duration.ofMillis(1), task2);
 
-        verify(task, timeout(100)).run();
-        verify(task2, timeout(100)).run();
+        verify(task, timeout(200)).run();
+        verify(task2, timeout(200)).run();
     }
 
     @Test

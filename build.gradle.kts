@@ -6,9 +6,9 @@ plugins {
     id("maven-publish")
     id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
-    id("com.github.ben-manes.versions") version "0.51.0"
+    id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.0.23"
+    id("com.github.spotbugs") version "6.1.5"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -16,6 +16,7 @@ plugins {
 
 allprojects {
     apply {
+        plugin("java")
         plugin("com.github.mfarsikov.kewt-versioning")
         plugin("se.patrikerdes.use-latest-versions")
         plugin("com.github.ben-manes.versions")
@@ -23,6 +24,11 @@ allprojects {
 
     repositories {
         mavenCentral()
+    }
+
+    dependencies {
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
     }
 
     kewtVersioning.configuration {
