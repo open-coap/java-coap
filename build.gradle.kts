@@ -8,7 +8,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.1.5"
+    id("com.github.spotbugs") version "6.1.13"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -27,8 +27,8 @@ allprojects {
     }
 
     dependencies {
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.0")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.0")
     }
 
     kewtVersioning.configuration {
@@ -45,7 +45,8 @@ allprojects {
 
             // newer version of logback-classic is not java8 compatible
             // newer version of kewt-versioning plugin requires java 21
-            isNonStable || listOf("logback-classic", "mockito-core", "com.github.mfarsikov.kewt-versioning.gradle.plugin").contains(candidate.module)
+            // newer version of equalsverifier is not java8 compatible
+            isNonStable || listOf("logback-classic", "mockito-core", "com.github.mfarsikov.kewt-versioning.gradle.plugin", "nl.jqno.equalsverifier").contains(candidate.module)
         }
     }
 
