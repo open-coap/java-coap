@@ -123,6 +123,12 @@ subprojects {
     }
 
     publishing {
+        repositories {
+            maven {
+                name = "ossrh-staging-api"
+                setUrl("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+            }
+        }
         publications {
             create<MavenPublication>("OSSRH") {
                 from(components["java"])
@@ -172,8 +178,8 @@ nexusPublishing {
             val ossrhUserName: String? by project
             val ossrhPassword: String? by project
 
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"))
             username.set(ossrhUserName)
             password.set(ossrhPassword)
         }
