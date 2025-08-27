@@ -5,7 +5,7 @@ plugins {
     id("java")
     id("maven-publish")
     id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
-    id("se.patrikerdes.use-latest-versions") version "0.2.18"
+    id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
     id("com.github.spotbugs") version "6.1.13"
@@ -27,8 +27,8 @@ allprojects {
     }
 
     dependencies {
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.0")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.0")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     }
 
     kewtVersioning.configuration {
@@ -46,7 +46,10 @@ allprojects {
             // newer version of logback-classic is not java8 compatible
             // newer version of kewt-versioning plugin requires java 21
             // newer version of equalsverifier is not java8 compatible
-            isNonStable || listOf("logback-classic", "mockito-core", "com.github.mfarsikov.kewt-versioning.gradle.plugin", "nl.jqno.equalsverifier").contains(candidate.module)
+            // newer version of spotbugs plugin requires java 11
+            isNonStable || listOf("logback-classic", "mockito-core", "com.github.mfarsikov.kewt-versioning.gradle.plugin", "nl.jqno.equalsverifier", "com.github.spotbugs.gradle.plugin").contains(
+                candidate.module
+            )
         }
     }
 
@@ -88,12 +91,12 @@ subprojects {
             (options as CoreJavadocOptions).addBooleanOption("Xdoclint:accessibility,html,syntax,reference", true)
         }
 
-        create<Jar>("sourceJar") {
+        register<Jar>("sourceJar") {
             archiveClassifier.set("sources")
             from(projSourceSets["main"].allSource)
         }
 
-        create<Jar>("javadocJar") {
+        register<Jar>("javadocJar") {
             archiveClassifier.set("javadoc")
             from(javadoc)
         }

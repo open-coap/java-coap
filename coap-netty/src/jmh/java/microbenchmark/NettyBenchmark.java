@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,8 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -124,7 +125,7 @@ public class NettyBenchmark {
     }
 
     private static Bootstrap createNettyBootstrap() {
-        EventLoopGroup group = new NioEventLoopGroup(1, new DefaultThreadFactory("udp", true));
+        EventLoopGroup group = new MultiThreadIoEventLoopGroup(1, new DefaultThreadFactory("udp", true), NioIoHandler.newFactory());
         // EventLoopGroup group = new KQueueEventLoopGroup(1, new DefaultThreadFactory("udp", true));
         // EventLoopGroup group = new EpollEventLoopGroup(1, new DefaultThreadFactory("udp", true));
 

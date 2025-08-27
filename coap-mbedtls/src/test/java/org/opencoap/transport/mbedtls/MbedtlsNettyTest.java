@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -74,7 +75,7 @@ import org.opencoap.ssl.transport.Transport;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MbedtlsNettyTest {
-    private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("udp", true));
+    private final EventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(1, new DefaultThreadFactory("udp", true), NioIoHandler.newFactory());
 
     private final SslConfig clientConf = SslConfig.client(new PskAuth("test", of("secret").getBytes()));
     private final SslConfig serverConf = SslConfig.server(new PskAuth("test", of("secret").getBytes()));

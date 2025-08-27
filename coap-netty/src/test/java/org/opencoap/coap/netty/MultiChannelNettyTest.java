@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import com.mbed.coap.server.RouterService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.epoll.EpollDatagramChannel;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.epoll.EpollIoHandler;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.unix.UnixChannelOption;
@@ -98,7 +99,7 @@ public class MultiChannelNettyTest {
     }
 
     private Bootstrap createNioBootstrap() {
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(THREADS, new DefaultThreadFactory("udp", true));
+        EventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(THREADS, new DefaultThreadFactory("udp", true), NioIoHandler.newFactory());
         return new Bootstrap()
                 .group(eventLoopGroup)
                 .localAddress(0) // this will cause server binding to multiple ports
@@ -112,7 +113,7 @@ public class MultiChannelNettyTest {
     }
 
     private Bootstrap createEpollBootstrap() {
-        EventLoopGroup eventLoopGroup = new EpollEventLoopGroup(3, new DefaultThreadFactory("udp", true));
+        EventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(THREADS, new DefaultThreadFactory("udp", true), EpollIoHandler.newFactory());
 
         return new Bootstrap()
                 .group(eventLoopGroup)

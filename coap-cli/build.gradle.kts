@@ -14,7 +14,7 @@ dependencies {
     implementation("info.picocli:picocli:4.7.7")
 
     testImplementation("org.mockito:mockito-core:4.11.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation(testFixtures(project(":coap-core")))
 }
