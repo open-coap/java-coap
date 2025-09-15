@@ -247,7 +247,7 @@ Development
 
 ### Requirements:
 
-* JDK 8
+* JDK 17
 * gradle
 
 ### Useful commands:
