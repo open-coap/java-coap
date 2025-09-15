@@ -4,7 +4,7 @@ import com.github.spotbugs.snom.Effort
 plugins {
     id("java")
     id("maven-publish")
-    id("com.github.mfarsikov.kewt-versioning") version "1.0.0"
+    id("pl.allegro.tech.build.axion-release") version "1.20.1"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
@@ -14,10 +14,15 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
+scmVersion {
+    versionIncrementer("incrementMinor")
+}
+
+version = scmVersion.version
+
 allprojects {
     apply {
         plugin("java")
-        plugin("com.github.mfarsikov.kewt-versioning")
         plugin("se.patrikerdes.use-latest-versions")
         plugin("com.github.ben-manes.versions")
     }
@@ -31,11 +36,8 @@ allprojects {
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     }
 
-    kewtVersioning.configuration {
-        separator = ""
-    }
-    version = kewtVersioning.version
     group = "io.github.open-coap"
+    project.version = rootProject.version
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
@@ -74,10 +76,13 @@ subprojects {
         }
 
         withType<JavaCompile> {
-            if (!JavaVersion.current().isJava8) {
-                options.release.set(8)
-            }
             options.encoding = "UTF-8"
+            if (this.name == "compileJava") {
+                options.release.set(8)
+                // options.setDeprecation(true)
+                options.compilerArgs.add("-Xlint:-options")
+                options.compilerArgs.add("-Werror")
+            }
         }
 
         withType<JacocoReport> {
