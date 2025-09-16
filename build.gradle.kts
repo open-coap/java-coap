@@ -8,7 +8,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.1.13"
+    id("com.github.spotbugs") version "6.4.1"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -45,13 +45,7 @@ allprojects {
             val regex = "^[0-9,.v-]+(-r)?$".toRegex()
             val isNonStable = !(stableKeyword || regex.matches(candidate.version))
 
-            // newer version of logback-classic is not java8 compatible
-            // newer version of kewt-versioning plugin requires java 21
-            // newer version of equalsverifier is not java8 compatible
-            // newer version of spotbugs plugin requires java 11
-            isNonStable || listOf("logback-classic", "mockito-core", "com.github.mfarsikov.kewt-versioning.gradle.plugin", "nl.jqno.equalsverifier", "com.github.spotbugs.gradle.plugin").contains(
-                candidate.module
-            )
+            isNonStable
         }
     }
 

@@ -13,7 +13,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":coap-core")))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
-    testImplementation("io.netty:netty-transport-native-epoll:4.2.4.Final:linux-x86_64")
-    testImplementation("ch.qos.logback:logback-classic:1.3.15")
+    testImplementation("io.netty:netty-transport-native-epoll:4.2.6.Final:linux-x86_64")
+    testImplementation("ch.qos.logback:logback-classic:1.5.18")
     testImplementation("org.awaitility:awaitility:4.3.0")
 }

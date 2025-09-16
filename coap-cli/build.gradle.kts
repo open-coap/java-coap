@@ -10,10 +10,10 @@ dependencies {
     implementation(project(":lwm2m"))
     implementation(project(":coap-mbedtls"))
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-classic:1.3.15")
+    implementation("ch.qos.logback:logback-classic:1.5.18")
     implementation("info.picocli:picocli:4.7.7")
 
-    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito:mockito-core:5.19.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation(testFixtures(project(":coap-core")))
