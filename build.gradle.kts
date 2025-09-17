@@ -8,7 +8,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.4.1"
+    id("com.github.spotbugs") version "6.4.2"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -114,14 +114,6 @@ subprojects {
     spotbugs {
         effort.set(Effort.MAX)
         excludeFilter.set(rootProject.file("spotbugs-exlude.xml"))
-    }
-    configurations.named("spotbugs").configure {
-        resolutionStrategy.eachDependency {
-            if (requested.group == "org.ow2.asm") {
-                useVersion("9.5")
-                because("Asm 9.5 is required for JDK 21 support")
-            }
-        }
     }
 
     publishing {
