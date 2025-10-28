@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -139,11 +140,15 @@ public class BasicHeaderOptions {
     }
 
     public boolean containsUnrecognisedCriticalOption() {
+        return containsUnrecognisedCriticalOption(Collections.emptySet());
+    }
+
+    public boolean containsUnrecognisedCriticalOption(final Collection<Integer> customOptions) {
         if (unrecognizedOptions == null) {
             return false;
         }
         for (int tp : unrecognizedOptions.keySet()) {
-            if (isCritical(tp)) {
+            if (!customOptions.contains(tp) && isCritical(tp)) {
                 return true;
             }
         }

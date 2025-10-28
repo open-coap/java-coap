@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +43,8 @@ import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -59,6 +61,7 @@ public class CoapServerBuilderForTcp {
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationsStore = ObservationsStore.ALWAYS_EMPTY;
     private Boolean isTransportLoggingEnabled = true;
+    private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
     CoapServerBuilderForTcp() {
         csmStorage = new CapabilitiesStorageImpl();
@@ -135,6 +138,17 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
+    /**
+     * Sets the collection of recognized custom critical CoAP option numbers.
+     *
+     * @param recognizedCustomOptions a collection of integer option numbers to be recognized as custom options
+     * @return this builder instance for method chaining
+     */
+    public CoapServerBuilderForTcp recognizedCustomOptions(Collection<Integer> recognizedCustomOptions) {
+        this.recognizedCustomOptions = requireNonNull(recognizedCustomOptions);
+        return this;
+    }
+
     public CoapClient buildClient(InetSocketAddress target) throws IOException {
         return CoapClient.create(target, build().start(), r -> r.getCode() == Code.C703_PONG);
     }
@@ -151,7 +165,7 @@ public class CoapServerBuilderForTcp {
 
         // INBOUND
         Service<CoapRequest, CoapResponse> inboundService = new RescueFilter()
-                .andThenIf(hasRoute(), new CriticalOptionVerifier())
+                .andThenIf(hasRoute(), new CriticalOptionVerifier(recognizedCustomOptions))
                 .andThenIf(hasRoute(), new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);
