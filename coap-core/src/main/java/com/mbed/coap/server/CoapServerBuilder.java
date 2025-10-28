@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +87,7 @@ public final class CoapServerBuilder {
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
     private boolean isTransportLoggingEnabled = true;
-    private Collection<Integer> customOptions = Collections.emptySet();
+    private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
     CoapServerBuilder() {
     }
@@ -231,8 +231,14 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder customOptions(Collection<Integer> recognizedCustomOptions) {
-        this.customOptions = requireNonNull(recognizedCustomOptions);
+    /**
+     * Sets the collection of recognized custom critical CoAP option numbers.
+     *
+     * @param recognizedCustomOptions a collection of integer option numbers to be recognized as custom options
+     * @return this builder instance for method chaining
+     */
+    public CoapServerBuilder recognizedCustomOptions(Collection<Integer> recognizedCustomOptions) {
+        this.recognizedCustomOptions = requireNonNull(recognizedCustomOptions);
         return this;
     }
 
@@ -281,7 +287,7 @@ public final class CoapServerBuilder {
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
-                .andThen(new CriticalOptionVerifier(customOptions))
+                .andThen(new CriticalOptionVerifier(recognizedCustomOptions))
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,9 +61,9 @@ public class CoapServerBuilderTest {
     }
 
     @Test
-    public void shouldFail_whenNullCustomOptionsValue() throws Exception {
+    public void shouldFail_whenNullRecognizedCustomOptionsValue() throws Exception {
         assertThrows(NullPointerException.class, () ->
-                CoapServer.builder().customOptions(null)
+                CoapServer.builder().recognizedCustomOptions(null)
         );
     }
 
