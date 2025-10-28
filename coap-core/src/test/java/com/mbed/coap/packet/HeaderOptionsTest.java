@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
@@ -422,6 +423,9 @@ public class HeaderOptionsTest {
 
         h.put(1001, Opaque.of("foo"));
         assertTrue(h.containsUnrecognisedCriticalOption());
+
+        h.put(1001, Opaque.of("foo"));
+        assertFalse(h.containsUnrecognisedCriticalOption(Collections.singleton(1001)));
     }
 
     @Test

@@ -56,6 +56,8 @@ import com.mbed.coap.utils.Timer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -85,6 +87,7 @@ public final class CoapServerBuilder {
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
     private boolean isTransportLoggingEnabled = true;
+    private Collection<Integer> customOptions = Collections.emptySet();
 
     CoapServerBuilder() {
     }
@@ -228,6 +231,11 @@ public final class CoapServerBuilder {
         return this;
     }
 
+    public CoapServerBuilder customOptions(Collection<Integer> recognizedCustomOptions) {
+        this.customOptions = requireNonNull(recognizedCustomOptions);
+        return this;
+    }
+
     public CoapServer build() {
         CoapTransport realTransport = requireNonNull(this.coapTransport.get(), "Missing transport");
         CoapTransport coapTransport = isTransportLoggingEnabled ? LoggingCoapTransport.wrap(realTransport) : realTransport;
@@ -273,7 +281,7 @@ public final class CoapServerBuilder {
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
-                .andThen(new CriticalOptionVerifier())
+                .andThen(new CriticalOptionVerifier(customOptions))
                 .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);

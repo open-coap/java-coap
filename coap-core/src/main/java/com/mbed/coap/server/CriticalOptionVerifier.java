@@ -22,13 +22,25 @@ import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 class CriticalOptionVerifier implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
+    private final Collection<Integer> recognizedCustomOptions;
+
+    CriticalOptionVerifier() {
+        this.recognizedCustomOptions = Collections.emptySet();
+    }
+
+    CriticalOptionVerifier(final Collection<Integer> recognizedCustomOptions) {
+        this.recognizedCustomOptions = recognizedCustomOptions;
+    }
+
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
-        if (request.options().containsUnrecognisedCriticalOption()) {
+        if (request.options().containsUnrecognisedCriticalOption(recognizedCustomOptions)) {
             return coapResponse(Code.C402_BAD_OPTION).toFuture();
         }
         return service.apply(request);

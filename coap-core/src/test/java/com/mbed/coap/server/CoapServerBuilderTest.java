@@ -61,6 +61,13 @@ public class CoapServerBuilderTest {
     }
 
     @Test
+    public void shouldFail_whenNullCustomOptionsValue() throws Exception {
+        assertThrows(NullPointerException.class, () ->
+                CoapServer.builder().customOptions(null)
+        );
+    }
+
+    @Test
     public void shouldReuseBuilder() throws Exception {
         CoapServer server = new CoapServerBuilder()
                 .transport(create(5683))

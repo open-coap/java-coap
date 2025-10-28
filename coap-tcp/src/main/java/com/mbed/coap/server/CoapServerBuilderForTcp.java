@@ -43,6 +43,8 @@ import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -59,6 +61,7 @@ public class CoapServerBuilderForTcp {
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationsStore = ObservationsStore.ALWAYS_EMPTY;
     private Boolean isTransportLoggingEnabled = true;
+    private Collection<Integer> customOptions = Collections.emptySet();
 
     CoapServerBuilderForTcp() {
         csmStorage = new CapabilitiesStorageImpl();
@@ -135,6 +138,11 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
+    public CoapServerBuilderForTcp customOptions(Collection<Integer> recognizedCustomOptions) {
+        this.customOptions = requireNonNull(recognizedCustomOptions);
+        return this;
+    }
+
     public CoapClient buildClient(InetSocketAddress target) throws IOException {
         return CoapClient.create(target, build().start(), r -> r.getCode() == Code.C703_PONG);
     }
@@ -151,7 +159,7 @@ public class CoapServerBuilderForTcp {
 
         // INBOUND
         Service<CoapRequest, CoapResponse> inboundService = new RescueFilter()
-                .andThenIf(hasRoute(), new CriticalOptionVerifier())
+                .andThenIf(hasRoute(), new CriticalOptionVerifier(customOptions))
                 .andThenIf(hasRoute(), new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
                 .then(route);
