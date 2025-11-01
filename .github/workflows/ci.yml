@@ -25,7 +25,7 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'corretto'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Build with Gradle
         run: ./gradlew build jacocoTestReport javadoc -i
