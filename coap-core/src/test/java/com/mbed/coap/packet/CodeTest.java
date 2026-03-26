@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,11 @@
  */
 package com.mbed.coap.packet;
 
+import static com.mbed.coap.packet.Code.fromHttp;
+import static com.mbed.coap.packet.Method.DELETE;
+import static com.mbed.coap.packet.Method.GET;
+import static com.mbed.coap.packet.Method.POST;
+import static com.mbed.coap.packet.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -95,5 +100,39 @@ public class CodeTest {
         assertFalse(Code.C705_ABORT.isSuccess());
         assertFalse(Code.C500_INTERNAL_SERVER_ERROR.isSuccess());
         assertFalse(Code.C503_SERVICE_UNAVAILABLE.isSuccess());
+    }
+
+    @Test
+    public void shouldConvertHttpToCoapCode() {
+        assertEquals(Code.C205_CONTENT, fromHttp(200, GET));
+        assertEquals(Code.C204_CHANGED, fromHttp(200, PUT));
+        assertEquals(Code.C202_DELETED, fromHttp(200, DELETE));
+        assertEquals(Code.C201_CREATED, fromHttp(201, POST));
+        assertEquals(Code.C204_CHANGED, fromHttp(202, POST));
+        assertEquals(Code.C202_DELETED, fromHttp(204, DELETE));
+
+        assertEquals(Code.C203_VALID, fromHttp(304, GET));
+
+        assertEquals(Code.C400_BAD_REQUEST, fromHttp(400, GET));
+        assertEquals(Code.C401_UNAUTHORIZED, fromHttp(401, GET));
+        assertEquals(Code.C403_FORBIDDEN, fromHttp(403, GET));
+        assertEquals(Code.C404_NOT_FOUND, fromHttp(404, GET));
+        assertEquals(Code.C405_METHOD_NOT_ALLOWED, fromHttp(405, GET));
+        assertEquals(Code.C406_NOT_ACCEPTABLE, fromHttp(406, GET));
+        assertEquals(Code.C408_REQUEST_ENTITY_INCOMPLETE, fromHttp(408, GET));
+        assertEquals(Code.C409_CONFLICT, fromHttp(409, GET));
+        assertEquals(Code.C412_PRECONDITION_FAILED, fromHttp(412, GET));
+        assertEquals(Code.C413_REQUEST_ENTITY_TOO_LARGE, fromHttp(413, GET));
+        assertEquals(Code.C415_UNSUPPORTED_MEDIA_TYPE, fromHttp(415, GET));
+        assertEquals(Code.C429_TOO_MANY_REQUESTS, fromHttp(429, GET));
+
+        assertEquals(Code.C500_INTERNAL_SERVER_ERROR, fromHttp(500, GET));
+        assertEquals(Code.C501_NOT_IMPLEMENTED, fromHttp(501, GET));
+        assertEquals(Code.C502_BAD_GATEWAY, fromHttp(502, GET));
+        assertEquals(Code.C503_SERVICE_UNAVAILABLE, fromHttp(503, GET));
+        assertEquals(Code.C504_GATEWAY_TIMEOUT, fromHttp(504, GET));
+
+
+
     }
 }

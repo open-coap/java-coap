@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,20 +19,21 @@ package com.mbed.coap.packet;
 
 public enum Code {
     //RFC 7252
-    //draft-ietf-core-http-mapping-08 - for HTTP mapping
+    //RFC 8075
 
     C201_CREATED(2, 01, 201),
     C202_DELETED(2, 02, 200),
     C203_VALID(2, 03, 200),
     C204_CHANGED(2, 04, 200),
-    C205_CONTENT(2, 05, 200),
+    C205_CONTENT(2, 05, 200), // No direct CoAP equivalent
     C400_BAD_REQUEST(4, 00, 400),
     C401_UNAUTHORIZED(4, 01, 403),
     C402_BAD_OPTION(4, 02, 400),
     C403_FORBIDDEN(4, 03, 403),
     C404_NOT_FOUND(4, 04, 404),
-    C405_METHOD_NOT_ALLOWED(4, 05, 400),
+    C405_METHOD_NOT_ALLOWED(4, 05, 405),
     C406_NOT_ACCEPTABLE(4, 06, 406),
+    C429_TOO_MANY_REQUESTS(4, 29, 429), // RFC 8516
     C412_PRECONDITION_FAILED(4, 12, 412),
     C415_UNSUPPORTED_MEDIA_TYPE(4, 15, 415),
     C500_INTERNAL_SERVER_ERROR(5, 00, 500),
@@ -105,4 +106,88 @@ public enum Code {
         return coapCode >>> 5 == 2;
     }
 
+    public static Code fromHttp(int httpStatus, Method method) {
+
+        switch (httpStatus) {
+            // SUCCESS (2.xx)
+            case 200:
+                switch (method) {
+                    case PUT:
+                    case POST:
+                    case PATCH:
+                    case iPATCH:
+                        return C204_CHANGED;
+                    case DELETE:
+                        return C202_DELETED;
+                    default:
+                        return C205_CONTENT;
+                }
+            case 201:
+                return C201_CREATED;
+            case 202:
+                return C204_CHANGED; // Closest semantic match
+            case 204:
+                if (method == Method.DELETE) {
+                    return C202_DELETED;
+                }
+                return C204_CHANGED;
+
+
+            // REDIRECT (3.xx)
+            case 304:
+                return C203_VALID;
+
+            // CLIENT ERRORS (4.xx)
+            case 400:
+                return C400_BAD_REQUEST;
+            case 401:
+                return C401_UNAUTHORIZED;
+            case 403:
+                return C403_FORBIDDEN;
+            case 404:
+                return C404_NOT_FOUND;
+            case 405:
+                return C405_METHOD_NOT_ALLOWED;
+            case 406:
+                return C406_NOT_ACCEPTABLE;
+            case 408:
+                return C408_REQUEST_ENTITY_INCOMPLETE; // Closest semantic match
+            case 409:
+                return C409_CONFLICT;
+            case 412:
+                return C412_PRECONDITION_FAILED;
+            case 413:
+                return C413_REQUEST_ENTITY_TOO_LARGE;
+            case 415:
+                return C415_UNSUPPORTED_MEDIA_TYPE;
+            case 429:
+                return C429_TOO_MANY_REQUESTS;
+
+            // SERVER ERRORS (5.xx)
+            case 500:
+                return C500_INTERNAL_SERVER_ERROR;
+            case 501:
+                return C501_NOT_IMPLEMENTED;
+            case 502:
+                return C502_BAD_GATEWAY;
+            case 503:
+                return C503_SERVICE_UNAVAILABLE;
+            case 504:
+                return C504_GATEWAY_TIMEOUT;
+
+            default:
+                return mapUnhandledHttpStatusToDefault(httpStatus);
+        }
+    }
+
+    private static Code mapUnhandledHttpStatusToDefault(int httpStatus) {
+        if (httpStatus <= 299) {
+            return C205_CONTENT;
+        } else if (httpStatus <= 399) {
+            return C502_BAD_GATEWAY;
+        } else if (httpStatus <= 499) {
+            return C400_BAD_REQUEST;
+        }
+        return C500_INTERNAL_SERVER_ERROR;
+    }
 }
