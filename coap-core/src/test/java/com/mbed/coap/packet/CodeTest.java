@@ -106,9 +106,11 @@ public class CodeTest {
     public void shouldConvertHttpToCoapCode() {
         assertEquals(Code.C205_CONTENT, fromHttp(200, GET));
         assertEquals(Code.C204_CHANGED, fromHttp(200, PUT));
+        assertEquals(Code.C201_CREATED, fromHttp(200, POST));
         assertEquals(Code.C202_DELETED, fromHttp(200, DELETE));
         assertEquals(Code.C201_CREATED, fromHttp(201, POST));
-        assertEquals(Code.C204_CHANGED, fromHttp(202, POST));
+        assertEquals(Code.C201_CREATED, fromHttp(202, POST));
+        assertEquals(Code.C202_DELETED, fromHttp(202, DELETE));
         assertEquals(Code.C202_DELETED, fromHttp(204, DELETE));
 
         assertEquals(Code.C203_VALID, fromHttp(304, GET));

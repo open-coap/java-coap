@@ -111,9 +111,11 @@ public enum Code {
         switch (httpStatus) {
             // SUCCESS (2.xx)
             case 200:
+            case 202: // Closest semantic match is to use same code as 200
                 switch (method) {
-                    case PUT:
                     case POST:
+                        return C201_CREATED;
+                    case PUT:
                     case PATCH:
                     case iPATCH:
                         return C204_CHANGED;
@@ -124,8 +126,6 @@ public enum Code {
                 }
             case 201:
                 return C201_CREATED;
-            case 202:
-                return C204_CHANGED; // Closest semantic match
             case 204:
                 if (method == Method.DELETE) {
                     return C202_DELETED;
