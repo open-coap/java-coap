@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -258,6 +258,14 @@ public final class CoapRequest {
         public Builder payload(Opaque payload) {
             this.payload = payload;
             return this;
+        }
+
+        public Builder payload(byte[] payload) {
+            return payload(Opaque.of(payload));
+        }
+
+        public Builder payload(byte[] payload, short contentFormat) {
+            return payload(Opaque.of(payload), contentFormat);
         }
 
         public Builder token(Opaque token) {
