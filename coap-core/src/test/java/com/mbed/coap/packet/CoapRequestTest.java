@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ import static com.mbed.coap.packet.BlockSize.S_64;
 import static com.mbed.coap.packet.CoapRequest.fetch;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.ping;
+import static com.mbed.coap.packet.CoapRequest.post;
 import static com.mbed.coap.packet.CoapResponseTest.newOptions;
 import static com.mbed.coap.packet.MediaTypes.CT_APPLICATION_JSON;
 import static com.mbed.coap.packet.Opaque.EMPTY;
@@ -81,7 +82,7 @@ class CoapRequestTest {
     @Test
     void testToString() {
         assertEquals("CoapRequest[PUT URI:/test,Token:03ff, pl(4):64757061]", CoapRequest.put("/test").token(1023).payload("dupa").build().toString());
-        assertEquals("CoapRequest[POST URI:/test, pl(4):64757061]", CoapRequest.post("/test").payload("dupa").build().toString());
+        assertEquals("CoapRequest[POST URI:/test, pl(4):64757061]", post("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[DELETE URI:/test,Token:03ff]", CoapRequest.delete("/test").token(1023).build().toString());
         assertEquals("CoapRequest[GET URI:/test]", get("/test").build().toString());
         assertEquals("CoapRequest[FETCH URI:/test, pl(4):64757061]", fetch("/test").payload("dupa").build().toString());
@@ -171,6 +172,23 @@ class CoapRequestTest {
 
             assertEquals(new BlockOption(0, S_512, false), req2.options().getBlock2Res());
             assertNull(req2.options().getBlock1Req());
+        }
+
+        @Test
+        public void shouldSetPayloadFromByteArray() {
+            byte[] data = new byte[]{1, 2, 3, 4};
+
+            CoapRequest req = post("/test").payload(data).build();
+            assertEquals(Opaque.of(data), req.getPayload());
+        }
+
+        @Test
+        public void shouldSetPayloadFromByteArrayWithContentFormat() {
+            byte[] data = new byte[]{1, 2, 3, 4};
+
+            CoapRequest req = post("/test").payload(data, CT_APPLICATION_JSON).build();
+            assertEquals(Opaque.of(data), req.getPayload());
+            assertEquals(CT_APPLICATION_JSON, req.options().getContentFormat());
         }
 
         @Test
