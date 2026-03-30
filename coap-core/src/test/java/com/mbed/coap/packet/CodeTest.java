@@ -112,6 +112,7 @@ public class CodeTest {
         assertEquals(Code.C201_CREATED, fromHttp(202, POST));
         assertEquals(Code.C202_DELETED, fromHttp(202, DELETE));
         assertEquals(Code.C202_DELETED, fromHttp(204, DELETE));
+        assertEquals(Code.C205_CONTENT, fromHttp(204, GET));
 
         assertEquals(Code.C203_VALID, fromHttp(304, GET));
 

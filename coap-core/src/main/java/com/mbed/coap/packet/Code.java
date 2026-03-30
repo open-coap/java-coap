@@ -106,6 +106,7 @@ public enum Code {
         return coapCode >>> 5 == 2;
     }
 
+    @SuppressWarnings("PMD.NcssCount")
     public static Code fromHttp(int httpStatus, Method method) {
 
         switch (httpStatus) {
@@ -127,11 +128,15 @@ public enum Code {
             case 201:
                 return C201_CREATED;
             case 204:
-                if (method == Method.DELETE) {
-                    return C202_DELETED;
+                switch (method) {
+                    case GET:
+                    case FETCH:
+                        return C205_CONTENT;
+                    case DELETE:
+                        return C202_DELETED;
+                    default:
+                        return C204_CHANGED;
                 }
-                return C204_CHANGED;
-
 
             // REDIRECT (3.xx)
             case 304:
