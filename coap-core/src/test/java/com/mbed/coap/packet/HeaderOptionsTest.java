@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -531,6 +531,13 @@ public class HeaderOptionsTest {
         assertFalse(isCritical(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
         assertFalse(isUnsave(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
         assertFalse(hasNoCacheKey(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
+    }
+
+    @Test
+    void getCustomOption_shouldReturnNull_whenNoCustomOptionsSet() {
+        BasicHeaderOptions hdr = new BasicHeaderOptions();
+
+        assertNull(hdr.getCustomOption(100));
     }
 
     private static byte[] serialize(BasicHeaderOptions hdr) throws IOException, CoapException {
