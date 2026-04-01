@@ -18,7 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
       - name: Publish with Gradle
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -i
         env:
