@@ -72,7 +72,7 @@ subprojects {
         withType<JavaCompile> {
             options.encoding = "UTF-8"
             if (this.name == "compileJava") {
-                options.release.set(8)
+                options.release.set(17)
                 // options.setDeprecation(true)
                 options.compilerArgs.add("-Xlint:-options")
                 options.compilerArgs.add("-Werror")
