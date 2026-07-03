@@ -9,12 +9,12 @@ dependencies {
     implementation(project(":coap-tcp"))
     implementation(project(":lwm2m"))
     implementation(project(":coap-mbedtls"))
-    implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("org.slf4j:slf4j-api:2.0.18")
+    implementation("ch.qos.logback:logback-classic:1.5.37")
     implementation("info.picocli:picocli:4.7.7")
 
-    testImplementation("org.mockito:mockito-core:5.19.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.1")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation(testFixtures(project(":coap-core")))
 }
