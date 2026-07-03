@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
+public final class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
 
     private final Timer timer;
     private final RetransmissionBackOff backoff;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-public class SeparateResponse {
+public final class SeparateResponse {
     private final CoapResponse response;
     private final Opaque token;
     private final InetSocketAddress peerAddress;
