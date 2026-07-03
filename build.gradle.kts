@@ -8,7 +8,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("com.github.ben-manes.versions") version "0.54.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.4.2"
+    id("com.github.spotbugs") version "6.5.8"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
