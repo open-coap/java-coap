@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class NettyCoapTransport implements CoapTransport {
+public final class NettyCoapTransport implements CoapTransport {
 
     private Channel channel;
     private final Bootstrap bootstrap;

@@ -31,7 +31,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Sharable
-public class CoapCodec extends MessageToMessageCodec<DatagramPacket, CoapPacket> {
+public final class CoapCodec extends MessageToMessageCodec<DatagramPacket, CoapPacket> {
 
     private final Function<DatagramPacket, TransportContext> contextResolver;
     private final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter;

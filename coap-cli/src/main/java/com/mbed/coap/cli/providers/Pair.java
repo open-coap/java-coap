@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class Pair<K, V> {
+public final class Pair<K, V> {
     public final K key;
     public final V value;
 

@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class CoapResponse {
+public final class CoapResponse {
     private final Code code;
     private final HeaderOptions options;
     private final Opaque payload;

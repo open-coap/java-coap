@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
+public final class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
 
     private final Timer timer;
     private final RetransmissionBackOff backoff;

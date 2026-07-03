@@ -23,7 +23,7 @@ import com.mbed.coap.packet.Opaque;
 /**
  * Capabilities And Settings POJO for CoAP over TCP https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09
  */
-public class Capabilities {
+public final class Capabilities {
     // see https://tools.ietf.org/html/draft-ietf-core-coap-tcp-tls-09#section-5.3 for base values (5.3.1, 5.3.2)
     private static final int BASE_MAX_MESSAGE_SIZE = 1152;
     private static final boolean BASE_BLOCKWISE = false;

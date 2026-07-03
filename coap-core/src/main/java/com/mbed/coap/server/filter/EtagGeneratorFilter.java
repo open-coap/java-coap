@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class EtagGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
     private final Function<Opaque, Opaque> etagGenerator;
 

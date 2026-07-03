@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Deprecated
-public class LWM2MObject {
+public final class LWM2MObject {
 
     private final LWM2MID id;
     private final List<LWM2MObjectInstance> instances;

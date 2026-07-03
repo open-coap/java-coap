@@ -19,7 +19,7 @@ import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-public class SeparateResponse {
+public final class SeparateResponse {
     private final CoapResponse response;
     private final Opaque token;
     private final InetSocketAddress peerAddress;

@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-public class TokenGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public final class TokenGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
     final Supplier<Opaque> tokenGenerator;
 
