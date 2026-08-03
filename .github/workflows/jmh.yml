@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK
-        uses: actions/setup-java@v5.6.0
+        uses: actions/setup-java@v5.7.0
         with:
           java-version: 17
           distribution: 'temurin'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v6.2.0
       - name: Build
         run: ./gradlew jmhJar
       - name: Run benchmarks
