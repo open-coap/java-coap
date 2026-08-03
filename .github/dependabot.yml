@@ -1,6 +1,33 @@
 version: 2
 updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build(deps)"
+    groups:
+      gradle:
+        patterns:
+          - "*"
+        # spotbugs upgrades usually require fixing new findings, keep them in a separate PR
+        exclude-patterns:
+          - "com.github.spotbugs*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: "monthly"
+    commit-message:
+      prefix: "build(deps)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
