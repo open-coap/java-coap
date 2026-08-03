@@ -10,8 +10,8 @@ dependencies {
 
     testImplementation(testFixtures(project(":coap-core")))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.1")
-    testImplementation("ch.qos.logback:logback-classic:1.5.37")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.2")
+    testImplementation("ch.qos.logback:logback-classic:1.6.1")
     testImplementation("org.mockito:mockito-core:5.23.0")
     testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:4.5")

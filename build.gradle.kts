@@ -6,7 +6,7 @@ plugins {
     id("maven-publish")
     id("pl.allegro.tech.build.axion-release") version "1.21.2"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
-    id("com.github.ben-manes.versions") version "0.54.0"
+    id("com.github.ben-manes.versions") version "0.58.0"
     id("pmd")
     id("com.github.spotbugs") version "6.5.8"
     id("org.gradle.signing")
@@ -32,8 +32,8 @@ allprojects {
     }
 
     dependencies {
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.1")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.2")
     }
 
     group = "io.github.open-coap"
