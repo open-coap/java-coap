@@ -16,6 +16,7 @@
 package com.mbed.coap.packet;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -166,23 +167,48 @@ public class CoapOptionsBuilder {
         return this;
     }
 
+    /**
+     * Replaces all Uri-Query options, splitting the given string on '&amp;'.
+     *
+     * @deprecated splitting on '&amp;' cannot express a value that itself contains '&amp;'. Use
+     *         {@link #query(String, String)} or {@link #queries(List)} instead.
+     */
+    @Deprecated
     public CoapOptionsBuilder query(String query) {
         options.setUriQuery(query);
         return this;
     }
 
+    /**
+     * Replaces all Uri-Query options, one per given value. Values are written verbatim, so they
+     * must hold decoded characters (RFC 7252, section 6.4), not percent-encoded ones.
+     */
+    public CoapOptionsBuilder queries(List<String> queries) {
+        options.setUriQueryList(queries);
+        return this;
+    }
+
+    /**
+     * Replaces all Uri-Query options, one per given value. Values are written verbatim, so they
+     * must hold decoded characters (RFC 7252, section 6.4), not percent-encoded ones. Calling it
+     * with no arguments removes the Uri-Query options.
+     */
+    public CoapOptionsBuilder queries(String... queries) {
+        options.setUriQueryList(queries);
+        return this;
+    }
+
+    /**
+     * Appends a single Uri-Query option. Both name and value are written verbatim, so they must
+     * hold decoded characters (RFC 7252, section 6.4), not percent-encoded ones. The value may
+     * contain any character, including '&amp;', '=' and '?', because it is carried in its own option.
+     */
     public CoapOptionsBuilder query(String name, String val) {
-        if (name.isEmpty() || name.contains("=") || name.contains("&") || name.contains("?")
-                || val.isEmpty() || val.contains("=") || val.contains("&") || val.contains("?")) {
+        if (name.isEmpty() || name.contains("=") || name.contains("&")) {
             throw new IllegalArgumentException("Non valid characters provided in query");
         }
-        final StringBuilder query = new StringBuilder();
-        if (options.getUriQuery() != null) {
-            query.append(options.getUriQuery());
-            query.append('&');
-        }
-        query.append(name).append('=').append(val);
-        return query(query.toString());
+        options.addUriQuery(name + '=' + val);
+        return this;
     }
 
     public CoapOptionsBuilder ifMatch(Opaque etag) {

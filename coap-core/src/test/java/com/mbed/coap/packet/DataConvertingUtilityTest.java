@@ -18,15 +18,18 @@ package com.mbed.coap.packet;
 
 import static com.mbed.coap.packet.DataConvertingUtility.parseUriQuery;
 import static com.mbed.coap.packet.DataConvertingUtility.parseUriQueryMult;
+import static com.mbed.coap.packet.DataConvertingUtility.percentEncodeUriQueryOption;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class DataConvertingUtilityTest {
@@ -60,6 +63,67 @@ public class DataConvertingUtilityTest {
         assertEquals(q, parseUriQuery("par1="));
     }
 
+
+    @Nested
+    class PercentEncodeUriQueryOptionTest {
+
+        @Test
+        public void shouldPercentEncodeCharactersOutsideTheAllowedSet() {
+            assertEquals("filter=a%26b", percentEncodeUriQueryOption("filter=a&b"));
+            assertEquals("hello%20world", percentEncodeUriQueryOption("hello world"));
+            assertEquals("100%25", percentEncodeUriQueryOption("100%"));
+            assertEquals("a%22b%3Cc%3Ed%23e", percentEncodeUriQueryOption("a\"b<c>d#e"));
+        }
+
+        @Test
+        public void shouldEncodeExactlyTheCharactersOutsideTheRfc7252QuerySet() {
+            // spelled out from RFC 7252 6.5 step 8: unreserved / sub-delims except '&' / ':' '@' '/' '?'
+            String unreserved = "-._~";
+            String subDelimsWithoutSeparator = "!$'()*+,;=";
+            String alsoAllowed = ":@/?";
+
+            StringBuilder literal = new StringBuilder();
+            StringBuilder encoded = new StringBuilder();
+            for (char chr = 0x20; chr <= 0x7E; chr++) {
+                String single = String.valueOf(chr);
+                if (percentEncodeUriQueryOption(single).equals(single)) {
+                    literal.append(chr);
+                } else {
+                    encoded.append(chr);
+                    assertEquals(String.format("%%%02X", (int) chr), percentEncodeUriQueryOption(single));
+                }
+            }
+
+            for (char chr : (unreserved + subDelimsWithoutSeparator + alsoAllowed).toCharArray()) {
+                assertTrue(literal.indexOf(String.valueOf(chr)) >= 0, chr + " must stay literal");
+            }
+            assertEquals(" \"#%&<>[\\]^`{|}", encoded.toString());
+        }
+
+        @Test
+        public void shouldPercentEncodeUtf8BytesInUppercase() {
+            assertEquals("za%C5%BC%C3%B3%C5%82%C4%87", percentEncodeUriQueryOption("zażółć"));
+        }
+
+        @Test
+        public void shouldNotEncodePlusSign() {
+            // '+' is a sub-delim, so RFC 7252 leaves it literal. It does not survive a consumer that
+            // decodes as application/x-www-form-urlencoded, where a bare '+' means space -- such a
+            // consumer needs its own encoding, this method is not it.
+            assertEquals("current_version=1.2.3+build.7", percentEncodeUriQueryOption("current_version=1.2.3+build.7"));
+        }
+
+        @Test
+        public void shouldEncodeOneOptionSoSeparatorIsNotTreatedAsSuch() {
+            // encodes a single option, so '&' is data and gets escaped rather than passed through
+            assertEquals("a=1%26b=2", percentEncodeUriQueryOption("a=1&b=2"));
+        }
+
+        @Test
+        public void shouldEncodeEmptyValueToEmptyString() {
+            assertEquals("", percentEncodeUriQueryOption(""));
+        }
+    }
 
     @Test
     public void splitTest() throws Exception {

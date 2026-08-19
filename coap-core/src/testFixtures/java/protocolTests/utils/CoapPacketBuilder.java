@@ -25,6 +25,7 @@ import com.mbed.coap.packet.Method;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 
 public class CoapPacketBuilder {
@@ -94,7 +95,7 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder uriQuery(String uriQuery) {
-        coapPacket.headers().setUriQuery(uriQuery);
+        coapPacket.headers().setUriQueryList(Arrays.asList(uriQuery.split("&")));
         return this;
     }
 

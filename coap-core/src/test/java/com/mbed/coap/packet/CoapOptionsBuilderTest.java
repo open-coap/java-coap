@@ -18,7 +18,11 @@ package com.mbed.coap.packet;
 import static com.mbed.coap.packet.CoapOptionsBuilder.options;
 import static com.mbed.coap.packet.Opaque.decodeHex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
@@ -29,9 +33,44 @@ public class CoapOptionsBuilderTest {
         failQueryWithNonValidChars("", "2");
         failQueryWithNonValidChars("&", "2");
         failQueryWithNonValidChars("=", "54");
-        failQueryWithNonValidChars("f", "");
-        failQueryWithNonValidChars("f", "&");
-        failQueryWithNonValidChars("f", "=");
+    }
+
+    @Test
+    public void shouldAllowAnyCharacterInQueryValue() {
+        // each value is carried in its own Uri-Query option, so no character is a separator
+        assertEquals(singletonList("f="), options().query("f", "").build().getUriQueryList());
+        assertEquals(singletonList("f=&"), options().query("f", "&").build().getUriQueryList());
+        assertEquals(singletonList("f=="), options().query("f", "=").build().getUriQueryList());
+        assertEquals(singletonList("f=?"), options().query("f", "?").build().getUriQueryList());
+        assertEquals(singletonList("f=1.0.0+sha"), options().query("f", "1.0.0+sha").build().getUriQueryList());
+    }
+
+    @Test
+    public void shouldKeepRepeatedQueryNames() {
+        HeaderOptions options = options().query("a", "1").query("a", "2").build();
+
+        assertEquals(asList("a=1", "a=2"), options.getUriQueryList());
+    }
+
+    @Test
+    public void shouldSetQueriesFromVarargs() {
+        assertEquals(asList("a=1", "b=2"), options().queries("a=1", "b=2").build().getUriQueryList());
+
+        // same result as the List overload
+        assertEquals(options().queries(asList("a=1", "b=2")).build().getUriQueryList(),
+                options().queries("a=1", "b=2").build().getUriQueryList());
+
+        // values are verbatim, so a separator inside a value stays inside that one option
+        assertEquals(singletonList("filter=a&b"), options().queries("filter=a&b").build().getUriQueryList());
+    }
+
+    @Test
+    public void shouldClearQueriesWithNoVarargs() {
+        HeaderOptions options = options().query("a", "1").queries().build();
+
+        assertEquals(emptyList(), options.getUriQueryList());
+        // absent, not present-and-empty
+        assertNull(options.getUriQueryEncoded());
     }
 
     private static void failQueryWithNonValidChars(String name, String val) {

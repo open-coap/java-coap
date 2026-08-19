@@ -34,7 +34,7 @@ public class CoapPacketAssertion {
         assertEquals(cp1.headers().getUriPath(), cp2.headers().getUriPath());
         assertEquals(cp1.headers().getUriAuthority(), cp2.headers().getUriAuthority());
         assertEquals(cp1.headers().getUriHost(), cp2.headers().getUriHost());
-        assertEquals(cp1.headers().getUriQuery(), cp2.headers().getUriQuery());
+        assertEquals(cp1.headers().getUriQueryList(), cp2.headers().getUriQueryList());
         assertEquals(cp1.headers().getLocationPath(), cp2.headers().getLocationPath());
         assertEquals(cp1.headers().getLocationQuery(), cp2.headers().getLocationQuery());
 

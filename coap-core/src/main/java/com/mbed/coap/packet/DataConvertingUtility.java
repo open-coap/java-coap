@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.packet;
 
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,10 @@ import java.util.Map;
  * Utility class that provides static helper methods for creating and parsing CoAP packet
  */
 public final class DataConvertingUtility {
+
+    private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+    /** RFC 3986 "sub-delims", without '&amp;' which separates Uri-Query options. */
+    private static final String QUERY_SUB_DELIMS = "!$'()*+,;=";
 
     private DataConvertingUtility() {
         //keep private
@@ -73,6 +78,55 @@ public final class DataConvertingUtility {
             }
         }
         return result;
+    }
+
+    /**
+     * Percent-encodes the value of a <b>single</b> Uri-Query option for use in a CoAP URI,
+     * following the rules of RFC 7252, section 6.5, step 8. Any character outside the "unreserved"
+     * set, the "sub-delims" set except '&amp;', and ':', '&#64;', '/' and '?' is replaced by the
+     * uppercase percent-encoded form of its UTF-8 bytes.
+     *
+     * <p>This takes one option, not a whole query string. '&amp;' is a separator that only exists
+     * once options are joined into a URI, so it is escaped here: passing <code>"a=1&amp;b=2"</code>
+     * yields <code>"a=1%26b=2"</code>, a single option, not two. To encode a complete query use
+     * {@link BasicHeaderOptions#getUriQueryEncoded()}.
+     *
+     * <p>Notably '+', '=', ';' and ',' are <b>not</b> escaped, which is what makes the result a
+     * valid CoAP URI query. This is not <code>application/x-www-form-urlencoded</code>: a consumer
+     * decoding with those rules, for example an HTTP proxy target, reads a literal '+' as a space.
+     *
+     * @param value Uri-Query option value, holding already decoded characters
+     * @return percent-encoded value
+     */
+    public static String percentEncodeUriQueryOption(String value) {
+        // Encoded by hand because no JDK helper matches these rules. URLEncoder implements
+        // application/x-www-form-urlencoded, which escapes '=', emits '+' for space and escapes
+        // '+' ',' ';' '/' '?' that must stay literal here. java.net.URI keeps '&' unescaped, since
+        // it is legal in a query component, which would make two options indistinguishable from
+        // one option whose value contains '&'.
+        StringBuilder sb = new StringBuilder(value.length());
+        for (byte rawByte : value.getBytes(StandardCharsets.UTF_8)) {
+            int chr = rawByte & 0xFF;
+            if (isAllowedInUriQuery(chr)) {
+                sb.append((char) chr);
+            } else {
+                sb.append('%').append(HEX_DIGITS[chr >> 4]).append(HEX_DIGITS[chr & 0x0F]);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isAllowedInUriQuery(int chr) {
+        return isUnreserved(chr)
+                || QUERY_SUB_DELIMS.indexOf(chr) >= 0
+                || chr == ':' || chr == '@' || chr == '/' || chr == '?';
+    }
+
+    private static boolean isUnreserved(int chr) {
+        return chr >= 'a' && chr <= 'z'
+                || chr >= 'A' && chr <= 'Z'
+                || chr >= '0' && chr <= '9'
+                || chr == '-' || chr == '.' || chr == '_' || chr == '~';
     }
 
     public static Map<String, List<String>> parseUriQueryMult(String uriQuery) throws ParseException {
