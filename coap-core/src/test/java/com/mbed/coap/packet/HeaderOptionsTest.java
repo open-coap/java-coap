@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
@@ -628,6 +629,48 @@ public class HeaderOptionsTest {
         h.addUriQuery("a=1");
 
         h.setUriQueryList(Collections.emptyList());
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldClearUriQueryWithNullList() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQueryList((List<String>) null);
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldClearUriQueryWithNullArray() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQueryList((String[]) null);
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldSetUriQueryFromVarargs() {
+        HeaderOptions h = new HeaderOptions();
+
+        h.setUriQueryList("a=1", "filter=x&y");
+
+        assertEquals(Arrays.asList("a=1", "filter=x&y"), h.getUriQueryList());
+    }
+
+    @Test
+    void shouldClearUriQueryWithEmptyString() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQuery("");
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
         assertNull(h.getUriQuery());
