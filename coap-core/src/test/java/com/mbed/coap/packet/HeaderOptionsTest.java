@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
@@ -470,8 +471,9 @@ public class HeaderOptionsTest {
 
         assertThatThrownBy(() -> h.setUriPath("no-leading-slash")).isExactlyInstanceOf(IllegalArgumentException.class);
 
-        h.setUriQuery("");
-        assertNull(h.getUriQuery());
+        h.setUriQueryList();
+        assertNull(h.getUriQueryEncoded());
+        assertTrue(h.getUriQueryList().isEmpty());
     }
 
     @Test
@@ -524,6 +526,166 @@ public class HeaderOptionsTest {
         assertEquals("", h2.getUriQueryMap().get("q"));
 
         assertEquals("?param1=val1&q&param2=val2 Loc:?q", h2.toString());
+    }
+
+    @Test
+    void shouldPercentEncodeUriQueryPerRfc7252() {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("filter=a&b", "note=hello world", "p=100%"));
+
+        // '&' inside a value is escaped, so the joined result is unambiguous
+        assertEquals("filter=a%26b&note=hello%20world&p=100%25", h.getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldNotEncodeSubDelimsInUriQuery() {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("current_version=1.0.0+sha", "a=x,y;z", "b=!$'()*"));
+
+        // sub-delims other than '&', plus ':' '@' '/' '?', are legal unescaped in a CoAP URI query
+        assertEquals("current_version=1.0.0+sha&a=x,y;z&b=!$'()*", h.getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldEncodeUriQueryAsUtf8() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("name=zażółć");
+
+        assertEquals("name=za%C5%BC%C3%B3%C5%82%C4%87", h.getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldKeepSeparatorForEmptyUriQueryValue() {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("", "a=1"));
+
+        assertEquals("&a=1", h.getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldRoundTripEmptyUriQueryValue() throws CoapException, IOException {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("", "a=1"));
+
+        HeaderOptions h2 = deserialize(serialize(h));
+
+        // a zero length Uri-Query option is its own option, not padding to be dropped
+        assertEquals(Arrays.asList("", "a=1"), h2.getUriQueryList());
+        assertEquals("&a=1", h2.getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldReturnNullEncodedUriQueryWhenAbsent() {
+        assertNull(new HeaderOptions().getUriQueryEncoded());
+    }
+
+    @Test
+    void shouldRoundTripQueryValueContainingAmpersand() throws CoapException, IOException {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("filter=a&b", "page=1"));
+
+        HeaderOptions h2 = deserialize(serialize(h));
+
+        // option boundaries survive, so the '&' stays part of the value
+        assertEquals(Arrays.asList("filter=a&b", "page=1"), h2.getUriQueryList());
+        assertEquals("a&b", h2.getUriQueryMap().get("filter"));
+        assertEquals("1", h2.getUriQueryMap().get("page"));
+    }
+
+    @Test
+    void shouldNotTruncateQueryValueAtQuestionMark() throws CoapException, IOException {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("redirect=/a?b=c");
+
+        HeaderOptions h2 = deserialize(serialize(h));
+
+        assertEquals("/a?b=c", h2.getUriQueryMap().get("redirect"));
+    }
+
+    @Test
+    void shouldKeepRepeatedQueryNames() throws CoapException, IOException {
+        HeaderOptions h = new HeaderOptions();
+        h.setUriQueryList(Arrays.asList("a=1", "a=2"));
+
+        HeaderOptions h2 = deserialize(serialize(h));
+
+        assertEquals(Arrays.asList("a=1", "a=2"), h2.getUriQueryList());
+        // the map view collapses repeats, keeping the last one
+        assertEquals("2", h2.getUriQueryMap().get("a"));
+    }
+
+    @Test
+    void shouldReturnEmptyQueryViewsWhenNoUriQuery() {
+        HeaderOptions h = new HeaderOptions();
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertEquals(Collections.emptyMap(), h.getUriQueryMap());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldClearUriQueryWithEmptyList() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQueryList(Collections.emptyList());
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldClearUriQueryWithNullList() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQueryList((List<String>) null);
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldClearUriQueryWithNullArray() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQueryList((String[]) null);
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldSetUriQueryFromVarargs() {
+        HeaderOptions h = new HeaderOptions();
+
+        h.setUriQueryList("a=1", "filter=x&y");
+
+        assertEquals(Arrays.asList("a=1", "filter=x&y"), h.getUriQueryList());
+    }
+
+    @Test
+    void shouldClearUriQueryWithEmptyString() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        h.setUriQuery("");
+
+        assertEquals(Collections.emptyList(), h.getUriQueryList());
+        assertNull(h.getUriQuery());
+    }
+
+    @Test
+    void shouldNotShareUriQueryListBetweenDuplicates() {
+        HeaderOptions h = new HeaderOptions();
+        h.addUriQuery("a=1");
+
+        HeaderOptions copy = h.duplicate();
+        copy.addUriQuery("b=2");
+
+        assertEquals(Collections.singletonList("a=1"), h.getUriQueryList());
+        assertEquals(Arrays.asList("a=1", "b=2"), copy.getUriQueryList());
     }
 
     @Test

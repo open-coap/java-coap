@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ import com.mbed.coap.packet.Method;
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 
 public class CoapPacketBuilder {
@@ -94,7 +95,7 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder uriQuery(String uriQuery) {
-        coapPacket.headers().setUriQuery(uriQuery);
+        coapPacket.headers().setUriQueryList(Arrays.asList(uriQuery.split("&")));
         return this;
     }
 

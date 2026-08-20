@@ -22,14 +22,17 @@ import com.mbed.coap.exception.CoapMessageFormatException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Implements CoAP basic header options.
@@ -63,7 +66,12 @@ public class BasicHeaderOptions {
     private String locationPath;
     private String locationQuery;
     private String uriPath;
-    private String uriQuery;
+    /**
+     * Each element is the verbatim value of a single Uri-Query option, holding already decoded
+     * characters as described in RFC 7252, section 6.4. Values are never percent-encoded and may
+     * contain any character, including '&amp;', '=' and '?'. Null when no Uri-Query option is present.
+     */
+    private List<String> uriQuery;
     private Integer accept;
     private Opaque[] ifMatch;
     private Boolean ifNonMatch;
@@ -97,7 +105,7 @@ public class BasicHeaderOptions {
                 uriPath = DataConvertingUtility.extendOption(uriPath, data, "/", true);
                 break;
             case URI_QUERY:
-                uriQuery = DataConvertingUtility.extendOption(uriQuery, data, "&", false);
+                addUriQuery(data.toUtf8String());
                 break;
             case PROXY_URI:
                 proxyUri = data.toUtf8String();
@@ -223,7 +231,13 @@ public class BasicHeaderOptions {
             list.add(RawOption.fromString(URI_PATH, DataConvertingUtility.split(uriPath, '/')));
         }
         if (uriQuery != null) {
-            list.add(RawOption.fromString(URI_QUERY, uriQuery.split("&")));
+            // not RawOption.fromString(int, String[]), which drops a leading empty element for
+            // the benefit of Uri-Path. A zero length Uri-Query option is a legal, distinct option.
+            Opaque[] queryValues = new Opaque[uriQuery.size()];
+            for (int i = 0; i < queryValues.length; i++) {
+                queryValues[i] = Opaque.of(uriQuery.get(i));
+            }
+            list.add(new RawOption(URI_QUERY, queryValues));
         }
         if (proxyUri != null) {
             list.add(RawOption.fromString(PROXY_URI, proxyUri));
@@ -267,7 +281,7 @@ public class BasicHeaderOptions {
             sb.append(" URI:").append(uriPath);
         }
         if (uriQuery != null) {
-            sb.append('?').append(uriQuery);
+            sb.append('?').append(String.join("&", uriQuery));
         }
         if (locationPath != null) {
             sb.append(" Loc:").append(locationPath);
@@ -470,21 +484,119 @@ public class BasicHeaderOptions {
     }
 
     /**
-     * @return the uriQuery
+     * Returns all Uri-Query option values joined with '&amp;'.
+     *
+     * @return joined Uri-Query values, or null when no Uri-Query option is present
+     * @deprecated the returned string looks like a URL query component but is not one. Uri-Query
+     * option values hold already decoded characters (RFC 7252, section 6.4), so they are
+     * never percent-encoded, and a value containing '&amp;' is indistinguishable from an
+     * option boundary. Do not splice the result into a URL. Use
+     * {@link #getUriQueryEncoded()} to compose a CoAP URI, {@link #getUriQueryList()} for
+     * the unambiguous per-option values, or {@link #getUriQueryMap()} for name/value pairs.
      */
+    @Deprecated
     public String getUriQuery() {
-        return uriQuery;
+        return uriQuery == null ? null : String.join("&", uriQuery);
     }
 
     /**
-     * @param uriQuery the uriQuery to set
+     * Returns the query component of the CoAP URI built from the Uri-Query options, following the
+     * rules of RFC 7252, section 6.5, step 8. Each option value is percent-encoded and the results
+     * are joined with '&amp;'. The leading '?' is not included.
+     *
+     * <p>Encoding leaves any character in the "unreserved" set, in the "sub-delims" set except
+     * '&amp;', or one of ':', '&#64;', '/' and '?' as is. Notably '+', '=', ';' and ',' are
+     * therefore <b>not</b> escaped, which is what makes the result a valid CoAP URI query. This is
+     * not <code>application/x-www-form-urlencoded</code>: if the result is destined for a consumer
+     * that decodes with those rules, for example an HTTP proxy target, a literal '+' will be read
+     * as a space. Use {@link #getUriQueryMap()} or {@link #getUriQueryList()} and apply that
+     * encoding instead.
+     *
+     * @return percent-encoded query, or null when no Uri-Query option is present
      */
+    public String getUriQueryEncoded() {
+        if (uriQuery == null) {
+            return null;
+        }
+        return uriQuery.stream()
+                .map(DataConvertingUtility::percentEncodeUriQueryOption)
+                .collect(Collectors.joining("&"));
+    }
+
+    /**
+     * Replaces all Uri-Query options, splitting the given string on '&amp;'.
+     *
+     * @param uriQuery '&amp;' separated query, empty string clears the option
+     * @deprecated splitting on '&amp;' cannot express a value that itself contains '&amp;'. Use
+     * {@link #setUriQueryList(List)} or {@link #addUriQuery(String)} instead.
+     */
+    @Deprecated
     public void setUriQuery(String uriQuery) {
         if (uriQuery.isEmpty()) {
             this.uriQuery = null;
         } else {
-            this.uriQuery = uriQuery;
+            this.uriQuery = new ArrayList<>(Arrays.asList(uriQuery.split("&")));
         }
+    }
+
+    /**
+     * Returns the value of each Uri-Query option, in order, exactly as carried on the wire.
+     * Values hold already decoded characters (RFC 7252, section 6.4), so they are never
+     * percent-encoded and may contain any character, including '&amp;', '=' and '?'.
+     *
+     * <p>This is the lossless view of the option: unlike {@link #getUriQuery()} it keeps option
+     * boundaries, and unlike {@link #getUriQueryMap()} it keeps repeated names and ordering.
+     *
+     * @return unmodifiable list of Uri-Query values, empty when no Uri-Query option is present
+     */
+    public List<String> getUriQueryList() {
+        if (uriQuery == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(uriQuery);
+    }
+
+    /**
+     * Replaces all Uri-Query options with the given values. Each value becomes one Uri-Query
+     * option and is written verbatim, so it must hold decoded characters, not percent-encoded ones.
+     *
+     * @param uriQuery Uri-Query values, null or empty clears the option
+     */
+    public void setUriQueryList(List<String> uriQuery) {
+        if (uriQuery == null || uriQuery.isEmpty()) {
+            this.uriQuery = null;
+        } else {
+            uriQuery.forEach(Objects::requireNonNull);
+            this.uriQuery = new ArrayList<>(uriQuery);
+        }
+    }
+
+    /**
+     * Replaces all Uri-Query options with the given values. Each value becomes one Uri-Query
+     * option and is written verbatim, so it must hold decoded characters, not percent-encoded ones.
+     *
+     * @param uriQuery Uri-Query values, null or empty clears the option
+     */
+    public void setUriQueryList(String... uriQuery) {
+        if (uriQuery == null) {
+            setUriQueryList((List<String>) null);
+        } else {
+            setUriQueryList(Arrays.asList(uriQuery));
+        }
+    }
+
+    /**
+     * Appends a single Uri-Query option. The value is written verbatim, so it must hold decoded
+     * characters, not percent-encoded ones.
+     *
+     * @param uriQuery Uri-Query value, typically in "name=value" form
+     */
+    public void addUriQuery(String uriQuery) {
+        Objects.requireNonNull(uriQuery);
+        if (this.uriQuery == null) {
+            this.uriQuery = new ArrayList<>(1);
+        }
+        this.uriQuery.add(uriQuery);
     }
 
     public void setAccept(short accept) {
@@ -550,11 +662,30 @@ public class BasicHeaderOptions {
         this.uriPort = uriPort;
     }
 
+    /**
+     * Returns Uri-Query options as decoded name to value pairs, in order. A value-less option
+     * maps to an empty string.
+     *
+     * <p>Names and values are not percent-encoded (RFC 7252, section 6.4), so they must be encoded
+     * before being placed into a URL. Repeated names collapse to the last occurrence, use
+     * {@link #getUriQueryList()} when repeats matter.
+     *
+     * @return name to value pairs, empty when no Uri-Query option is present
+     */
     public Map<String, String> getUriQueryMap() {
         if (uriQuery == null) {
             return Collections.emptyMap();
         }
-        return DataConvertingUtility.parseUriQuery(uriQuery);
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String query : uriQuery) {
+            int eq = query.indexOf('=');
+            if (eq < 0) {
+                result.put(query, "");
+            } else {
+                result.put(query.substring(0, eq), query.substring(eq + 1));
+            }
+        }
+        return result;
     }
 
     public Integer getSize1() {
@@ -688,7 +819,7 @@ public class BasicHeaderOptions {
         opts.locationPath = locationPath;
         opts.locationQuery = locationQuery;
         opts.uriPath = uriPath;
-        opts.uriQuery = uriQuery;
+        opts.uriQuery = uriQuery == null ? null : new ArrayList<>(uriQuery);
         opts.accept = accept;
         opts.ifMatch = ifMatch;
         opts.ifNonMatch = ifNonMatch;
