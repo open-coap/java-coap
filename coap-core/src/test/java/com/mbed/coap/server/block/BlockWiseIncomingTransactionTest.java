@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ import static com.mbed.coap.packet.BlockSize.S_256;
 import static com.mbed.coap.packet.BlockSize.S_512;
 import static com.mbed.coap.packet.CoapRequest.get;
 import static com.mbed.coap.packet.CoapRequest.put;
+import static com.mbed.coap.server.block.BlockWiseIncomingTransaction.validateSize1;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -167,6 +168,26 @@ public class BlockWiseIncomingTransactionTest {
         assertThatThrownBy(() ->
                 bwReq.appendBlock(put("/").block1Req(8, S_1024_BERT, false).payload(opaqueOfSize(2000)).to(LOCAL_5683))
         ).isExactlyInstanceOf(CoapRequestEntityTooLarge.class);
+    }
+
+    @Test
+    public void should_reject_too_large_size1_before_a_transaction_exists() {
+        assertCodeException(Code.C413_REQUEST_ENTITY_TOO_LARGE, () ->
+                validateSize1(put("/").size1(Integer.MAX_VALUE).block1Req(0, S_512, true).payload(opaqueOfSize(512)).to(LOCAL_5683), 10_000)
+        );
+    }
+
+    @Test
+    public void should_reject_unrepresentable_size1_as_client_error() {
+        assertCodeException(Code.C402_BAD_OPTION, () ->
+                validateSize1(put("/").size1(-1).block1Req(0, S_512, true).payload(opaqueOfSize(512)).to(LOCAL_5683), 10_000)
+        );
+    }
+
+    @Test
+    public void should_accept_absent_and_within_limit_size1() throws Exception {
+        validateSize1(put("/").block1Req(0, S_512, true).payload(opaqueOfSize(512)).to(LOCAL_5683), 10_000);
+        validateSize1(put("/").size1(10_000).block1Req(0, S_512, true).payload(opaqueOfSize(512)).to(LOCAL_5683), 10_000);
     }
 
     @Test
