@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,7 +69,8 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
                 LOGGER.warn("[{}] Mismatch request-tag: {}", request.getPeerAddress(), request.options().getRequestTag());
                 throw new CoapCodeException(Code.C408_REQUEST_ENTITY_INCOMPLETE, "Mismatch request-tag");
             } else if (blockRequest == null) {
-                //start new block-wise transaction
+                //start new block-wise transaction, reject a declared size before allocating for it
+                BlockWiseIncomingTransaction.validateSize1(request, maxIncomingBlockTransferSize);
                 blockRequest = new BlockWiseIncomingTransaction(request, maxIncomingBlockTransferSize, capabilities.getOrDefault(request.getPeerAddress()));
                 blockReqMap.put(blockRequestId, blockRequest);
             }

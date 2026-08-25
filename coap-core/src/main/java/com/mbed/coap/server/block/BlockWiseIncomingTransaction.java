@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,12 +43,30 @@ class BlockWiseIncomingTransaction {
         this.maxIncomingBlockTransferSize = maxIncomingBlockTransferSize;
         this.csm = csm;
         this.requestTag = request.options().getRequestTag();
-        Integer expectedPayloadSize = request.options().getSize1();
-        BlockOption blockOption = request.options().getBlock1Req();
+        // Never size this buffer from a peer supplied hint, let it grow as blocks actually arrive.
+        this.payload = new ByteArrayOutputStream();
+    }
 
-        int allocationSize = expectedPayloadSize != null ? expectedPayloadSize : blockOption.getSize() * 4;
-
-        this.payload = new ByteArrayOutputStream(allocationSize);
+    /**
+     * Validates peer declared Size1 option. Must be called before anything is allocated for a transfer.
+     *
+     * @param request incoming request
+     * @param maxIncomingBlockTransferSize maximum allowed transfer size
+     * @throws CoapCodeException if Size1 is unrepresentable or larger than allowed
+     */
+    static void validateSize1(CoapRequest request, int maxIncomingBlockTransferSize) throws CoapCodeException {
+        Integer size1 = request.options().getSize1();
+        if (size1 == null) {
+            return;
+        }
+        if (size1 < 0) {
+            LOGGER.warn("Received request with unrepresentable size1 option: {}", request);
+            throw new CoapCodeException(Code.C402_BAD_OPTION, "invalid size1");
+        }
+        if (size1 > maxIncomingBlockTransferSize) {
+            LOGGER.warn("Received request with too large size1 option: {}", request);
+            throw new CoapRequestEntityTooLarge(maxIncomingBlockTransferSize, "Entity too large");
+        }
     }
 
     void appendBlock(CoapRequest request) throws CoapCodeException {
@@ -118,9 +136,6 @@ class BlockWiseIncomingTransaction {
             throw new CoapCodeException(Code.C400_BAD_REQUEST, "last block size mismatch");
         }
 
-        if (request.options().getSize1() != null && isTooBigPayloadSize(request.options().getSize1())) {
-            LOGGER.warn("Received request with too large size1 option: " + request);
-            throw new CoapRequestEntityTooLarge(maxIncomingBlockTransferSize, "Entity too large");
-        }
+        validateSize1(request, maxIncomingBlockTransferSize);
     }
 }
