@@ -25,6 +25,12 @@ Simple timer interface, helps with testing
  */
 @FunctionalInterface
 public interface Timer {
+    /**
+     * Timer that never runs a scheduled task, for components that can also work without a background sweeper.
+     */
+    Timer NOOP = (delay, task) -> () -> {
+    };
+
     Runnable schedule(Duration delay, Runnable task);
 
     static Timer toTimer(ScheduledExecutorService executorService) {

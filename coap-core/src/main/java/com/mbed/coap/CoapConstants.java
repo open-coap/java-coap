@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,33 @@ public final class CoapConstants {
     public static final Duration ACK_TIMEOUT = Duration.ofSeconds(2);
     public static final float ACK_RANDOM_FACTOR = 1.5f;
     public static final Short MAX_RETRANSMIT = 4;
+
+    /**
+     * Maximum time from the first transmission of a Confirmable message to its last retransmission, 45 seconds with
+     * the default transmission parameters (RFC 7252, section 4.8.2).
+     */
+    public static final Duration MAX_TRANSMIT_SPAN = Duration.ofMillis(
+            (long) (ACK_TIMEOUT.toMillis() * ((1 << MAX_RETRANSMIT) - 1) * ACK_RANDOM_FACTOR)
+    );
+
+    /**
+     * Maximum time a datagram is expected to take from the start of its transmission to the completion of its
+     * reception (RFC 7252, section 4.8.2).
+     */
+    public static final Duration MAX_LATENCY = Duration.ofSeconds(100);
+
+    /**
+     * Time a node takes to turn a Confirmable message around into an acknowledgement (RFC 7252, section 4.8.2).
+     */
+    public static final Duration PROCESSING_DELAY = ACK_TIMEOUT;
+
+    /**
+     * Time from starting to send a Confirmable message until it is no longer expected that an acknowledgement or a
+     * reply based on it may arrive, 247 seconds with the default transmission parameters (RFC 7252, section 4.8.2).
+     */
+    public static final Duration EXCHANGE_LIFETIME = MAX_TRANSMIT_SPAN
+            .plus(MAX_LATENCY.multipliedBy(2))
+            .plus(PROCESSING_DELAY);
 
     private CoapConstants() {
     }

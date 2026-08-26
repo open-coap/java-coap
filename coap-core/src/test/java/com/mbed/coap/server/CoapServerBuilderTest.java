@@ -61,6 +61,20 @@ public class CoapServerBuilderTest {
     }
 
     @Test
+    public void shouldFail_whenIllegalMaxIncomingBlockTransfers() throws Exception {
+        assertThrows(IllegalArgumentException.class, () ->
+                CoapServer.builder().maxIncomingBlockTransfers(0)
+        );
+    }
+
+    @Test
+    public void shouldFail_whenIllegalIncomingBlockTransferIdleTimeout() throws Exception {
+        assertThrows(IllegalArgumentException.class, () ->
+                CoapServer.builder().incomingBlockTransferIdleTimeout(Duration.ZERO)
+        );
+    }
+
+    @Test
     public void shouldFail_whenNullRecognizedCustomOptionsValue() throws Exception {
         assertThrows(NullPointerException.class, () ->
                 CoapServer.builder().recognizedCustomOptions(null)

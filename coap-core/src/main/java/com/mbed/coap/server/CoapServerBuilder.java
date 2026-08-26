@@ -76,6 +76,8 @@ public final class CoapServerBuilder {
     private DuplicatedCoapMessageCallback duplicatedCoapMessageCallback = DuplicatedCoapMessageCallback.NULL;
     private RetransmissionBackOff retransmissionBackOff = RetransmissionBackOff.ofDefault();
     private int maxIncomingBlockTransferSize = 10_000_000; //default to 10 MB
+    private int maxIncomingBlockTransfers = BlockWiseIncomingFilter.DEFAULT_MAX_INCOMING_BLOCK_TRANSFERS;
+    private Duration incomingBlockTransferIdleTimeout = BlockWiseIncomingFilter.DEFAULT_IDLE_TIMEOUT;
     private BlockSize blockSize;
     private int maxMessageSize = 1152; //default
     private Service<CoapRequest, CoapResponse> route = RouterService.NOT_FOUND_SERVICE;
@@ -153,6 +155,33 @@ public final class CoapServerBuilder {
 
     public CoapServerBuilder maxIncomingBlockTransferSize(int size) {
         this.maxIncomingBlockTransferSize = size;
+        return this;
+    }
+
+    /**
+     * Limits how many incoming block-wise transfers can be in flight at the same time. Together with
+     * {@link #maxIncomingBlockTransferSize(int)} it caps the memory that unfinished transfers can hold. When the limit
+     * is reached, the least recently active transfer is dropped and answered with 4.08 if the peer resumes it.
+     *
+     * @param maxIncomingBlockTransfers maximum number of concurrent transfers
+     * @return this builder
+     */
+    public CoapServerBuilder maxIncomingBlockTransfers(int maxIncomingBlockTransfers) {
+        require(maxIncomingBlockTransfers > 0);
+        this.maxIncomingBlockTransfers = maxIncomingBlockTransfers;
+        return this;
+    }
+
+    /**
+     * Sets how long an incoming block-wise transfer may receive no block before it is dropped. Defaults to
+     * EXCHANGE_LIFETIME (RFC 7252, section 4.8.2).
+     *
+     * @param idleTimeout idle timeout
+     * @return this builder
+     */
+    public CoapServerBuilder incomingBlockTransferIdleTimeout(Duration idleTimeout) {
+        require(idleTimeout.toMillis() > 0);
+        this.incomingBlockTransferIdleTimeout = idleTimeout;
         return this;
     }
 
@@ -283,12 +312,14 @@ public final class CoapServerBuilder {
         // INBOUND
         PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
+        BlockWiseIncomingFilter blockWiseIncomingFilter = new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize,
+                maxIncomingBlockTransfers, incomingBlockTransferIdleTimeout, timer);
         Service<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
                 .andThen(new CriticalOptionVerifier(recognizedCustomOptions))
-                .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(blockWiseIncomingFilter)
                 .andThen(routeFilter)
                 .then(route);
 
@@ -304,6 +335,7 @@ public final class CoapServerBuilder {
         return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, () -> {
             piggybackedExchangeFilter.stop();
             duplicateDetectorCache.stop();
+            blockWiseIncomingFilter.stop();
             if (stopExecutor) {
                 effectiveExecutorService.shutdown();
             }

@@ -30,8 +30,11 @@ import static com.mbed.coap.packet.Opaque.decodeHex;
 import static com.mbed.coap.utils.Assertions.assertEquals;
 import static com.mbed.coap.utils.Bytes.opaqueOfSize;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.packet.BlockSize;
@@ -40,15 +43,23 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.server.messaging.Capabilities;
+import com.mbed.coap.utils.MockTimer;
 import com.mbed.coap.utils.Service;
+import com.mbed.coap.utils.Timer;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 class BlockWiseIncomingFilterTest {
+    private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(100);
+
     private Capabilities capability = Capabilities.BASE;
     private final BlockWiseIncomingFilter blockingFilter = new BlockWiseIncomingFilter(__ -> capability, 10000000);
     private CoapRequest lastRequest = null;
     private Service<CoapRequest, CoapResponse> service;
+    private final MockTimer timer = new MockTimer();
+    private final AtomicLong currentTimeMillis = new AtomicLong(1_000_000);
 
     @Test
     void shouldForwardWhenNonBlockRequestAndResponse() {
@@ -199,6 +210,120 @@ class BlockWiseIncomingFilterTest {
         );
 
         assertThatThrownBy(resp::join).hasCause(new CoapCodeException(Code.C413_REQUEST_ENTITY_TOO_LARGE, "Mismatch request-tag"));
+    }
+
+    @Test
+    public void should_drop_idle_transfer_and_answer_408_when_it_is_resumed() {
+        service = boundedFilter(10, IDLE_TIMEOUT).then(__ -> ok("OK").toFuture());
+        assertContinue(0, service.apply(firstBlock("/res")));
+
+        //no block arrives for longer than the idle timeout
+        currentTimeMillis.addAndGet(IDLE_TIMEOUT.toMillis() + 1);
+        timer.runAll();
+
+        assertFailsWith(Code.C408_REQUEST_ENTITY_INCOMPLETE, service.apply(nextBlock("/res", 1)));
+    }
+
+    @Test
+    public void should_drop_idle_transfer_when_new_transfer_starts_and_there_is_no_sweeper() {
+        service = new BlockWiseIncomingFilter(__ -> capability, 10000000, 10, IDLE_TIMEOUT, Timer.NOOP, currentTimeMillis::get)
+                .then(__ -> ok("OK").toFuture());
+        assertContinue(0, service.apply(firstBlock("/res")));
+
+        currentTimeMillis.addAndGet(IDLE_TIMEOUT.toMillis() + 1);
+        assertContinue(0, service.apply(firstBlock("/other")));
+
+        assertFailsWith(Code.C408_REQUEST_ENTITY_INCOMPLETE, service.apply(nextBlock("/res", 1)));
+    }
+
+    @Test
+    public void should_keep_transfer_that_is_slow_but_still_progressing() {
+        service = boundedFilter(10, IDLE_TIMEOUT).then(req -> {
+            lastRequest = req;
+            return completedFuture(of(C204_CHANGED, "ok"));
+        });
+
+        assertContinue(0, service.apply(firstBlock("/res")));
+        for (int nr = 1; nr <= 4; nr++) {
+            //slower than the sweep interval but still within the idle timeout
+            currentTimeMillis.addAndGet(IDLE_TIMEOUT.toMillis() - 1);
+            timer.runAll();
+
+            assertContinue(nr, service.apply(nextBlock("/res", nr)));
+        }
+        service.apply(lastBlock("/res", 5)).join();
+
+        assertEquals(opaqueOfSize(81), lastRequest.getPayload());
+    }
+
+    @Test
+    public void should_drop_least_recently_active_transfer_when_limit_is_reached() {
+        service = boundedFilter(3, IDLE_TIMEOUT).then(__ -> ok("OK").toFuture());
+
+        assertContinue(0, service.apply(firstBlock("/one")));
+        currentTimeMillis.addAndGet(10);
+        assertContinue(0, service.apply(firstBlock("/two")));
+        currentTimeMillis.addAndGet(10);
+        assertContinue(0, service.apply(firstBlock("/three")));
+        currentTimeMillis.addAndGet(10);
+
+        //makes room for a fourth transfer
+        assertContinue(0, service.apply(firstBlock("/four")));
+
+        assertFailsWith(Code.C408_REQUEST_ENTITY_INCOMPLETE, service.apply(nextBlock("/one", 1)));
+        assertContinue(1, service.apply(nextBlock("/two", 1)));
+    }
+
+    @Test
+    public void should_keep_number_of_transfers_bounded_when_many_are_abandoned() {
+        service = boundedFilter(3, IDLE_TIMEOUT).then(__ -> ok("OK").toFuture());
+
+        for (int i = 0; i < 100; i++) {
+            currentTimeMillis.addAndGet(10);
+            assertContinue(0, service.apply(firstBlock("/abandoned" + i)));
+        }
+
+        //only the three most recent transfers are still held
+        assertFailsWith(Code.C408_REQUEST_ENTITY_INCOMPLETE, service.apply(nextBlock("/abandoned96", 1)));
+        assertContinue(1, service.apply(nextBlock("/abandoned97", 1)));
+        assertContinue(1, service.apply(nextBlock("/abandoned99", 1)));
+    }
+
+    @Test
+    public void should_stop_sweeping_when_stopped() {
+        BlockWiseIncomingFilter filter = boundedFilter(10, IDLE_TIMEOUT);
+        assertEquals(1, timer.size());
+
+        filter.stop();
+
+        assertTrue(timer.isEmpty());
+    }
+
+    private BlockWiseIncomingFilter boundedFilter(int maxIncomingBlockTransfers, Duration idleTimeout) {
+        return new BlockWiseIncomingFilter(__ -> capability, 10000000, maxIncomingBlockTransfers, idleTimeout, timer, currentTimeMillis::get);
+    }
+
+    private static CoapRequest firstBlock(String uriPath) {
+        return put(uriPath).block1Req(0, S_16, true).payload(opaqueOfSize(16)).to(LOCAL_5683);
+    }
+
+    private static CoapRequest nextBlock(String uriPath, int blockNr) {
+        return put(uriPath).block1Req(blockNr, S_16, true).payload(opaqueOfSize(16)).to(LOCAL_5683);
+    }
+
+    private static CoapRequest lastBlock(String uriPath, int blockNr) {
+        return put(uriPath).block1Req(blockNr, S_16, false).payload(opaqueOfSize(1)).to(LOCAL_5683);
+    }
+
+    private static void assertContinue(int blockNr, CompletableFuture<CoapResponse> resp) {
+        assertEquals(coapResponse(C231_CONTINUE).block1Req(blockNr, S_16, true), resp.join());
+    }
+
+    private static void assertFailsWith(Code expectedCode, CompletableFuture<CoapResponse> resp) {
+        Throwable cause = catchThrowable(resp::join).getCause();
+
+        assertThat(cause).isInstanceOf(CoapCodeException.class);
+        assertEquals(expectedCode, ((CoapCodeException) cause).getCode());
     }
 
     private void requestTag01(CoapOptionsBuilder it) {

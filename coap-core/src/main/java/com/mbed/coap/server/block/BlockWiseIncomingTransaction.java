@@ -38,6 +38,7 @@ class BlockWiseIncomingTransaction {
     private final int maxIncomingBlockTransferSize;
     private final Capabilities csm;
     private final Opaque requestTag;
+    private volatile long lastActivity;
 
     BlockWiseIncomingTransaction(CoapRequest request, int maxIncomingBlockTransferSize, Capabilities csm) {
         this.maxIncomingBlockTransferSize = maxIncomingBlockTransferSize;
@@ -93,6 +94,14 @@ class BlockWiseIncomingTransaction {
 
     boolean validateRequestTag(CoapRequest request) {
         return Objects.equals(requestTag, request.options().getRequestTag());
+    }
+
+    void updateLastActivity(long timestampMillis) {
+        this.lastActivity = timestampMillis;
+    }
+
+    long getLastActivity() {
+        return lastActivity;
     }
 
     Opaque getCombinedPayload() {

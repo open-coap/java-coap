@@ -18,6 +18,8 @@ package com.mbed.coap.server.block;
 
 import static com.mbed.coap.packet.CoapResponse.coapResponse;
 import static com.mbed.coap.utils.FutureHelpers.failedFuture;
+import static com.mbed.coap.utils.Validations.require;
+import com.mbed.coap.CoapConstants;
 import com.mbed.coap.exception.CoapCodeException;
 import com.mbed.coap.packet.BlockOption;
 import com.mbed.coap.packet.BlockSize;
@@ -28,22 +30,98 @@ import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.messaging.CapabilitiesResolver;
 import com.mbed.coap.utils.Filter;
 import com.mbed.coap.utils.Service;
+import com.mbed.coap.utils.Timer;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockWiseIncomingFilter.class.getName());
+
+    /**
+     * Together with maximum transfer size it gives the worst case memory that incoming block-wise transfers can hold.
+     */
+    public static final int DEFAULT_MAX_INCOMING_BLOCK_TRANSFERS = 100;
+
+    /**
+     * A transfer that received no block for that long is dropped. EXCHANGE_LIFETIME is the point after which a peer
+     * can no longer expect a reply to the block it sent last, so a transfer idle for longer can not be resumed anyway.
+     */
+    public static final Duration DEFAULT_IDLE_TIMEOUT = CoapConstants.EXCHANGE_LIFETIME;
+
+    private static final int SWEEPS_PER_IDLE_TIMEOUT = 4;
+    private static final long WARN_INTERVAL_MILLIS = 10_000;
+
     private final Map<BlockRequestId, BlockWiseIncomingTransaction> blockReqMap = new ConcurrentHashMap<>();
     private final CapabilitiesResolver capabilities;
     private final int maxIncomingBlockTransferSize;
+    private final int maxIncomingBlockTransfers;
+    private final long idleTimeoutMillis;
+    private final Duration sweepInterval;
+    private final Timer timer;
+    private final LongSupplier clock;
+    private final AtomicReference<Runnable> cancelSweep = new AtomicReference<>(() -> {
+    });
+    private volatile boolean isStopped;
+    private long nextWarnTimestamp;
 
+    /**
+     * Creates a filter that only expires idle transfers when a new one arrives. Use the constructor with a timer to
+     * also release them while the server is idle.
+     *
+     * @param capabilities peer capabilities
+     * @param maxIncomingBlockTransferSize maximum size of a single assembled transfer
+     */
     public BlockWiseIncomingFilter(CapabilitiesResolver capabilities, int maxIncomingBlockTransferSize) {
+        this(capabilities, maxIncomingBlockTransferSize, DEFAULT_MAX_INCOMING_BLOCK_TRANSFERS, DEFAULT_IDLE_TIMEOUT, Timer.NOOP);
+    }
+
+    /**
+     * @param capabilities peer capabilities
+     * @param maxIncomingBlockTransferSize maximum size of a single assembled transfer
+     * @param maxIncomingBlockTransfers maximum number of transfers kept in flight at the same time
+     * @param idleTimeout how long a transfer may receive no block before it is dropped
+     * @param timer timer that runs the background sweeper
+     */
+    public BlockWiseIncomingFilter(CapabilitiesResolver capabilities, int maxIncomingBlockTransferSize, int maxIncomingBlockTransfers,
+            Duration idleTimeout, Timer timer) {
+        this(capabilities, maxIncomingBlockTransferSize, maxIncomingBlockTransfers, idleTimeout, timer, System::currentTimeMillis);
+    }
+
+    BlockWiseIncomingFilter(CapabilitiesResolver capabilities, int maxIncomingBlockTransferSize, int maxIncomingBlockTransfers,
+            Duration idleTimeout, Timer timer, LongSupplier clock) {
+        require(maxIncomingBlockTransfers > 0, "Maximum number of block-wise transfers must be positive");
+        require(idleTimeout.toMillis() > 0, "Block-wise transfer idle timeout must be positive");
+
         this.capabilities = capabilities;
         this.maxIncomingBlockTransferSize = maxIncomingBlockTransferSize;
+        this.maxIncomingBlockTransfers = maxIncomingBlockTransfers;
+        this.idleTimeoutMillis = idleTimeout.toMillis();
+        this.sweepInterval = maxDuration(idleTimeout.dividedBy(SWEEPS_PER_IDLE_TIMEOUT), Duration.ofMillis(1));
+        this.timer = timer;
+        this.clock = clock;
+
+        scheduleSweep();
+    }
+
+    private static Duration maxDuration(Duration first, Duration second) {
+        return first.compareTo(second) < 0 ? second : first;
+    }
+
+    /**
+     * Stops the background sweeper. Transfers that are still in flight are dropped.
+     */
+    public void stop() {
+        isStopped = true;
+        cancelSweep.getAndSet(() -> {
+        }).run();
+        blockReqMap.clear();
     }
 
     @Override
@@ -72,9 +150,10 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
                 //start new block-wise transaction, reject a declared size before allocating for it
                 BlockWiseIncomingTransaction.validateSize1(request, maxIncomingBlockTransferSize);
                 blockRequest = new BlockWiseIncomingTransaction(request, maxIncomingBlockTransferSize, capabilities.getOrDefault(request.getPeerAddress()));
-                blockReqMap.put(blockRequestId, blockRequest);
+                putWithinBounds(blockRequestId, blockRequest);
             }
             blockRequest.appendBlock(request);
+            blockRequest.updateLastActivity(clock.getAsLong());
 
         } catch (CoapCodeException e) {
             removeBlockRequest(blockRequestId);
@@ -113,6 +192,69 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
 
     private void removeBlockRequest(BlockRequestId blockRequestId) {
         blockReqMap.remove(blockRequestId);
+    }
+
+    private void putWithinBounds(BlockRequestId blockRequestId, BlockWiseIncomingTransaction blockRequest) {
+        long now = clock.getAsLong();
+        blockRequest.updateLastActivity(now);
+
+        synchronized (blockReqMap) {
+            dropIdleTransfers(now);
+
+            // an abandoned transfer is idle, so it is the first to go when there is no room left
+            for (int size = blockReqMap.size(); size >= maxIncomingBlockTransfers; size--) {
+                dropLeastRecentlyActiveTransfer();
+            }
+            blockReqMap.put(blockRequestId, blockRequest);
+        }
+    }
+
+    private void sweep() {
+        dropIdleTransfers(clock.getAsLong());
+        scheduleSweep();
+    }
+
+    private void scheduleSweep() {
+        if (isStopped) {
+            return;
+        }
+        cancelSweep.set(timer.schedule(sweepInterval, this::sweep));
+    }
+
+    private void dropIdleTransfers(long now) {
+        blockReqMap.entrySet().removeIf(entry -> {
+            boolean isIdle = now - entry.getValue().getLastActivity() > idleTimeoutMillis;
+            if (isIdle) {
+                LOGGER.debug("Dropping idle block-wise transfer {}", entry.getKey());
+            }
+            return isIdle;
+        });
+    }
+
+    private void dropLeastRecentlyActiveTransfer() {
+        BlockRequestId leastRecent = null;
+        long leastRecentActivity = Long.MAX_VALUE;
+
+        for (Map.Entry<BlockRequestId, BlockWiseIncomingTransaction> entry : blockReqMap.entrySet()) {
+            if (entry.getValue().getLastActivity() < leastRecentActivity) {
+                leastRecentActivity = entry.getValue().getLastActivity();
+                leastRecent = entry.getKey();
+            }
+        }
+
+        if (leastRecent != null) {
+            blockReqMap.remove(leastRecent);
+            warnAboutReachedLimit(leastRecent);
+        }
+    }
+
+    private void warnAboutReachedLimit(BlockRequestId dropped) {
+        long now = clock.getAsLong();
+        if (now >= nextWarnTimestamp) {
+            LOGGER.warn("Reached maximum number of block-wise transfers ({}), dropped the least recently active one: {}",
+                    maxIncomingBlockTransfers, dropped);
+            nextWarnTimestamp = now + WARN_INTERVAL_MILLIS;
+        }
     }
 
     public CoapResponse adjustPayloadSize(CoapRequest req, CoapResponse resp) {

@@ -57,4 +57,9 @@ class BlockRequestId {
         return Objects.equals(this.sourceAddress, other.sourceAddress);
     }
 
+    @Override
+    public String toString() {
+        return sourceAddress + uriPath;
+    }
+
 }
