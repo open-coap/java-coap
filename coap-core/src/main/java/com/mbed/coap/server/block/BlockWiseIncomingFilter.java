@@ -36,6 +36,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 import org.slf4j.Logger;
@@ -68,6 +69,7 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
     private final LongSupplier clock;
     private final AtomicReference<Runnable> cancelSweep = new AtomicReference<>(() -> {
     });
+    private final AtomicBoolean isSweepScheduled = new AtomicBoolean();
     private volatile boolean isStopped;
     private long nextWarnTimestamp;
 
@@ -106,8 +108,6 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
         this.sweepInterval = maxDuration(idleTimeout.dividedBy(SWEEPS_PER_IDLE_TIMEOUT), Duration.ofMillis(1));
         this.timer = timer;
         this.clock = clock;
-
-        scheduleSweep();
     }
 
     private static Duration maxDuration(Duration first, Duration second) {
@@ -207,11 +207,28 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
             }
             blockReqMap.put(blockRequestId, blockRequest);
         }
+        startSweeping();
     }
 
     private void sweep() {
         dropIdleTransfers(clock.getAsLong());
-        scheduleSweep();
+
+        if (!blockReqMap.isEmpty()) {
+            scheduleSweep();
+            return;
+        }
+
+        //nothing left to expire, the next transfer starts the sweeper again
+        isSweepScheduled.set(false);
+        if (!blockReqMap.isEmpty()) {
+            startSweeping();
+        }
+    }
+
+    private void startSweeping() {
+        if (isSweepScheduled.compareAndSet(false, true)) {
+            scheduleSweep();
+        }
     }
 
     private void scheduleSweep() {

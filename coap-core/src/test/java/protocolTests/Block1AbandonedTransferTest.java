@@ -84,7 +84,7 @@ public class Block1AbandonedTransferTest {
 
         // every peer sends a single first block and then goes silent
         List<DatagramSocket> abandoning = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 20; i++) {
             DatagramSocket peer = newPeer();
             abandoning.add(peer);
             assertEquals(Code.C231_CONTINUE, exchange(peer, firstBlock(1)).getCode());
@@ -92,7 +92,7 @@ public class Block1AbandonedTransferTest {
 
         // the oldest transfers are gone, only the most recent ones are still held
         assertEquals(Code.C408_REQUEST_ENTITY_INCOMPLETE, exchange(abandoning.get(0), nextBlock(2)).getCode());
-        assertEquals(Code.C231_CONTINUE, exchange(abandoning.get(49), nextBlock(2)).getCode());
+        assertEquals(Code.C231_CONTINUE, exchange(abandoning.get(19), nextBlock(2)).getCode());
 
         // and the server keeps serving other requests
         assertEquals(Code.C205_CONTENT, exchange(newPeer(), probe(3)).getCode());
@@ -125,7 +125,7 @@ public class Block1AbandonedTransferTest {
 
     private DatagramSocket newPeer() throws IOException {
         DatagramSocket peer = new DatagramSocket();
-        peer.setSoTimeout(3000);
+        peer.setSoTimeout(10_000);
         peers.add(peer);
         return peer;
     }

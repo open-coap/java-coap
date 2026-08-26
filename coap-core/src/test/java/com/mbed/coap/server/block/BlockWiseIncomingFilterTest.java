@@ -290,8 +290,24 @@ class BlockWiseIncomingFilterTest {
     }
 
     @Test
+    public void should_sweep_only_while_there_are_transfers_to_expire() {
+        service = boundedFilter(10, IDLE_TIMEOUT).then(__ -> ok("OK").toFuture());
+        assertTrue(timer.isEmpty());
+
+        assertContinue(0, service.apply(firstBlock("/res")));
+        assertEquals(1, timer.size());
+
+        //the transfer completes, so there is nothing left to sweep for
+        service.apply(lastBlock("/res", 1)).join();
+        timer.runAll();
+
+        assertTrue(timer.isEmpty());
+    }
+
+    @Test
     public void should_stop_sweeping_when_stopped() {
         BlockWiseIncomingFilter filter = boundedFilter(10, IDLE_TIMEOUT);
+        filter.then(__ -> ok("OK").toFuture()).apply(firstBlock("/res")).join();
         assertEquals(1, timer.size());
 
         filter.stop();
