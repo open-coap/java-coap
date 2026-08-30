@@ -39,7 +39,7 @@ The following features are supported by the library:
 
 ### Fork
 
-This project started as a fork from https://github.com/PelionIoT/java-coap, but it has changed significantly, so it became project of its own.
+This project started as a fork from https://github.com/PelionIoT/java-coap, but it has changed significantly, so it became a project of its own.
 
 ### Integrations:
 
@@ -50,7 +50,7 @@ This project started as a fork from https://github.com/PelionIoT/java-coap, but 
 Runtime requirements
 ------------
 
-* JRE 8, 17, 21
+* JRE 8, 17, 21, 25
 
 Using the Library
 -----------------
@@ -119,7 +119,7 @@ client = CoapServer.builder()
         // (optional) set maximum response timeout, default for every request
         .responseTimeout(Duration.ofMinutes(2))
         // (optional) set maximum allowed resource size
-        .maxIncomingBlockTransferSize(1000_0000)
+        .maxIncomingBlockTransferSize(10_000_000)
         // (optional) set extra filters (interceptors) to outbound pipeline
         .outboundFilter(
                 // each request will be set with different Token
@@ -196,13 +196,13 @@ server.start();
 
 All requests are handled by implementing `Service<REQ, RES>` interface, which is a simple function:
 
-```
+```java
 (REQ) -> CompletableFuture<RES>
 ```
 
 Intercepting is achieved by implementing `Filter` interface, which is again a simple function:
 
-```
+```java
 (REQ, Service<IN_REQ, IN_RES>) -> CompletableFuture<RES>
 ```
 
@@ -210,7 +210,7 @@ Filter interface has a set of helper functions to compose with another `Filter` 
 Together it creates a pipeline of request handling functions.
 
 It is following "server as a function" design concept. It is a very simple, flexible and testable way to model data processing in a pipeline.
-It is best describe in this white paper: [Your Server as a Function](https://monkey.org/~marius/funsrv.pdf), and has a great implementation in [Finagle](https://twitter.github.io/finagle) project.
+It is best described in this white paper: [Your Server as a Function](https://monkey.org/~marius/funsrv.pdf), and has a great implementation in [Finagle](https://twitter.github.io/finagle) project.
 
 #### Decorating services with filters
 
@@ -218,19 +218,19 @@ Every `Service` implementation can be decorated with `Filter`. It can be used to
 
 For example, if we want to limit allowed payload size, it could be done:
 
-```
-  MaxAllowedEntityFilter filter = new MaxAllowedEntityFilter(100, "too big")
-  
-  Service<CoapRequest, CoapResponse> filteredRoute = filter.then(route)
+```java
+MaxAllowedPayloadFilter filter = new MaxAllowedPayloadFilter(100, "too big");
+
+Service<CoapRequest, CoapResponse> filteredRoute = filter.then(route);
 ```
 
 Another example, is to use auto generated `etag` for responses and validate it in requests:
 
-```
-  EtagGeneratorFilter filter2 = new EtagGeneratorFilter()
-  EtagValidatorFilter filter3 = new EtagValidatorFilter()
-  
-  Service<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route)
+```java
+EtagGeneratorFilter filter2 = EtagGeneratorFilter.PAYLOAD_HASHING;
+EtagValidatorFilter filter3 = new EtagValidatorFilter();
+
+Service<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route);
 ```
 
 All request handling filters are under package [..coap.server.filter](coap-core/src/main/java/com/mbed/coap/server/filter).
