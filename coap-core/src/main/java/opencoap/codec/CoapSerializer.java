@@ -24,7 +24,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import opencoap.core.CoapException;
 import opencoap.core.Code;
-import opencoap.core.HeaderOptions;
+import opencoap.core.CoapOptions;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
@@ -166,7 +166,7 @@ public class CoapSerializer {
             coap.setToken(Opaque.read(inputStream, tokenLen));
 
             //read headers
-            HeaderOptions options = new HeaderOptions();
+            CoapOptions options = new CoapOptions();
             boolean hasPayloadMarker = options.deserialize(inputStream);
             coap.setHeaderOptions(options);
 

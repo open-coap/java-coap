@@ -175,8 +175,8 @@ class CoapResponseTest {
         }
     }
 
-    static HeaderOptions newOptions(Consumer<HeaderOptions> optionsFunc) {
-        HeaderOptions options = new HeaderOptions();
+    static CoapOptions newOptions(Consumer<CoapOptions> optionsFunc) {
+        CoapOptions options = new CoapOptions();
         optionsFunc.accept(options);
         return options;
     }
