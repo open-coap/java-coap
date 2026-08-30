@@ -16,12 +16,7 @@
  */
 package opencoap.core;
 
-import static opencoap.codec.PacketUtils.read16;
-import static opencoap.codec.PacketUtils.read8;
 import static opencoap.util.Validations.require;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import opencoap.codec.CoapMessageFormatException;
-import opencoap.codec.CoapSerializer;
 import opencoap.codec.DataConvertingUtility;
 import opencoap.codec.RawOption;
 
@@ -54,7 +47,6 @@ import opencoap.codec.RawOption;
  *    +-----+---+---+---+---+----------------+--------+--------+----------+
  * </pre>
  */
-@SuppressWarnings({"PMD.NPathComplexity", "PMD.CyclomaticComplexity", "PMD.NcssCount"})
 public class CoapOptions {
 
     public static final int IF_MATCH = 1; //multiple
@@ -112,6 +104,8 @@ public class CoapOptions {
     private String correlationTag;
     private Map<Integer, RawOption> unrecognizedOptions;
 
+    // one case per CoAP option number, a flat switch is the clearest form available
+    @SuppressWarnings("PMD.NcssCount")
     public boolean parseOption(int type, Opaque data) {
         switch (type) {
             case CONTENT_FORMAT:
@@ -259,6 +253,8 @@ public class CoapOptions {
      *
      * @return sorted list
      */
+    // one branch per CoAP option number
+    @SuppressWarnings("PMD.NPathComplexity")
     public List<RawOption> getRawOptions() {
         List<RawOption> list = new LinkedList<>();
 
@@ -317,7 +313,7 @@ public class CoapOptions {
             if (observe == 0) {
                 list.add(RawOption.fromEmpty(OBSERVE));
             } else {
-                list.add(RawOption.fromUint(OBSERVE, observe.longValue()));
+                list.add(RawOption.fromUint(OBSERVE, observe));
             }
         }
         if (block1Req != null) {
@@ -327,7 +323,7 @@ public class CoapOptions {
             list.add(new RawOption(BLOCK_2_RES, new Opaque[]{block2Res.toBytes()}));
         }
         if (size2Res != null) {
-            list.add(RawOption.fromUint(SIZE_2_RES, size2Res.longValue()));
+            list.add(RawOption.fromUint(SIZE_2_RES, size2Res));
         }
         if (echo != null) {
             list.add(new RawOption(ECHO, echo));
@@ -354,6 +350,8 @@ public class CoapOptions {
         return sb.toString();
     }
 
+    // one branch per CoAP option number
+    @SuppressWarnings("PMD.NPathComplexity")
     public void buildToString(StringBuilder sb) {
         if (uriPath != null) {
             sb.append(" URI:").append(uriPath);
@@ -839,126 +837,7 @@ public class CoapOptions {
         return correlationTag;
     }
 
-    public void serialize(OutputStream os) throws IOException {
-        List<RawOption> list = getRawOptions();
-        Collections.sort(list);
-
-        int lastOptNumber = 0;
-        for (RawOption opt : list) {
-            for (Opaque optValue : opt.optValues) {
-                int delta = opt.optNumber - lastOptNumber;
-                lastOptNumber = opt.optNumber;
-                if (delta > 0xFFFF + 269) {
-                    throw new IllegalArgumentException("Delta with size: " + delta + " is not supported [option number: " + opt.optNumber + "]");
-                }
-                int len = optValue.size();
-                if (len > 0xFFFF + 269) {
-                    throw new IllegalArgumentException("Header size: " + len + " is not supported [option number: " + opt.optNumber + "]");
-                }
-                writeOptionHeader(delta, len, os);
-                optValue.writeTo(os);
-            }
-        }
-    }
-
-    public static void writeOptionHeader(int delta, int len, OutputStream os) throws IOException {
-        //first byte
-        int tempByte;
-        if (delta <= 12) {
-            tempByte = delta << 4;
-        } else if (delta < 269) {
-            tempByte = 13 << 4;
-        } else {
-            tempByte = 14 << 4;
-        }
-        if (len <= 12) {
-            tempByte |= len;
-        } else if (len < 269) {
-            tempByte |= 13;
-        } else {
-            tempByte |= 14;
-        }
-        os.write(tempByte);
-
-        //extended option delta
-        if (delta > 12 && delta < 269) {
-            os.write(delta - 13);
-        } else if (delta >= 269) {
-            os.write((0xFF00 & (delta - 269)) >> 8);
-            os.write(0x00FF & (delta - 269));
-        }
-        //extended len
-        if (len > 12 && len < 269) {
-            os.write(len - 13);
-        } else if (len >= 269) {
-            os.write((0xFF00 & (len - 269)) >> 8);
-            os.write(0x00FF & (len - 269));
-        }
-    }
-
-    public boolean deserialize(InputStream inputStream) throws IOException, CoapMessageFormatException {
-        return deserialize(inputStream, inputStream.available()) != 0;
-    }
-
-    /**
-     * De-serializes CoAP header options. Returns left stream/data length if PayloadMarker was
-     * found or zero if no payload present.
-     * If no payload marker found but still data present - CoapMessageException is thrown.
-     */
-    public int deserialize(InputStream is, int availableBytes) throws IOException, CoapMessageFormatException {
-
-        int availableInternal = availableBytes;
-        int headerOptNum = 0;
-        // olesmi:
-        // if we have whole packet (UDP, DTLS) we should read till end of stream, expecting whole packet contained in stream
-        // if we have TCP stream - we should try to read withing provided packetLen (optionsAndPayloadLen). If stream ends
-        // here we should throw EOFException (from underlying StrictInputStream) or should throw NotEnoughDataException if we
-        // are waiting for more data. While querying is.available() if stream is closed, unfortunately IOException will be
-        // thrown instead of EOFException (implementation for SocketInputStream)
-        while (availableInternal > 0) {
-            int hdrByte = read8(is);
-            availableInternal--;
-
-            if (hdrByte == CoapSerializer.PAYLOAD_MARKER) {
-                return availableInternal;
-            }
-            int delta = hdrByte >> 4;
-            int len = 0xF & hdrByte;
-
-            if (delta == 15 || len == 15) {
-                throw new CoapMessageFormatException("Unexpected delta or len value in option header after optNum: " + headerOptNum);
-            }
-            if (delta == 13) {
-                delta += read8(is);
-                availableInternal--;
-            } else if (delta == 14) {
-                delta = read16(is) + 269;
-                availableInternal -= 2;
-            }
-            if (len == 13) {
-                len += read8(is);
-                availableInternal--;
-            } else if (len == 14) {
-                len = read16(is) + 269;
-                availableInternal -= 2;
-            }
-            headerOptNum += delta;
-            Opaque headerOptData = Opaque.read(is, len);
-            availableInternal -= len;
-            if (isTextOption(headerOptNum) && headerOptData.hasControlChars()) {
-                // deliberately without the value itself, it lands in a log
-                throw new CoapMessageFormatException("Control character in option: " + headerOptNum);
-            }
-            put(headerOptNum, headerOptData);
-        }
-        if (availableInternal < 0) {
-            throw new CoapMessageFormatException("No payload marker found and options read more that were available");
-        }
-        return availableInternal;
-
-    }
-
-    boolean isTextOption(int optionNumber) {
+    public boolean isTextOption(int optionNumber) {
         return optionNumber == OPEN_COAP_CORRELATION_TAG
                 || optionNumber == URI_HOST
                 || optionNumber == URI_PATH
