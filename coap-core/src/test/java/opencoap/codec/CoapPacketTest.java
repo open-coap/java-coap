@@ -50,13 +50,12 @@ import java.util.HashMap;
 import java.util.Map;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import opencoap.core.BasicHeaderOptions;
 import opencoap.core.BlockOption;
 import opencoap.core.BlockSize;
 import opencoap.core.CoapException;
+import opencoap.core.CoapOptions;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
-import opencoap.core.HeaderOptions;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
@@ -91,7 +90,7 @@ public class CoapPacketTest {
     @Test
     public void shouldFailToDeserializeControlCharacterInUriPath() {
         // a single Uri-Path option value carrying a forged log entry
-        byte[] raw = rawPacketWithOption(BasicHeaderOptions.URI_PATH, "test\r\n11:11:11 INFO -- CON DELETE URI:/admin/wipe");
+        byte[] raw = rawPacketWithOption(CoapOptions.URI_PATH, "test\r\n11:11:11 INFO -- CON DELETE URI:/admin/wipe");
 
         assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(raw)))
                 .isInstanceOf(CoapMessageFormatException.class)
@@ -100,17 +99,17 @@ public class CoapPacketTest {
 
     @Test
     public void shouldFailToDeserializeControlCharacterInTextOptions() {
-        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_PATH, "cfg\u0000.bak"))))
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(CoapOptions.URI_PATH, "cfg\u0000.bak"))))
                 .isInstanceOf(CoapMessageFormatException.class);
-        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_QUERY, "a=\u001b[31m"))))
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(CoapOptions.URI_QUERY, "a=\u001b[31m"))))
                 .isInstanceOf(CoapMessageFormatException.class);
-        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_HOST, "host\u0085"))))
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(CoapOptions.URI_HOST, "host\u0085"))))
                 .isInstanceOf(CoapMessageFormatException.class);
     }
 
     @Test
     public void shouldDeserializeNonAsciiUriPath() throws CoapException {
-        byte[] raw = rawPacketWithOption(BasicHeaderOptions.URI_PATH, "temperatura/wnętrze");
+        byte[] raw = rawPacketWithOption(CoapOptions.URI_PATH, "temperatura/wnętrze");
 
         CoapPacket cp = deserialize(null, new ByteArrayInputStream(raw));
 
@@ -239,7 +238,7 @@ public class CoapPacketTest {
 
     @Test
     public void shouldRejectContentFormatOutsideUint16Range() {
-        HeaderOptions options = new HeaderOptions();
+        CoapOptions options = new CoapOptions();
 
         assertThrows(IllegalArgumentException.class, () -> options.setContentFormat(-1));
         assertThrows(IllegalArgumentException.class, () -> options.setContentFormat(0x10000));

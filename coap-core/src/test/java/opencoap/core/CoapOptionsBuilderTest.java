@@ -47,7 +47,7 @@ public class CoapOptionsBuilderTest {
 
     @Test
     public void shouldKeepRepeatedQueryNames() {
-        HeaderOptions options = options().query("a", "1").query("a", "2").build();
+        CoapOptions options = options().query("a", "1").query("a", "2").build();
 
         assertEquals(asList("a=1", "a=2"), options.getUriQueryList());
     }
@@ -66,7 +66,7 @@ public class CoapOptionsBuilderTest {
 
     @Test
     public void shouldClearQueriesWithNoVarargs() {
-        HeaderOptions options = options().query("a", "1").queries().build();
+        CoapOptions options = options().query("a", "1").queries().build();
 
         assertEquals(emptyList(), options.getUriQueryList());
         // absent, not present-and-empty
@@ -81,14 +81,14 @@ public class CoapOptionsBuilderTest {
 
     @Test
     public void shouldBuildEmpty() {
-        HeaderOptions options = options().build();
+        CoapOptions options = options().build();
 
-        assertEquals(new HeaderOptions(), options);
+        assertEquals(new CoapOptions(), options);
     }
 
     @Test
     public void shouldBuildWithAllOptions() {
-        HeaderOptions options = options()
+        CoapOptions options = options()
                 .contentFormat(ContentFormat.APPLICATION_JSON)
                 .maxAge(Duration.ofHours(1))
                 .uriPath("/test")
@@ -113,7 +113,7 @@ public class CoapOptionsBuilderTest {
                 .correlationTag("RequestId123")
                 .build();
 
-        HeaderOptions expected = new HeaderOptions();
+        CoapOptions expected = new CoapOptions();
         expected.setContentFormat(ContentFormat.APPLICATION_JSON);
         expected.setMaxAge(3600L);
         expected.setUriPath("/test");
@@ -142,7 +142,7 @@ public class CoapOptionsBuilderTest {
 
     @Test
     public void shouldUnsetOptions() {
-        HeaderOptions options = options()
+        CoapOptions options = options()
                 .observe(41)
                 .block2Res(2, BlockSize.S_256, false)
                 .block1Req(0, BlockSize.S_256, true)
@@ -150,7 +150,7 @@ public class CoapOptionsBuilderTest {
                 .custom(65000, Opaque.of("custom"))
                 .build();
 
-        HeaderOptions unsetOptions = CoapOptionsBuilder.from(options)
+        CoapOptions unsetOptions = CoapOptionsBuilder.from(options)
                 .unsetObserve()
                 .unsetBlock1Req()
                 .unsetBlock2Res()
@@ -158,17 +158,17 @@ public class CoapOptionsBuilderTest {
                 .unsetCustom(65000)
                 .build();
 
-        assertEquals(new HeaderOptions(), unsetOptions);
+        assertEquals(new CoapOptions(), unsetOptions);
     }
 
     @Test
     void shouldRunWithIfCondition() {
         CoapOptionsBuilder builder = options()
-                .ifNull(HeaderOptions::getAccept, o -> o.accept(321));
+                .ifNull(CoapOptions::getAccept, o -> o.accept(321));
         assertEquals(321, builder.build().getAccept());
 
         // when
-        builder.ifNull(HeaderOptions::getAccept, o -> o.accept(43432));
+        builder.ifNull(CoapOptions::getAccept, o -> o.accept(43432));
 
         // then, value not changed
         assertEquals(321, builder.build().getAccept());

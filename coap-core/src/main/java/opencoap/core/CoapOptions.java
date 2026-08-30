@@ -18,6 +18,7 @@ package opencoap.core;
 
 import static opencoap.codec.PacketUtils.read16;
 import static opencoap.codec.PacketUtils.read8;
+import static opencoap.util.Validations.require;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,10 +39,23 @@ import opencoap.codec.DataConvertingUtility;
 import opencoap.codec.RawOption;
 
 /**
- * Implements CoAP basic header options.
+ * Implements CoAP header options from
+ * - RFC 7252 (The Constrained Application Protocol)
+ * - RFC 7959 (Block-Wise Transfers)
+ * - draft-ietf-core-observe-09
+ * - RFC 9175 (Echo, Request-Tag, and Token Processing)
+ * <p>
+ * And custom:
+ * <pre>
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    | No. | C | U | N | R | Name           | Format | Length | Default  |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    |29644|   |   |   |   | Correlation-tag| opaque | 0-36   | (none)   |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ * </pre>
  */
-@SuppressWarnings({"PMD.NPathComplexity"})
-public class BasicHeaderOptions {
+@SuppressWarnings({"PMD.NPathComplexity", "PMD.CyclomaticComplexity", "PMD.NcssCount"})
+public class CoapOptions {
 
     public static final int IF_MATCH = 1; //multiple
     public static final int URI_HOST = 3;
@@ -58,6 +72,13 @@ public class BasicHeaderOptions {
     public static final int PROXY_URI = 35; //not repeatable
     public static final int PROXY_SCHEME = 39; //not repeatable
     public static final int SIZE1 = 60;
+    private static final int OBSERVE = 6;
+    private static final int BLOCK_1_REQ = 27;
+    private static final int BLOCK_2_RES = 23;
+    private static final int SIZE_2_RES = 28;
+    private static final int ECHO = 252;
+    private static final int REQUEST_TAG = 292;
+    public static final int OPEN_COAP_CORRELATION_TAG = 29644; // open-coap specific option for request tracing
     //
     public static final long DEFAULT_MAX_AGE = 60;
     public static final String DEFAULT_URI_HOST = "";
@@ -82,9 +103,16 @@ public class BasicHeaderOptions {
     private String proxyScheme;
     private Integer uriPort;
     private Integer size1;
+    private Integer observe;
+    private BlockOption block1Req;
+    private BlockOption block2Res;
+    private Integer size2Res;
+    private Opaque echo;
+    private Opaque requestTag;
+    private String correlationTag;
     private Map<Integer, RawOption> unrecognizedOptions;
 
-    protected boolean parseOption(int type, Opaque data) {
+    public boolean parseOption(int type, Opaque data) {
         switch (type) {
             case CONTENT_FORMAT:
                 // assigned directly, a malformed peer may send a value outside the uint16 range
@@ -131,6 +159,27 @@ public class BasicHeaderOptions {
                 break;
             case SIZE1:
                 size1 = data.toInt();
+                break;
+            case OBSERVE:
+                setObserve(data.toInt());
+                break;
+            case BLOCK_2_RES:
+                setBlock2Res(new BlockOption(data));
+                break;
+            case BLOCK_1_REQ:
+                setBlock1Req(new BlockOption(data));
+                break;
+            case SIZE_2_RES:
+                setSize2Res(data.toInt());
+                break;
+            case ECHO:
+                setEcho(data);
+                break;
+            case REQUEST_TAG:
+                setRequestTag(data);
+                break;
+            case OPEN_COAP_CORRELATION_TAG:
+                setCorrelationTag(data.toUtf8String());
                 break;
             default:
                 return false;
@@ -264,6 +313,31 @@ public class BasicHeaderOptions {
         if (size1 != null) {
             list.add(RawOption.fromUint(SIZE1, size1));
         }
+        if (observe != null) {
+            if (observe == 0) {
+                list.add(RawOption.fromEmpty(OBSERVE));
+            } else {
+                list.add(RawOption.fromUint(OBSERVE, observe.longValue()));
+            }
+        }
+        if (block1Req != null) {
+            list.add(new RawOption(BLOCK_1_REQ, new Opaque[]{block1Req.toBytes()}));
+        }
+        if (block2Res != null) {
+            list.add(new RawOption(BLOCK_2_RES, new Opaque[]{block2Res.toBytes()}));
+        }
+        if (size2Res != null) {
+            list.add(RawOption.fromUint(SIZE_2_RES, size2Res.longValue()));
+        }
+        if (echo != null) {
+            list.add(new RawOption(ECHO, echo));
+        }
+        if (requestTag != null) {
+            list.add(new RawOption(REQUEST_TAG, requestTag));
+        }
+        if (correlationTag != null) {
+            list.add(new RawOption(OPEN_COAP_CORRELATION_TAG, Opaque.of(correlationTag)));
+        }
 
         if (unrecognizedOptions != null) {
             for (RawOption rOpt : unrecognizedOptions.values()) {
@@ -332,6 +406,27 @@ public class BasicHeaderOptions {
         }
         if (size1 != null) {
             sb.append(" sz1:").append(size1);
+        }
+        if (block1Req != null) {
+            sb.append(" block1:").append(block1Req);
+        }
+        if (block2Res != null) {
+            sb.append(" block2:").append(block2Res);
+        }
+        if (observe != null) {
+            sb.append(" obs:").append(observe);
+        }
+        if (size2Res != null) {
+            sb.append(" sz2:").append(size2Res);
+        }
+        if (echo != null) {
+            sb.append(" Echo:").append(echo.toHex());
+        }
+        if (requestTag != null) {
+            sb.append(" Req-tag:").append(requestTag.toHex());
+        }
+        if (correlationTag != null) {
+            sb.append(" Corr-tag:").append(correlationTag);
         }
     }
 
@@ -668,6 +763,82 @@ public class BasicHeaderOptions {
         this.size1 = size;
     }
 
+    /**
+     * @return the subsLifetime
+     */
+    public Integer getObserve() {
+        return observe;
+    }
+
+    /**
+     * Sets observer option value. Allowed value range: 3 bytes.
+     *
+     * @param observe the subsLifetime to set
+     */
+    public void setObserve(Integer observe) {
+        if (observe != null && (observe < 0 || observe > 0xFFFFFF)) {
+            throw new IllegalArgumentException("Illegal observe argument: " + observe);
+        }
+        this.observe = observe;
+    }
+
+    /**
+     * @return the request block
+     */
+    public BlockOption getBlock1Req() {
+        return block1Req;
+    }
+
+    public BlockOption getBlock2Res() {
+        return block2Res;
+    }
+
+    public Integer getSize2Res() {
+        return size2Res;
+    }
+
+    /**
+     * @param block the block to set
+     */
+    public void setBlock1Req(BlockOption block) {
+        this.block1Req = block;
+    }
+
+    public void setBlock2Res(BlockOption block) {
+        this.block2Res = block;
+    }
+
+    public void setSize2Res(Integer size2Res) {
+        this.size2Res = size2Res;
+    }
+
+    public void setEcho(Opaque echo) {
+        require(echo == null || echo.size() <= 40);
+        this.echo = echo;
+    }
+
+    public Opaque getEcho() {
+        return echo;
+    }
+
+    public void setRequestTag(Opaque requestTag) {
+        require(requestTag == null || requestTag.size() <= 8);
+        this.requestTag = requestTag;
+    }
+
+    public Opaque getRequestTag() {
+        return requestTag;
+    }
+
+    void setCorrelationTag(String corrTag) {
+        require(corrTag == null || corrTag.length() <= 36);
+        this.correlationTag = corrTag;
+    }
+
+    public String getCorrelationTag() {
+        return correlationTag;
+    }
+
     public void serialize(OutputStream os) throws IOException {
         List<RawOption> list = getRawOptions();
         Collections.sort(list);
@@ -788,7 +959,8 @@ public class BasicHeaderOptions {
     }
 
     boolean isTextOption(int optionNumber) {
-        return optionNumber == URI_HOST
+        return optionNumber == OPEN_COAP_CORRELATION_TAG
+                || optionNumber == URI_HOST
                 || optionNumber == URI_PATH
                 || optionNumber == URI_QUERY
                 || optionNumber == LOCATION_PATH
@@ -797,7 +969,7 @@ public class BasicHeaderOptions {
                 || optionNumber == PROXY_SCHEME;
     }
 
-    public void duplicate(BasicHeaderOptions opts) {
+    public void duplicate(CoapOptions opts) {
         opts.contentFormat = contentFormat;
         opts.maxAge = maxAge;
         opts.etag = etag;
@@ -813,7 +985,20 @@ public class BasicHeaderOptions {
         opts.proxyScheme = proxyScheme;
         opts.uriPort = uriPort;
         opts.size1 = size1;
+        opts.observe = observe;
+        opts.block1Req = block1Req;
+        opts.block2Res = block2Res;
+        opts.size2Res = size2Res;
+        opts.echo = echo;
+        opts.requestTag = requestTag;
+        opts.correlationTag = correlationTag;
         opts.unrecognizedOptions = unrecognizedOptions;
+    }
+
+    public CoapOptions duplicate() {
+        CoapOptions opts = new CoapOptions();
+        duplicate(opts);
+        return opts;
     }
 
     @Override
@@ -835,18 +1020,25 @@ public class BasicHeaderOptions {
         hash = 41 * hash + (this.uriPort != null ? this.uriPort.hashCode() : 0);
         hash = 41 * hash + (this.size1 != null ? this.size1.hashCode() : 0);
         hash = 41 * hash + (this.unrecognizedOptions != null ? this.unrecognizedOptions.hashCode() : 0);
+        hash = 31 * hash + (this.correlationTag != null ? this.correlationTag.hashCode() : 0);
+        hash = 31 * hash + (this.echo != null ? this.echo.hashCode() : 0);
+        hash = 31 * hash + (this.requestTag != null ? this.requestTag.hashCode() : 0);
+        hash = 31 * hash + (this.observe != null ? this.observe.hashCode() : 0);
+        hash = 31 * hash + (this.block1Req != null ? this.block1Req.hashCode() : 0);
+        hash = 31 * hash + (this.block2Res != null ? this.block2Res.hashCode() : 0);
+        hash = 31 * hash + (this.size2Res != null ? this.size2Res.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final BasicHeaderOptions other = (BasicHeaderOptions) obj;
+        final CoapOptions other = (CoapOptions) obj;
         if (!Objects.equals(this.contentFormat, other.contentFormat)) {
             return false;
         }
@@ -890,6 +1082,27 @@ public class BasicHeaderOptions {
             return false;
         }
         if (!Objects.equals(this.proxyScheme, other.proxyScheme)) {
+            return false;
+        }
+        if (!Objects.equals(this.correlationTag, other.correlationTag)) {
+            return false;
+        }
+        if (!Objects.equals(this.echo, other.echo)) {
+            return false;
+        }
+        if (!Objects.equals(this.requestTag, other.requestTag)) {
+            return false;
+        }
+        if (!Objects.equals(this.observe, other.observe)) {
+            return false;
+        }
+        if (!Objects.equals(this.block1Req, other.block1Req)) {
+            return false;
+        }
+        if (!Objects.equals(this.block2Res, other.block2Res)) {
+            return false;
+        }
+        if (!Objects.equals(this.size2Res, other.size2Res)) {
             return false;
         }
         return Objects.equals(this.unrecognizedOptions, other.unrecognizedOptions);

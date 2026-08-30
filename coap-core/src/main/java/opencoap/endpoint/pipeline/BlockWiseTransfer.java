@@ -17,8 +17,8 @@
 package opencoap.endpoint.pipeline;
 
 import opencoap.core.BlockOption;
+import opencoap.core.CoapOptions;
 import opencoap.core.CoapRequest;
-import opencoap.core.HeaderOptions;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
 import opencoap.endpoint.Capabilities;
@@ -48,7 +48,7 @@ class BlockWiseTransfer {
                         .unsetBlock2Res()
                         .size1(payloadSize)
                         .unsetSize2Res()
-                        .ifNull(HeaderOptions::getRequestTag, __ ->
+                        .ifNull(CoapOptions::getRequestTag, __ ->
                                 o.requestTag(csm.nextRequestTag())
                         )
                 )

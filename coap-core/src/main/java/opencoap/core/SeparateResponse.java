@@ -59,7 +59,7 @@ public final class SeparateResponse {
         return response.getCode();
     }
 
-    public HeaderOptions options() {
+    public CoapOptions options() {
         return response.options();
     }
 
