@@ -286,7 +286,7 @@ public class CoapTcpPacketSerializerTest {
         opts.setUriPath("/aaa/bbb");
 
         ByteArrayOutputStream optSerializedStream = new ByteArrayOutputStream();
-        opts.serialize(optSerializedStream);
+        CoapSerializer.serializeOptions(opts, optSerializedStream);
 
         os = createRawPacketHeader(13, 0, new byte[]{(byte) optSerializedStream.size()}, Code.C205_CONTENT.getCoapCode(), null);
         os.write(optSerializedStream.toByteArray());
@@ -330,7 +330,7 @@ public class CoapTcpPacketSerializerTest {
         opts.setUriPath("/aaa/bbb");
 
         ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
-        opts.serialize(tmpStream);
+        CoapSerializer.serializeOptions(opts, tmpStream);
 
         os = createRawPacketHeader(13, 0, new byte[]{(byte) (tmpStream.size() + 1)}, Code.C205_CONTENT.getCoapCode(), null);
         os.write(tmpStream.toByteArray());

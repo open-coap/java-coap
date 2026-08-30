@@ -81,7 +81,7 @@ public final class CoapTcpPacketSerializer {
         } else {
             options = new CoapOptions();
         }
-        int leftPayloadLen = options.deserialize(is, (int) pktContext.getLength());
+        int leftPayloadLen = CoapSerializer.deserializeOptions(options, is, (int) pktContext.getLength());
         pkt.setHeaderOptions(options);
 
         if (leftPayloadLen > 0) {
@@ -224,7 +224,7 @@ public final class CoapTcpPacketSerializer {
         // because options size included into packet length field together with
         // payload marker and payload size
         ByteArrayOutputStream headerOptionsStream = new ByteArrayOutputStream();
-        coapPacket.headers().serialize(headerOptionsStream);
+        CoapSerializer.serializeOptions(coapPacket.headers(), headerOptionsStream);
 
         // token length
         int tokenLen = coapPacket.getToken().size();
