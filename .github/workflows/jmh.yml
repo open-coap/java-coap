@@ -3,6 +3,9 @@ name: benchmark
 on:
   push:
 
+permissions:
+  contents: read
+
 jobs:
   benchmark:
     timeout-minutes: 10
