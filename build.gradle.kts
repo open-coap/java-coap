@@ -1,5 +1,6 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsTask
 
 plugins {
     id("java")
@@ -114,6 +115,15 @@ subprojects {
     spotbugs {
         effort.set(Effort.MAX)
         excludeFilter.set(rootProject.file("spotbugs-exlude.xml"))
+    }
+
+    tasks.withType<SpotBugsTask> {
+        reports.create("xml") { required.set(true) }
+        reports.create("html") { required.set(true) }
+    }
+
+    dependencies {
+        spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0")
     }
 
     publishing {
