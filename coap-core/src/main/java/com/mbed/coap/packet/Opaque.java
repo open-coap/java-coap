@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -172,6 +172,28 @@ public final class Opaque {
 
     public String toUtf8String() {
         return new String(data, CoapConstants.DEFAULT_CHARSET);
+    }
+
+    /**
+     * Tells whether the text of this value holds a control character.
+     *
+     * @return true when {@link #toUtf8String()} would hold at least one ISO control character
+     */
+    public boolean hasControlChars() {
+        for (int i = 0; i < data.length; i++) {
+            int chr = data[i] & 0xFF;
+            if (chr <= 0x1F || chr == 0x7F) {
+                return true;
+            }
+            if (chr == 0xC2 && i + 1 < data.length && isC1Control(data[i + 1] & 0xFF)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isC1Control(int continuationChr) {
+        return continuationChr >= 0x80 && continuationChr <= 0x9F;
     }
 
     public boolean isEmpty() {

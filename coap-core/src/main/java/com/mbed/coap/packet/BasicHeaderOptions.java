@@ -802,6 +802,10 @@ public class BasicHeaderOptions {
             headerOptNum += delta;
             Opaque headerOptData = Opaque.read(is, len);
             availableInternal -= len;
+            if (isTextOption(headerOptNum) && headerOptData.hasControlChars()) {
+                // deliberately without the value itself, it lands in a log
+                throw new CoapMessageFormatException("Control character in option: " + headerOptNum);
+            }
             put(headerOptNum, headerOptData);
         }
         if (availableInternal < 0) {
@@ -809,6 +813,16 @@ public class BasicHeaderOptions {
         }
         return availableInternal;
 
+    }
+
+    boolean isTextOption(int optionNumber) {
+        return optionNumber == URI_HOST
+                || optionNumber == URI_PATH
+                || optionNumber == URI_QUERY
+                || optionNumber == LOCATION_PATH
+                || optionNumber == LOCATION_QUERY
+                || optionNumber == PROXY_URI
+                || optionNumber == PROXY_SCHEME;
     }
 
     public void duplicate(BasicHeaderOptions opts) {
