@@ -35,7 +35,6 @@ The following features are supported by the library:
         - X509 Certificate
         - PSK
     - TLS
-* ~~LwM2M TLV and JSON data formats~~ (deprecated)
 
 ### Fork
 

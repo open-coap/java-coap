@@ -1,7 +1,6 @@
 include(":coap-core")
 include(":coap-tcp")
 include(":coap-mbedtls")
-include(":lwm2m")
 include(":coap-cli")
 include(":coap-metrics")
 include(":coap-netty")
