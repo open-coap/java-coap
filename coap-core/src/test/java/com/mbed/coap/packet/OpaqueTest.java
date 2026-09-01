@@ -56,6 +56,8 @@ public class OpaqueTest {
         // replacement character, which is not a control one
         assertFalse(Opaque.ofBytes(0x85).hasControlChars());
         assertFalse(Opaque.ofBytes(0x61, 0xc2).hasControlChars());
+        // 0xc2 followed by something that is not a continuation byte, same story
+        assertFalse(Opaque.ofBytes(0xc2, 0x41).hasControlChars());
     }
 
     @Test
