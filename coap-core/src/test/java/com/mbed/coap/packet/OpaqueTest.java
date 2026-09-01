@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,27 @@ public class OpaqueTest {
     public void stringConverting() {
         assertEquals("", Opaque.EMPTY.toUtf8String());
         assertEquals("dupa", Opaque.of("dupa").toUtf8String());
+    }
+
+    @Test
+    public void controlCharsDetecting() {
+        assertFalse(Opaque.EMPTY.hasControlChars());
+        assertFalse(Opaque.of("/test/1").hasControlChars());
+        // valid multi-byte utf-8 is not a control character
+        assertFalse(Opaque.of("temperatura/wnętrze/22°C").hasControlChars());
+
+        assertTrue(Opaque.of("test\r\n11:11:11 INFO -- forged").hasControlChars());
+        assertTrue(Opaque.of("cfg\u0000.bak").hasControlChars());
+        assertTrue(Opaque.of("a\tb").hasControlChars());
+        assertTrue(Opaque.of("\u001b[31mred").hasControlChars());
+        assertTrue(Opaque.of("del\u007f").hasControlChars());
+        // C1, arriving as a two byte utf-8 sequence
+        assertTrue(Opaque.ofBytes(0xc2, 0x85).hasControlChars());
+
+        // malformed utf-8: a lone continuation byte and a truncated sequence decode to a
+        // replacement character, which is not a control one
+        assertFalse(Opaque.ofBytes(0x85).hasControlChars());
+        assertFalse(Opaque.ofBytes(0x61, 0xc2).hasControlChars());
     }
 
     @Test

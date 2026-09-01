@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ import static com.mbed.coap.packet.CoapResponse.ok;
 import static com.mbed.coap.packet.CoapSerializer.deserialize;
 import static com.mbed.coap.packet.CoapSerializer.serialize;
 import static com.mbed.coap.utils.CoapPacketAssertion.assertSimilar;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,6 +38,7 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import com.mbed.coap.exception.CoapException;
+import com.mbed.coap.exception.CoapMessageFormatException;
 import com.mbed.coap.linkformat.LinkFormat;
 import com.mbed.coap.linkformat.LinkFormatBuilder;
 import com.mbed.coap.transport.TransportContext;
@@ -76,6 +78,54 @@ public class CoapPacketTest {
 
         lf = LinkFormatBuilder.parseList(linkFormatString);
         assertEquals(4, lf.length);
+    }
+
+    @Test
+    public void shouldFailToDeserializeControlCharacterInUriPath() {
+        // a single Uri-Path option value carrying a forged log entry
+        byte[] raw = rawPacketWithOption(BasicHeaderOptions.URI_PATH, "test\r\n11:11:11 INFO -- CON DELETE URI:/admin/wipe");
+
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(raw)))
+                .isInstanceOf(CoapMessageFormatException.class)
+                .hasMessage("Control character in option: 11");
+    }
+
+    @Test
+    public void shouldFailToDeserializeControlCharacterInTextOptions() {
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_PATH, "cfg\u0000.bak"))))
+                .isInstanceOf(CoapMessageFormatException.class);
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_QUERY, "a=\u001b[31m"))))
+                .isInstanceOf(CoapMessageFormatException.class);
+        assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(rawPacketWithOption(BasicHeaderOptions.URI_HOST, "host\u0085"))))
+                .isInstanceOf(CoapMessageFormatException.class);
+    }
+
+    @Test
+    public void shouldDeserializeNonAsciiUriPath() throws CoapException {
+        byte[] raw = rawPacketWithOption(BasicHeaderOptions.URI_PATH, "temperatura/wnętrze");
+
+        CoapPacket cp = deserialize(null, new ByteArrayInputStream(raw));
+
+        assertEquals("/temperatura/wnętrze", cp.headers().getUriPath());
+    }
+
+    @Test
+    public void shouldDeserializeControlCharactersInOpaqueOptionAndPayload() throws CoapException {
+        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", null);
+        cp.headers().setEtag(Opaque.ofBytes(0x00, 0x0d, 0x0a));
+        cp.setPayload("first\r\nsecond");
+
+        CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(serialize(cp)));
+
+        // not text options, arbitrary bytes are legal there
+        assertEquals(Opaque.ofBytes(0x00, 0x0d, 0x0a), cp2.headers().getEtag());
+        assertEquals("first\r\nsecond", cp2.getPayloadString());
+    }
+
+    private static byte[] rawPacketWithOption(int optionNumber, String value) {
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, null, null);
+        cp.headers().put(optionNumber, Opaque.of(value));
+        return serialize(cp);
     }
 
     @Test
