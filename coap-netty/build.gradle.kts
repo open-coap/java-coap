@@ -7,15 +7,15 @@ description = "coap-netty"
 
 dependencies {
     api(project(":coap-core"))
-    api("io.netty:netty-handler:4.2.16.Final")
+    api("io.netty:netty-handler:4.2.17.Final")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
 
     testImplementation(testFixtures(project(":coap-core")))
-    testImplementation("ch.qos.logback:logback-classic:1.6.1")
-    testImplementation("io.netty:netty-transport-native-epoll:4.2.16.Final:linux-x86_64")
+    testImplementation("ch.qos.logback:logback-classic:1.6.3")
+    testImplementation("io.netty:netty-transport-native-epoll:4.2.17.Final:linux-x86_64")
 
-    jmhImplementation("io.netty:netty-all:4.2.16.Final")
+    jmhImplementation("io.netty:netty-all:4.2.17.Final")
     jmh("org.openjdk.jmh:jmh-core:1.37")
     jmh("org.openjdk.jmh:jmh-generator-bytecode:1.37")
 }
