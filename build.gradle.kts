@@ -4,9 +4,9 @@ import com.github.spotbugs.snom.Effort
 plugins {
     id("java")
     id("maven-publish")
-    id("pl.allegro.tech.build.axion-release") version "1.21.2"
+    id("pl.allegro.tech.build.axion-release") version "1.21.3"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
-    id("com.github.ben-manes.versions") version "0.58.0"
+    id("com.github.ben-manes.versions") version "0.61.0"
     id("pmd")
     id("com.github.spotbugs") version "6.5.9"
     id("org.gradle.signing")
@@ -32,8 +32,8 @@ allprojects {
     }
 
     dependencies {
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.2")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.3")
     }
 
     group = "io.github.open-coap"
