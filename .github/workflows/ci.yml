@@ -30,7 +30,7 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'corretto'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6.2.0
+        uses: gradle/actions/setup-gradle@v6.3.0
 
       - name: Build with Gradle
         run: ./gradlew build jacocoTestReport javadoc -i
@@ -55,7 +55,7 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6.2.0
+        uses: gradle/actions/setup-gradle@v6.3.0
 
       - name: Publish with Gradle
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -i
