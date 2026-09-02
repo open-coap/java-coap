@@ -30,7 +30,7 @@ public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapReques
 
     private final Function<Opaque, Opaque> etagGenerator;
 
-    public final static EtagGeneratorFilter PAYLOAD_HASHING = new EtagGeneratorFilter(payload -> Opaque.variableUInt(Arrays.hashCode(payload.getBytes())));
+    public static final EtagGeneratorFilter PAYLOAD_HASHING = new EtagGeneratorFilter(payload -> Opaque.variableUInt(Arrays.hashCode(payload.getBytes())));
 
     public EtagGeneratorFilter(Function<Opaque, Opaque> etagGenerator) {
         this.etagGenerator = Objects.requireNonNull(etagGenerator);

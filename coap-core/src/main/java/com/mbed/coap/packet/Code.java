@@ -81,7 +81,7 @@ public enum Code {
     }
 
     public static Code valueOf(int code) {
-        for (Code c : Code.values()) {
+        for (Code c : values()) {
             if (c.getCoapCode() == code) {
                 return c;
             }
@@ -106,7 +106,7 @@ public enum Code {
         return coapCode >>> 5 == 2;
     }
 
-    @SuppressWarnings("PMD.NcssCount")
+    @SuppressWarnings({"PMD.NcssCount", "PMD.ImplicitSwitchFallThrough"})
     public static Code fromHttp(int httpStatus, Method method) {
 
         switch (httpStatus) {

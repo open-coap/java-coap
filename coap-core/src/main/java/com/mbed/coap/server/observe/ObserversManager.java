@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ObserversManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObserversManager.class);
     private volatile Service<SeparateResponse, Boolean> outboundObservation;
     //               uri-path,    address,           subscribing request
     private final Map<String, Map<InetSocketAddress, CoapRequest>> obsRelations = new ConcurrentHashMap<>();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -49,7 +48,7 @@ public class KeystoreUtils {
     }
 
     public static String findKeyAlias(KeyStore ks) throws KeyStoreException {
-        ArrayList<String> aliases = Collections.list(ks.aliases());
+        List<String> aliases = Collections.list(ks.aliases());
 
         for (String alias : aliases) {
             if (ks.isKeyEntry(alias) && !"ca".equals(alias)) {

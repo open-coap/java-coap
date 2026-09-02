@@ -106,7 +106,7 @@ subprojects {
     }
 
     pmd {
-        toolVersion = "6.55.0"
+        toolVersion = "7.27.0"
         isConsoleOutput = true
         ruleSets = emptyList()
         ruleSetFiles = files(rootProject.file("pmd-rules.xml"))
@@ -123,6 +123,8 @@ subprojects {
     }
 
     dependencies {
+        pmd("net.sourceforge.pmd:pmd-ant:7.27.0")
+        pmd("net.sourceforge.pmd:pmd-java:7.27.0")
         spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0")
     }
 

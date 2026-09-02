@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     private final List<Entry<RequestMatcher, Service<CoapRequest, CoapResponse>>> prefixedHandlers;
     public final Service<CoapRequest, CoapResponse> defaultHandler;
 
-    public final static Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> CoapResponse.notFound().toFuture();
+    public static final Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> CoapResponse.notFound().toFuture();
 
     public static RouteBuilder builder() {
         return new RouteBuilder();
@@ -151,7 +151,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     static final class RequestMatcher {
         final Method method;
         final String uriPath;
-        private transient final boolean isPrefixed;
+        private final transient boolean isPrefixed;
 
         RequestMatcher(Method method, String uriPath) {
             this.method = method;

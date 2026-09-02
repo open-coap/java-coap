@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ package com.mbed.coap.server;
 import com.mbed.coap.packet.CoapPacket;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +35,7 @@ public class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapRequestId, 
     private static final int DEFAULT_DUPLICATE_DETECTOR_DETECTION_TIME_MILLIS = 30000;
 
     private final Lock REDUCE_LOCK = new ReentrantLock();
-    private final ConcurrentHashMap<CoapRequestId, CoapPacket> underlying;
+    private final ConcurrentMap<CoapRequestId, CoapPacket> underlying;
     private final long maxSize;
     private final long overSizeMargin;
     private final long warnIntervalMillis;

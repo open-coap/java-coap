@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class DtlsTransportContext {
     public static final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> DTLS_COAP_TO_DATAGRAM_CONVERTER = (coapPacket, ctx) -> {
         ByteBuf buf = ctx.alloc().buffer(coapPacket.getPayload().size() + 128);
         CoapSerializer.serialize(coapPacket, new ByteBufOutputStream(buf));
-        return new DatagramPacketWithContext(buf, coapPacket.getRemoteAddress(), null, DtlsTransportContext.toDtlsSessionContext(coapPacket.getTransportContext()));
+        return new DatagramPacketWithContext(buf, coapPacket.getRemoteAddress(), null, toDtlsSessionContext(coapPacket.getTransportContext()));
     };
 
     public static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {

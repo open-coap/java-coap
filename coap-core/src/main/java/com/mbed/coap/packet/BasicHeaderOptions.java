@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 /**
  * Implements CoAP basic header options.
  */
-@SuppressWarnings({"PMD.NPathComplexity", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.NPathComplexity"})
 public class BasicHeaderOptions {
 
     public static final byte IF_MATCH = 1; //multiple
@@ -207,10 +207,10 @@ public class BasicHeaderOptions {
      * @return sorted list
      */
     List<RawOption> getRawOptions() {
-        LinkedList<RawOption> list = new LinkedList<>();
+        List<RawOption> list = new LinkedList<>();
 
         if (contentFormat != null) {
-            list.add(RawOption.fromUint(CONTENT_FORMAT, contentFormat.longValue()));
+            list.add(RawOption.fromUint(CONTENT_FORMAT, contentFormat));
         }
         if (maxAge != null && maxAge != DEFAULT_MAX_AGE) {
             list.add(RawOption.fromUint(MAX_AGE, maxAge));
@@ -246,10 +246,10 @@ public class BasicHeaderOptions {
             list.add(RawOption.fromString(PROXY_SCHEME, proxyScheme));
         }
         if (this.accept != null) {
-            list.add(RawOption.fromUint(ACCEPT, accept.longValue()));
+            list.add(RawOption.fromUint(ACCEPT, accept));
         }
         if (this.uriPort != null) {
-            list.add(RawOption.fromUint(URI_PORT, uriPort.longValue()));
+            list.add(RawOption.fromUint(URI_PORT, uriPort));
         }
         if (ifNonMatch != null && ifNonMatch) {
             list.add(RawOption.fromEmpty(IF_NON_MATCH));
@@ -258,7 +258,7 @@ public class BasicHeaderOptions {
             list.add(new RawOption(IF_MATCH, ifMatch));
         }
         if (size1 != null) {
-            list.add(RawOption.fromUint(SIZE1, size1.longValue()));
+            list.add(RawOption.fromUint(SIZE1, size1));
         }
 
         if (unrecognizedOptions != null) {

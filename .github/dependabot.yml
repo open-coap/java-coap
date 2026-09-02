@@ -11,9 +11,10 @@ updates:
       gradle:
         patterns:
           - "*"
-        # spotbugs upgrades usually require fixing new findings, keep them in a separate PR
+        # spotbugs and pmd upgrades usually require fixing new findings, keep them in a separate PR
         exclude-patterns:
           - "com.github.spotbugs*"
+          - "net.sourceforge.pmd*"
         update-types:
           - "minor"
           - "patch"

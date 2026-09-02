@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,6 +133,22 @@ public class RegistrationManagerTest {
 
         trnsport.when(newCoapPacket(2).post().uriPath("/stub/0001"))
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).maxAge(101));
+
+        //when
+        runScheduledTask();
+
+        //then
+        assertTrue(reg.isRegistered());
+        verifyScheduledInSec(71L);
+    }
+
+    @Test
+    public void update_with201Created() throws Exception {
+        //given
+        RegistrationManager reg = registered();
+
+        trnsport.when(newCoapPacket(2).post().uriPath("/stub/0001"))
+                .then(newCoapPacket(2).ack(Code.C201_CREATED).maxAge(101));
 
         //when
         runScheduledTask();

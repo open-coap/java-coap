@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public final class TransportContext {
 
     public <T> TransportContext with(Key<T> key, T value) {
         if (this.equals(EMPTY)) {
-            return TransportContext.of(key, value);
+            return of(key, value);
         }
 
         return new TransportContext(requireNonNull(key), requireNonNull(value), this);
