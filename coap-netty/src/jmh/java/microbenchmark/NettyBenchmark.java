@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,12 @@
  */
 package microbenchmark;
 
+import static opencoap.netty.CoapCodec.EMPTY_RESOLVER;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opencoap.coap.netty.CoapCodec.EMPTY_RESOLVER;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.utils.Bytes;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
@@ -40,7 +36,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.opencoap.coap.netty.NettyCoapTransport;
+import opencoap.netty.NettyCoapTransport;
+import opencoap.packet.CoapPacket;
+import opencoap.packet.Code;
+import opencoap.server.CoapServer;
+import opencoap.utils.Bytes;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;

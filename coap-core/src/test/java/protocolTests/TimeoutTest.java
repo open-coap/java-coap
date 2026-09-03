@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,20 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static java.time.Duration.ofMillis;
+import static opencoap.packet.CoapRequest.get;
+import static opencoap.transmission.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.exception.CoapTimeoutException;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.transport.InMemoryCoapTransport;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import opencoap.client.CoapClient;
+import opencoap.exception.CoapException;
+import opencoap.exception.CoapTimeoutException;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.server.CoapServer;
+import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.Test;
 
 

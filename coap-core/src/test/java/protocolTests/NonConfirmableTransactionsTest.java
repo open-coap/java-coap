@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.BlockSize.S_16;
-import static com.mbed.coap.packet.CoapRequest.put;
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.transport.TransportContext.NON_CONFIRMABLE;
-import static com.mbed.coap.utils.Assertions.assertEquals;
-import static com.mbed.coap.utils.Validations.require;
+import static opencoap.packet.BlockSize.S_16;
+import static opencoap.packet.CoapRequest.put;
+import static opencoap.packet.CoapResponse.coapResponse;
+import static opencoap.packet.CoapResponse.ok;
+import static opencoap.transport.TransportContext.NON_CONFIRMABLE;
+import static opencoap.utils.Assertions.assertEquals;
+import static opencoap.utils.Validations.require;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,17 +30,17 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.reset;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Code;
+import opencoap.packet.Opaque;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.utils.Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;

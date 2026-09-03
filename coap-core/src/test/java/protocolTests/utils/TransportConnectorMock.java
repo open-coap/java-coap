@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,17 @@
  */
 package protocolTests.utils;
 
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapSerializer;
-import com.mbed.coap.transport.BlockingCoapTransport;
-import com.mbed.coap.utils.AsyncQueue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import opencoap.exception.CoapException;
+import opencoap.packet.CoapPacket;
+import opencoap.packet.CoapSerializer;
+import opencoap.transport.BlockingCoapTransport;
+import opencoap.utils.AsyncQueue;
 
 
 public class TransportConnectorMock extends BlockingCoapTransport {

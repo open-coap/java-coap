@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,28 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.filter.TokenGeneratorFilter;
-import com.mbed.coap.server.observe.HashMapObservationsStore;
-import com.mbed.coap.server.observe.ObserversManager;
-import com.mbed.coap.transport.TransportContext;
-import com.mbed.coap.transport.udp.DatagramSocketTransport;
+import static opencoap.packet.CoapResponse.coapResponse;
+import static opencoap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
+import static opencoap.transport.udp.DatagramSocketTransport.udp;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import opencoap.client.CoapClient;
+import opencoap.exception.CoapException;
+import opencoap.packet.BlockSize;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Code;
+import opencoap.packet.MediaTypes;
+import opencoap.packet.Opaque;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.server.filter.TokenGeneratorFilter;
+import opencoap.server.observe.HashMapObservationsStore;
+import opencoap.server.observe.ObserversManager;
+import opencoap.transport.TransportContext;
+import opencoap.transport.udp.DatagramSocketTransport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
