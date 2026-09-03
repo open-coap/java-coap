@@ -1,0 +1,183 @@
+/*
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package opencoap.packet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.jupiter.api.Test;
+
+public class OpaqueTest {
+
+    @Test
+    public void equalsAndHashTest() {
+        EqualsVerifier.forClass(Opaque.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+    }
+
+    @Test
+    public void stringConverting() {
+        assertEquals("", Opaque.EMPTY.toUtf8String());
+        assertEquals("dupa", Opaque.of("dupa").toUtf8String());
+    }
+
+    @Test
+    public void controlCharsDetecting() {
+        assertFalse(Opaque.EMPTY.hasControlChars());
+        assertFalse(Opaque.of("/test/1").hasControlChars());
+        // valid multi-byte utf-8 is not a control character
+        assertFalse(Opaque.of("temperatura/wnętrze/22°C").hasControlChars());
+
+        assertTrue(Opaque.of("test\r\n11:11:11 INFO -- forged").hasControlChars());
+        assertTrue(Opaque.of("cfg\u0000.bak").hasControlChars());
+        assertTrue(Opaque.of("a\tb").hasControlChars());
+        assertTrue(Opaque.of("\u001b[31mred").hasControlChars());
+        assertTrue(Opaque.of("del\u007f").hasControlChars());
+        // C1, arriving as a two byte utf-8 sequence
+        assertTrue(Opaque.ofBytes(0xc2, 0x85).hasControlChars());
+
+        // malformed utf-8: a lone continuation byte and a truncated sequence decode to a
+        // replacement character, which is not a control one
+        assertFalse(Opaque.ofBytes(0x85).hasControlChars());
+        assertFalse(Opaque.ofBytes(0x61, 0xc2).hasControlChars());
+        // 0xc2 followed by something that is not a continuation byte, same story
+        assertFalse(Opaque.ofBytes(0xc2, 0x41).hasControlChars());
+    }
+
+    @Test
+    public void testConvertVariableUInt() {
+        assertEquals("00", Opaque.variableUInt(0x00).toHex());
+        assertEquals("02", Opaque.variableUInt(0x02).toHex());
+        assertEquals("ff", Opaque.variableUInt(0xFF).toHex());
+        assertEquals("0100", Opaque.variableUInt(0x0100).toHex());
+        assertEquals("0203", Opaque.variableUInt(0x0203).toHex());
+        assertEquals("ffff", Opaque.variableUInt(0xFFFF).toHex());
+        assertEquals("010000", Opaque.variableUInt(0x010000).toHex());
+        assertEquals("020304", Opaque.variableUInt(0x020304).toHex());
+        assertEquals("02030405", Opaque.variableUInt(0x02030405).toHex());
+        assertEquals("0203040506", Opaque.variableUInt(0x0203040506L).toHex());
+        assertEquals("020304050607", Opaque.variableUInt(0x020304050607L).toHex());
+        assertEquals("02030405060708", Opaque.variableUInt(0x02030405060708L).toHex());
+        assertEquals("0203040506070809", Opaque.variableUInt(0x0203040506070809L).toHex());
+    }
+
+    @Test
+    public void shouldConvertToLong() {
+        assertEquals(0, Opaque.EMPTY.toLong());
+        assertEquals(0, Opaque.ofBytes(0).toLong());
+        assertEquals(1, Opaque.ofBytes(1).toLong());
+        assertEquals(0xf1, Opaque.ofBytes(0xf1).toLong());
+        assertTrue(Opaque.ofBytes(0xf1).toLong() > 0);
+
+        assertEquals(0x0101, Opaque.ofBytes(1, 1).toLong());
+        assertEquals(0x010101, Opaque.ofBytes(1, 1, 1).toLong());
+        assertEquals(0x01010101, Opaque.ofBytes(1, 1, 1, 1).toLong());
+
+        assertEquals(0xff0101, Opaque.ofBytes(0xff, 1, 1).toLong());
+    }
+
+    @Test
+    public void shouldFailToConvertToLongWhenTooMuchData() {
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(1, 2, 3, 4, 5, 6, 7, 8, 9).toLong());
+
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(1, 2, 3, 4, 5).toInt());
+    }
+
+    @Test
+    void shouldFailWhenByteIsOutOfRange() {
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(-1000));
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(-1));
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(256));
+        assertThrows(IllegalArgumentException.class, () -> Opaque.ofBytes(25612));
+
+    }
+
+    @Test
+    public void shouldEncodeToHex() {
+        assertEquals("0102030405060708090a0b0c", Opaque.ofBytes(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12).toHex());
+
+        assertEquals("01020304..", Opaque.ofBytes(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12).toHexShort(4));
+        assertEquals("0102030405", Opaque.ofBytes(1, 2, 3, 4, 5).toHexShort(5));
+    }
+
+    @Test
+    public void shouldDecodeHex() {
+        assertEquals(Opaque.ofBytes(1), Opaque.decodeHex("01"));
+        assertEquals(Opaque.ofBytes(0xFF), Opaque.decodeHex("ff"));
+        assertEquals(Opaque.ofBytes(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), Opaque.decodeHex("0102030405060708090a0b0c"));
+    }
+
+    @Test
+    public void malformedHex() {
+        assertThrows(IllegalArgumentException.class, () -> Opaque.decodeHex("0g"));
+
+        assertThrows(IllegalArgumentException.class, () -> Opaque.decodeHex("0A"));
+
+        assertThrows(IllegalArgumentException.class, () -> Opaque.decodeHex("dupa"));
+    }
+
+    @Test
+    void fragment() {
+        Opaque text = Opaque.of("The Constrained Application Protocol (CoAP)");
+
+        assertEquals(Opaque.of("The Constr"), text.fragment(0, 10));
+        assertEquals(Opaque.of("ained Appl"), text.fragment(1, 10));
+        assertEquals(Opaque.of("AP)"), text.fragment(4, 10));
+        assertEquals(Opaque.of(")"), text.fragment(1, 42));
+        assertEquals(Opaque.EMPTY, text.fragment(1, 43));
+        assertEquals(Opaque.EMPTY, text.fragment(5, 10));
+
+        assertEquals(text, text.fragment(0, 50));
+
+        // should return same object instance
+        assertTrue(text == text.fragment(0, 50));
+    }
+
+    @Test
+    void fragmentWithMultipleFragments() {
+        Opaque text = Opaque.of("The Constrained Application Protocol (CoAP)");
+
+        assertEquals(Opaque.of("The Constrained Appl"), text.fragment(0, 10, 2));
+        assertEquals(Opaque.of("ained Application Pr"), text.fragment(1, 10, 2));
+        assertEquals(Opaque.of("AP)"), text.fragment(4, 10, 2));
+        assertEquals(Opaque.of(")"), text.fragment(1, 42, 2));
+        assertEquals(Opaque.EMPTY, text.fragment(1, 43, 2));
+        assertEquals(Opaque.EMPTY, text.fragment(5, 10, 2));
+
+        assertEquals(text, text.fragment(0, 30, 2));
+
+        // should return same object instance
+        assertSame(text, text.fragment(0, 30, 2));
+    }
+
+    @Test
+    void readFromInputStream() throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
+
+        assertSame(Opaque.EMPTY, Opaque.read(inputStream, 0));
+        assertEquals(Opaque.of("t"), Opaque.read(inputStream, 1));
+        assertEquals(Opaque.of("es"), Opaque.read(inputStream, 2));
+
+        assertThrows(EOFException.class, () -> Opaque.read(inputStream, 3));
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,49 +16,49 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.fetch;
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.iPatch;
-import static com.mbed.coap.packet.CoapRequest.observe;
-import static com.mbed.coap.packet.CoapRequest.patch;
-import static com.mbed.coap.packet.CoapRequest.post;
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.packet.Opaque.EMPTY;
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
-import static com.mbed.coap.utils.Assertions.assertEquals;
-import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static opencoap.packet.CoapRequest.fetch;
+import static opencoap.packet.CoapRequest.get;
+import static opencoap.packet.CoapRequest.iPatch;
+import static opencoap.packet.CoapRequest.observe;
+import static opencoap.packet.CoapRequest.patch;
+import static opencoap.packet.CoapRequest.post;
+import static opencoap.packet.CoapResponse.coapResponse;
+import static opencoap.packet.CoapResponse.ok;
+import static opencoap.packet.Opaque.EMPTY;
+import static opencoap.packet.Opaque.of;
+import static opencoap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
+import static opencoap.utils.Assertions.assertEquals;
+import static opencoap.utils.FutureHelpers.failedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.mbed.coap.CoapConstants;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapCodeException;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.linkformat.LinkFormat;
-import com.mbed.coap.linkformat.LinkFormatBuilder;
-import com.mbed.coap.packet.CoapOptionsBuilder;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.packet.SeparateResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.observe.ObserversManager;
-import com.mbed.coap.utils.Bytes;
-import com.mbed.coap.utils.Filter;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import opencoap.CoapConstants;
+import opencoap.client.CoapClient;
+import opencoap.exception.CoapCodeException;
+import opencoap.exception.CoapException;
+import opencoap.linkformat.LinkFormat;
+import opencoap.linkformat.LinkFormatBuilder;
+import opencoap.packet.CoapOptionsBuilder;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Code;
+import opencoap.packet.MediaTypes;
+import opencoap.packet.Opaque;
+import opencoap.packet.SeparateResponse;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.server.observe.ObserversManager;
+import opencoap.utils.Bytes;
+import opencoap.utils.Filter;
+import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

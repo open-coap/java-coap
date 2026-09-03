@@ -43,26 +43,26 @@
     </Match>
 
     <Match>
-        <Class name="com.mbed.coap.transport.stdio.OpensslProcessTransport"/>
+        <Class name="opencoap.transport.stdio.OpensslProcessTransport"/>
         <Bug pattern="COMMAND_INJECTION"/>
     </Match>
     <Match>
-        <Class name="com.mbed.coap.linkformat.LinkFormat"/>
+        <Class name="opencoap.linkformat.LinkFormat"/>
         <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
     </Match>
     <Match>
-        <Class name="com.mbed.coap.server.observe.ObserversManager"/>
+        <Class name="opencoap.server.observe.ObserversManager"/>
         <Bug pattern="WMI_WRONG_MAP_ITERATOR"/>
     </Match>
 
     <!-- coap-cli is a command line tool -->
     <Match>
-        <Class name="com.mbed.coap.cli.KeystoreUtils"/>
+        <Class name="opencoap.cli.KeystoreUtils"/>
         <Method name="loadKeystore"/>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
     </Match>
     <Match>
-        <Class name="com.mbed.coap.cli.providers.MbedtlsProvider"/>
+        <Class name="opencoap.cli.providers.MbedtlsProvider"/>
         <Method name="createUDP"/>
         <Bug pattern="PATH_TRAVERSAL_IN"/>
     </Match>

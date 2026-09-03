@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +16,28 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.put;
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
-import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static opencoap.packet.CoapRequest.put;
+import static opencoap.packet.Opaque.of;
+import static opencoap.transport.udp.DatagramSocketTransport.udp;
+import static opencoap.utils.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockOption;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.observe.ObserversManager;
-import com.mbed.coap.utils.ObservableResource;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import opencoap.client.CoapClient;
+import opencoap.exception.CoapException;
+import opencoap.packet.BlockOption;
+import opencoap.packet.BlockSize;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Code;
+import opencoap.packet.Opaque;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.server.observe.ObserversManager;
+import opencoap.utils.ObservableResource;
+import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

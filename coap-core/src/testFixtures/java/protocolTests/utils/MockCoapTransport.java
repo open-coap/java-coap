@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,18 @@
  */
 package protocolTests.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.transport.BlockingCoapTransport;
-import com.mbed.coap.transport.TransportContext;
-import com.mbed.coap.utils.AsyncQueue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import opencoap.packet.CoapPacket;
+import opencoap.transport.BlockingCoapTransport;
+import opencoap.transport.TransportContext;
+import opencoap.utils.AsyncQueue;
 
 
 public class MockCoapTransport extends BlockingCoapTransport {
