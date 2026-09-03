@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -254,6 +254,11 @@ public class LinkFormatTest {
         assertEquals("LANG-PL", LinkFormatBuilder.parse("</dd>;hreflang=LANG-PL").getHRefLang());
         assertEquals("", LinkFormatBuilder.parse("</dd>;hreflang=").getHRefLang());
         assertNull(LinkFormatBuilder.parse("</dd>").getHRefLang());
+    }
+
+    @Test
+    public void testFailParseMissingParamValue() {
+        assertThrows(ParseException.class, () -> LinkFormatBuilder.parse("</path>;sz"));
     }
 
     @Test

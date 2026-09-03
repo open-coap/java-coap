@@ -25,8 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public final class Opaque {
-    private final static String HEX_DIGIT_STRING = "0123456789abcdef";
-    private final static char[] HEX_DIGITS = HEX_DIGIT_STRING.toCharArray();
+    private static final String HEX_DIGIT_STRING = "0123456789abcdef";
+    private static final char[] HEX_DIGITS = HEX_DIGIT_STRING.toCharArray();
     private final byte[] data;
     public static final Opaque EMPTY = new Opaque(new byte[0]);
 
@@ -97,7 +97,7 @@ public final class Opaque {
 
     public static Opaque read(InputStream inputStream, int len) throws IOException {
         if (len == 0) {
-            return Opaque.EMPTY;
+            return EMPTY;
         }
         byte[] data = new byte[len];
         int totalRead = 0;
@@ -141,6 +141,7 @@ public final class Opaque {
         }
     }
 
+    @SuppressWarnings({"PMD.AssignmentInOperand"})
     private String encodeToHex(final int len) {
         final char[] retVal = new char[len * 2];
         int k = 0;
@@ -217,7 +218,7 @@ public final class Opaque {
             indexTo = data.length;
         }
         if (indexFrom > indexTo) {
-            return Opaque.EMPTY;
+            return EMPTY;
         }
         if (indexFrom == 0 && indexTo == data.length) {
             return this;

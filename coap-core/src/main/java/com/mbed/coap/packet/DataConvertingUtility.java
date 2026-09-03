@@ -46,7 +46,7 @@ public final class DataConvertingUtility {
      */
     static String[] split(String val, char ch) {
         int offset = 0;
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         int nextPos = val.indexOf(ch, offset);
 
         while (nextPos != -1) {

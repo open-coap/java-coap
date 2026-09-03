@@ -8,45 +8,40 @@
 
     <rule ref="category/java/design.xml">
         <!-- See the explanation for TooManyMethods.-->
-        <exclude name="TooManyFields" />
+        <exclude name="TooManyFields"/>
         <!-- Design is very hard to measure by numbers like this.-->
         <!-- The number and quality of dependencies might be a better indicator, -->
         <!-- and that requires a different tool.-->
-        <exclude name="TooManyMethods" />
+        <exclude name="TooManyMethods"/>
         <!-- See the explanation for TooManyMethods.-->
-        <exclude name="ExcessivePublicCount" />
+        <exclude name="ExcessivePublicCount"/>
         <!-- Needs better understanding and proper configuration-->
-        <exclude name="CyclomaticComplexity" />
+        <exclude name="CyclomaticComplexity"/>
         <!-- It's just extra effort to write and read the final keyword-->
         <exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal"/>
-        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="GodClass"/>
         <exclude name="ExcessiveImports"/>
-        <exclude name="TooManyFields"/>
-        <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="DataClass"/>
-        <exclude name="UseUtilityClass"/>
+        <exclude name="InstantiableUtilityClass"/>
         <exclude name="LawOfDemeter"/>
         <exclude name="CognitiveComplexity"/>
+        <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="AvoidUncheckedExceptionsInSignatures"/>
+        <exclude name="AvoidDeeplyNestedIfStmts"/>
+        <exclude name="ExceptionAsFlowControl"/>
+        <exclude name="SimplifyBooleanReturns"/>
+        <exclude name="SimplifyConditional"/>
         <exclude name="LoosePackageCoupling"/>
+        <exclude name="PublicMemberInNonPublicType"/>
     </rule>
 
     <rule ref="category/java/design.xml/NPathComplexity">
         <properties>
             <!-- ignore this run on methods: equals and hashCode-->
             <property name="violationSuppressXPath"
-                      value="./ancestor::ClassOrInterfaceBodyDeclaration/MethodDeclaration[@Name='equals' or @Name='hashCode']"/>
+                      value="//MethodDeclaration[@Name='equals' or @Name='hashCode']"/>
         </properties>
     </rule>
-    <rule ref="category/java/design.xml/SimplifyBooleanReturns">
-        <properties>
-            <!-- ignore this run on methods: equals-->
-            <property name="violationSuppressXPath"
-                      value="./ancestor::ClassOrInterfaceBodyDeclaration/MethodDeclaration[@Name='equals']"/>
-        </properties>
-    </rule>
-
 
     <rule ref="category/java/bestpractices.xml">
         <exclude name="GuardLogStatement"/>
@@ -55,9 +50,11 @@
         <!-- There are valid reasons for passing arrays (making it nullable for example)-->
         <exclude name="UseVarargs"/>
         <exclude name="PreserveStackTrace"/>
+        <exclude name="LiteralsFirstInComparisons"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml">
+        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <!-- Opinion, for me a getter is not a command, it's a declarative-->
@@ -73,14 +70,14 @@
         <properties>
             <!-- ignore this run on methods: equals-->
             <property name="violationSuppressXPath"
-                      value="./ancestor::ClassOrInterfaceBodyDeclaration/MethodDeclaration[@Name='equals']"/>
+                      value="//MethodDeclaration[@Name='equals']"/>
         </properties>
     </rule>
 
     <rule ref="category/java/codestyle.xml">
         <!-- Why should generics not be named properly, like all other things-->
         <!-- (well, except Windows filesystem roots)?-->
-        <exclude name="GenericsNaming"/>
+        <exclude name="TypeParameterNamingConventions"/>
         <!-- It can be long if it's the only way to make it good-->
         <exclude name="LongVariable"/>
         <!-- It can be short if it's good-->
@@ -103,12 +100,14 @@
         <exclude name="UseUnderscoresInNumericLiterals"/>
         <exclude name="TooManyStaticImports"/>
         <exclude name="FieldNamingConventions"/>
+        <!-- Good idea, lets fix when possible -->
+        <exclude name="BooleanGetMethodName"/>
     </rule>
     <rule ref="category/java/multithreading.xml">
         <exclude name="DoNotUseThreads"/>
         <exclude name="UseConcurrentHashMap"/>
-
         <exclude name="AvoidUsingVolatile"/>
+        <exclude name="AvoidSynchronizedStatement"/>
     </rule>
 
     <rule ref="category/java/performance.xml">

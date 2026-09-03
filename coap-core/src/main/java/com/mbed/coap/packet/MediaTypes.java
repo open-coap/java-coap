@@ -1,4 +1,5 @@
-/**
+/*
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,41 +24,41 @@ public class MediaTypes {
     //https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
 
     //RFC 7252
-    public final static short CT_TEXT_PLAIN = 0;
-    public final static short CT_APPLICATION_LINK__FORMAT = 40; //RFC 6690
-    public final static short CT_APPLICATION_XML = 41;
-    public final static short CT_APPLICATION_OCTET__STREAM = 42;
-    public final static short CT_APPLICATION_EXI = 47;
-    public final static short CT_APPLICATION_JSON = 50;
+    public static final short CT_TEXT_PLAIN = 0;
+    public static final short CT_APPLICATION_LINK__FORMAT = 40; //RFC 6690
+    public static final short CT_APPLICATION_XML = 41;
+    public static final short CT_APPLICATION_OCTET__STREAM = 42;
+    public static final short CT_APPLICATION_EXI = 47;
+    public static final short CT_APPLICATION_JSON = 50;
     //--- OMA LwM2M ---
-    public final static short CT_APPLICATION_LWM2M_TLV = 11542;
-    public final static short CT_APPLICATION_LWM2M_JSON = 11543;
+    public static final short CT_APPLICATION_LWM2M_TLV = 11542;
+    public static final short CT_APPLICATION_LWM2M_JSON = 11543;
     //RFC8152
-    public final static short CT_APPLICATION_CODE_ENCRYPT0 = 16;
-    public final static short CT_APPLICATION_CODE_MAC0 = 17;
-    public final static short CT_APPLICATION_CODE_SIGN1 = 18;
-    public final static short CT_APPLICATION_CODE_ENCRYPT = 96;
-    public final static short CT_APPLICATION_CODE_MAC = 97;
-    public final static short CT_APPLICATION_CODE_SIGN = 98;
-    public final static short CT_APPLICATION_CODE_KEY = 101;
-    public final static short CT_APPLICATION_CODE_KEY_SET = 102;
+    public static final short CT_APPLICATION_CODE_ENCRYPT0 = 16;
+    public static final short CT_APPLICATION_CODE_MAC0 = 17;
+    public static final short CT_APPLICATION_CODE_SIGN1 = 18;
+    public static final short CT_APPLICATION_CODE_ENCRYPT = 96;
+    public static final short CT_APPLICATION_CODE_MAC = 97;
+    public static final short CT_APPLICATION_CODE_SIGN = 98;
+    public static final short CT_APPLICATION_CODE_KEY = 101;
+    public static final short CT_APPLICATION_CODE_KEY_SET = 102;
     //RFC6902
-    public final static short CT_APPLICATION_JSON_PATCH_JSON = 51;
+    public static final short CT_APPLICATION_JSON_PATCH_JSON = 51;
     //RFC7396
-    public final static short CT_APPLICATION_MERGE_PATCH_JSON = 52;
+    public static final short CT_APPLICATION_MERGE_PATCH_JSON = 52;
     //RFC7049
-    public final static short CT_APPLICATION_CBOR = 60;
+    public static final short CT_APPLICATION_CBOR = 60;
     //RFC7390
-    public final static short CT_APPLICATION_COAP_GROUP_JSON = 256;
+    public static final short CT_APPLICATION_COAP_GROUP_JSON = 256;
     //RFC8428
-    public final static short CT_APPLICATION_SENML_JSON = 110;
-    public final static short CT_APPLICATION_SENSML_JSON = 111;
-    public final static short CT_APPLICATION_SENML_CBOR = 112;
-    public final static short CT_APPLICATION_SENSML_CBOR = 113;
-    public final static short CT_APPLICATION_SENML_EXI = 114;
-    public final static short CT_APPLICATION_SENSML_EXI = 115;
-    public final static short CT_APPLICATION_SENML_XML = 310;
-    public final static short CT_APPLICATION_SENSML_XML = 311;
+    public static final short CT_APPLICATION_SENML_JSON = 110;
+    public static final short CT_APPLICATION_SENSML_JSON = 111;
+    public static final short CT_APPLICATION_SENML_CBOR = 112;
+    public static final short CT_APPLICATION_SENSML_CBOR = 113;
+    public static final short CT_APPLICATION_SENML_EXI = 114;
+    public static final short CT_APPLICATION_SENSML_EXI = 115;
+    public static final short CT_APPLICATION_SENML_XML = 310;
+    public static final short CT_APPLICATION_SENSML_XML = 311;
 
 
     static final Map<Short, String> MEDIA_TYPE_MAP = new HashMap<>();

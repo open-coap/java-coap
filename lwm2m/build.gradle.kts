@@ -15,3 +15,17 @@ dependencies {
     testImplementation("org.hamcrest:hamcrest-all:1.3")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:4.5.2")
 }
+
+tasks {
+    // Disable PMD for this deprecated module
+    named("pmdMain").configure {
+        enabled = false
+    }
+}
+
+tasks {
+    // Disable PMD for this deprecated module
+    named("pmdMain").configure {
+        enabled = false
+    }
+}

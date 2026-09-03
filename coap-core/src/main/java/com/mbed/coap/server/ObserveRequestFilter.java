@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final AtomicLong nextToken = new AtomicLong(0);
     private final Consumer<CoapRequest> registerRelation;
-    private final static Integer INIT_OBSERVE = 0;
+    private static final Integer INIT_OBSERVE = 0;
 
     ObserveRequestFilter(Consumer<CoapRequest> registerRelation) {
         this.registerRelation = registerRelation;

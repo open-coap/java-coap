@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class RequestLoggerFilter implements Filter.SimpleFilter<CoapRequest, Coa
     }
 
     public static class Builder {
-        public final static Formatter DEFAULT_FORMATTER = (req, resp, duration) -> String.format("[%s] %s -> %s (%dms)", req.getPeerAddress(), req, resp, duration);
+        public static final Formatter DEFAULT_FORMATTER = (req, resp, duration) -> String.format("[%s] %s -> %s (%dms)", req.getPeerAddress(), req, resp, duration);
 
         private Logger logger = LoggerFactory.getLogger(RequestLoggerFilter.class);
         private Level logLevel = Level.INFO;

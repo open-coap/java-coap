@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,7 +76,7 @@ public class LinkFormat implements Serializable {
             parse(paramName, lf, val);
         } catch (ClassCastException ex) {
             throw new ParseException("Expected ptoken value (without quotes)", 0);
-        } catch (NullPointerException ex) {     //NOPMD
+        } catch (NullPointerException ex) {
             throw new ParseException("Expected value for parameter", 0);
         } catch (Exception ex) {
             throw new ParseException(ex.getMessage(), 0);

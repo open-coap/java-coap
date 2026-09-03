@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +64,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@SuppressWarnings("PMD.CouplingBetweenObjects") // it's a nature for a builder class to have many dependencies
 public final class CoapServerBuilder {
     private static final long DELAYED_TRANSACTION_TIMEOUT_MS = 120000; //2 minutes
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,14 +54,17 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Servic
     }
 
 
+    @FunctionalInterface
     interface SimpleFilter<REQ, RES> extends Filter<REQ, RES, REQ, RES> {
 
     }
 
+    @FunctionalInterface
     interface UnaryFilter<T> extends Filter<T, T, T, T> {
 
     }
 
+    @SuppressWarnings("PMD.UseDiamondOperator") // looks like PMD bug
     static <REQ, RES> SimpleFilter<REQ, RES> identity() {
         return new SimpleFilter<REQ, RES>() {
             @Override

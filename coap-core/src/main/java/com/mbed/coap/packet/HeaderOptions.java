@@ -90,7 +90,7 @@ public class HeaderOptions extends BasicHeaderOptions {
             if (observe == 0) {
                 l.add(RawOption.fromEmpty(OBSERVE));
             } else {
-                l.add(RawOption.fromUint(OBSERVE, observe.longValue()));
+                l.add(RawOption.fromUint(OBSERVE, observe));
             }
         }
         if (block1Req != null) {
@@ -100,7 +100,7 @@ public class HeaderOptions extends BasicHeaderOptions {
             l.add(new RawOption(BLOCK_2_RES, new Opaque[]{getBlock2Res().toBytes()}));
         }
         if (size2Res != null) {
-            l.add(RawOption.fromUint(SIZE_2_RES, size2Res.longValue()));
+            l.add(RawOption.fromUint(SIZE_2_RES, size2Res));
         }
         if (echo != null) {
             l.add(new RawOption(ECHO, echo));

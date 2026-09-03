@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,6 @@ public final class RegistrationManager {
     private volatile Optional<String> registrationLocation = Optional.empty();
     private volatile Duration lastRetryDelay = Duration.ZERO;
 
-    @SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
     public RegistrationManager(CoapServer server, URI registrationUri, String registrationLinks, ScheduledExecutorService scheduledExecutor,
             Duration minRetryDelay, Duration maxRetryDelay) {
 
@@ -80,7 +79,7 @@ public final class RegistrationManager {
                         .payload(registrationLinks, MediaTypes.CT_APPLICATION_LINK__FORMAT)
                 )
                 .thenAccept(resp -> {
-                    if (resp.getCode().equals(Code.C201_CREATED)) {
+                    if (resp.getCode() == Code.C201_CREATED) {
                         registrationSuccess(resp.options().getLocationPath(), resp.options().getMaxAgeValue());
                     } else {
                         registrationFailed(String.format("%s '%s'", resp.getCode().codeToString(), resp.getPayload().toUtf8String()));
@@ -107,7 +106,7 @@ public final class RegistrationManager {
     private void updateRegistration() {
         client.send(post(registrationLocation.get()))
                 .thenAccept(resp -> {
-                    if (resp.getCode().equals(Code.C201_CREATED) || resp.getCode().equals(Code.C204_CHANGED)) {
+                    if (resp.getCode() == Code.C201_CREATED || resp.getCode() == Code.C204_CHANGED) {
                         LOGGER.info("[EP:{}] Updated, lifetime: {}s", epName, resp.options().getMaxAgeValue());
                         scheduleUpdate(resp.options().getMaxAgeValue());
                     } else {

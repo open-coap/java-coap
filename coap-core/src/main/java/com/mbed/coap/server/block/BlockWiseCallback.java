@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,7 @@ final class BlockWiseCallback {
             // see: https://tools.ietf.org/html/rfc7959#section-2.5
             responseBlock = new BlockOption(responseBlock.getNr() + 1, responseBlock.getBlockSize(), origReqBlock.hasMore());
         } else {
-            responseBlock = BlockWiseCallback.nextBertBlock(responseBlock, requestPayload.size(), numberOfBertBlocks, maxBlockPayload);
+            responseBlock = nextBertBlock(responseBlock, requestPayload.size(), numberOfBertBlocks, maxBlockPayload);
         }
 
         request.options().setBlock1Req(responseBlock);

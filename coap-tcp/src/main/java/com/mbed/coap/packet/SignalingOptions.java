@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,11 @@
  */
 package com.mbed.coap.packet;
 
-import static com.mbed.coap.utils.Validations.*;
+import static com.mbed.coap.utils.Validations.assume;
 
 /**
  * Implements CoAP signaling options from draft-ietf-core-coap-tcp-tls-09.
  */
-@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class SignalingOptions {
 
     private static final byte MAX_MESSAGE_SIZE = 2;     //7.01
@@ -46,6 +45,7 @@ public class SignalingOptions {
         return signalingOptions;
     }
 
+    @SuppressWarnings({"PMD.NPathComplexity"})
     SignalingOptions parse(int type, Opaque data, Code code) {
         if (code == Code.C701_CSM && type == MAX_MESSAGE_SIZE) {
             setMaxMessageSize(data.toLong());
@@ -78,7 +78,7 @@ public class SignalingOptions {
             return Opaque.of(alternativeAddress);
         }
         if (badCsmOption != null) {
-            return Opaque.variableUInt(badCsmOption.longValue());
+            return Opaque.variableUInt(badCsmOption);
         }
         return null;
     }
@@ -89,14 +89,14 @@ public class SignalingOptions {
         }
 
         if (holdOff != null) {
-            return Opaque.variableUInt(holdOff.longValue());
+            return Opaque.variableUInt(holdOff);
         }
         return null;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(32);
+        StringBuilder sb = new StringBuilder(64);
         if (maxMessageSize != null) {
             sb.append(" MaxMsgSz:").append(maxMessageSize);
         }
@@ -107,8 +107,7 @@ public class SignalingOptions {
             sb.append(" Custody");
         }
         if (alternativeAddress != null) {
-            sb.append(" AltAdr:");
-            sb.append(alternativeAddress);
+            sb.append(" AltAdr:").append(alternativeAddress);
         }
         if (holdOff != null) {
             sb.append(" Hold-Off:").append(holdOff);

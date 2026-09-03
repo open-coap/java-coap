@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,6 @@ public final class MessageIdSupplierImpl implements MessageIdSupplier {
 
     @Override
     public int getNextMID() {
-        return 0xFFFF & (globalMid.incrementAndGet());
+        return 0xFFFF & globalMid.incrementAndGet();
     }
 }
