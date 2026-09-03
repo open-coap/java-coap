@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,24 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.packet.Opaque.decodeHex;
-import static com.mbed.coap.utils.Assertions.assertEquals;
+import static opencoap.packet.CoapResponse.coapResponse;
+import static opencoap.packet.CoapResponse.ok;
+import static opencoap.packet.Opaque.decodeHex;
+import static opencoap.utils.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.filter.EtagGeneratorFilter;
-import com.mbed.coap.transport.InMemoryCoapTransport;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import opencoap.client.CoapClient;
+import opencoap.exception.CoapException;
+import opencoap.packet.CoapRequest;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Code;
+import opencoap.packet.Opaque;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.server.filter.EtagGeneratorFilter;
+import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

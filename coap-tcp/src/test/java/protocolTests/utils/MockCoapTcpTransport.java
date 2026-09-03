@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package protocolTests.utils;
 
-import com.mbed.coap.transport.CoapTcpListener;
-import com.mbed.coap.transport.CoapTcpTransport;
+import opencoap.transport.CoapTcpListener;
+import opencoap.transport.CoapTcpTransport;
 
 public class MockCoapTcpTransport extends MockCoapTransport implements CoapTcpTransport {
     public CoapTcpListener listener;

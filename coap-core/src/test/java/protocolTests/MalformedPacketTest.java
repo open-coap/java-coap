@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,20 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
+import static opencoap.packet.CoapRequest.get;
+import static opencoap.transport.udp.DatagramSocketTransport.udp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.transport.InMemoryCoapTransport;
-import com.mbed.coap.transport.udp.DatagramSocketTransport;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import opencoap.client.CoapClient;
+import opencoap.packet.CoapResponse;
+import opencoap.packet.Opaque;
+import opencoap.server.CoapServer;
+import opencoap.server.RouterService;
+import opencoap.transport.InMemoryCoapTransport;
+import opencoap.transport.udp.DatagramSocketTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

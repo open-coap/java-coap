@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package microbenchmark;
 
-import static com.mbed.coap.utils.Bytes.opaqueOfRandom;
-import static com.mbed.coap.utils.Networks.localhost;
+import static opencoap.utils.Bytes.opaqueOfRandom;
+import static opencoap.utils.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.transport.udp.DatagramSocketTransport;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import opencoap.exception.CoapException;
+import opencoap.packet.CoapPacket;
+import opencoap.packet.Code;
+import opencoap.server.CoapServer;
+import opencoap.transport.udp.DatagramSocketTransport;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;

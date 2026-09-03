@@ -232,7 +232,7 @@ Another example, is to use auto generated `etag` for responses and validate it i
   Service<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route)
 ```
 
-All request handling filters are under package [..coap.server.filter](coap-core/src/main/java/com/mbed/coap/server/filter).
+All request handling filters are under package [opencoap.server.filter](coap-core/src/main/java/opencoap/server/filter).
 
 
 Coap command line client

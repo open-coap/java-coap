@@ -16,16 +16,16 @@
  */
 package protocolTests.utils;
 
-import com.mbed.coap.packet.BlockOption;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MessageType;
-import com.mbed.coap.packet.Method;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import opencoap.packet.BlockOption;
+import opencoap.packet.BlockSize;
+import opencoap.packet.CoapPacket;
+import opencoap.packet.Code;
+import opencoap.packet.MessageType;
+import opencoap.packet.Method;
+import opencoap.packet.Opaque;
+import opencoap.transport.TransportContext;
 
 
 public class CoapPacketBuilder {
