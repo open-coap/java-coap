@@ -16,24 +16,23 @@
  */
 package protocolTests;
 
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.transport.udp.DatagramSocketTransport.udp;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.transport.DatagramSocketTransport.udp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import opencoap.client.CoapClient;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Opaque;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
+import opencoap.core.CoapResponse;
+import opencoap.core.Opaque;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.routing.RouterService;
+import opencoap.transport.DatagramSocketTransport;
 import opencoap.transport.InMemoryCoapTransport;
-import opencoap.transport.udp.DatagramSocketTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class MalformedPacketTest {
 

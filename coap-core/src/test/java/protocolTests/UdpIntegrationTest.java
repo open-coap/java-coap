@@ -15,17 +15,17 @@
  */
 package protocolTests;
 
-import static opencoap.transport.udp.DatagramSocketTransport.udp;
-import static opencoap.utils.Networks.localhost;
+import static opencoap.transport.DatagramSocketTransport.udp;
+import static opencoap.util.Networks.localhost;
 import java.io.IOException;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.server.CoapServer;
-import opencoap.server.filter.TokenGeneratorFilter;
-import opencoap.utils.Filter;
-import opencoap.utils.Service;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.filter.TokenGeneratorFilter;
 
 public class UdpIntegrationTest extends IntegrationTestBase {
 

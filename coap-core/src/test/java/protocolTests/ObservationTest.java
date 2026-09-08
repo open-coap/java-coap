@@ -17,30 +17,29 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapRequest.observe;
-import static opencoap.packet.Opaque.EMPTY;
-import static opencoap.packet.Opaque.of;
-import static opencoap.server.observe.NotificationsReceiver.REJECT_ALL;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
-import static opencoap.transport.udp.DatagramSocketTransport.udp;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.observe;
+import static opencoap.core.Opaque.EMPTY;
+import static opencoap.core.Opaque.of;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
+import static opencoap.observe.NotificationsReceiver.REJECT_ALL;
+import static opencoap.transport.DatagramSocketTransport.udp;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.InetSocketAddress;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.packet.Opaque;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.server.observe.ObserversManager;
-import opencoap.utils.ObservableResource;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Opaque;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.observe.ObserversManager;
+import opencoap.routing.RouterService;
+import opencoap.util.ObservableResource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
-
 
 public class ObservationTest {
 

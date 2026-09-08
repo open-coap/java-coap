@@ -15,23 +15,23 @@
  */
 package protocolTests;
 
-import static opencoap.packet.CoapResponse.coapResponse;
-import static opencoap.packet.CoapResponse.ok;
-import static opencoap.packet.Opaque.decodeHex;
-import static opencoap.utils.Assertions.assertEquals;
+import static opencoap.core.CoapResponse.coapResponse;
+import static opencoap.core.CoapResponse.ok;
+import static opencoap.core.Opaque.decodeHex;
+import static opencoap.util.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.packet.Opaque;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.server.filter.EtagGeneratorFilter;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Opaque;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.filter.EtagGeneratorFilter;
+import opencoap.routing.RouterService;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -27,7 +27,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import opencoap.cli.TransportProvider;
 import opencoap.transport.CoapTcpTransport;
-import opencoap.transport.javassl.SSLSocketClientTransport;
+import opencoap.transport.SSLSocketClientTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

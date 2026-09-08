@@ -17,8 +17,8 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,18 +26,17 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.MockCoapTransport;
-
 
 public class QueueRequestsTest {
 
@@ -50,7 +49,7 @@ public class QueueRequestsTest {
         MockCoapTransport transport = new MockCoapTransport();
 
         client = CoapServer.builder().transport(transport)
-                .midSupplier(new MessageIdSupplierImpl(0))
+                .midSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(BlockSize.S_32)
                 .noDuplicateCheck()
                 .queueMaxSize(2)

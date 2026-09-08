@@ -22,12 +22,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapSerializer;
+import opencoap.codec.CoapPacket;
+import opencoap.codec.CoapSerializer;
+import opencoap.core.CoapException;
 import opencoap.transport.BlockingCoapTransport;
-import opencoap.utils.AsyncQueue;
-
+import opencoap.util.AsyncQueue;
 
 public class TransportConnectorMock extends BlockingCoapTransport {
 

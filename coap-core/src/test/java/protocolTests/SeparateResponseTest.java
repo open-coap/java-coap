@@ -17,20 +17,20 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.BlockSize.S_32;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapRequest.post;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.BlockSize.S_32;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.post;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
-import opencoap.server.messaging.RequestTagSupplier;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ public class SeparateResponseTest {
 
         client = CoapServer.builder()
                 .transport(serverTransport)
-                .midSupplier(new MessageIdSupplierImpl(0))
+                .midSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(S_32)
                 .retransmission(ofFixed(ofMillis(500)))
                 .requestTagSupplier(RequestTagSupplier.createSequential(100))

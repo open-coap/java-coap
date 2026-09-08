@@ -19,10 +19,10 @@ package opencoap.cli.providers;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import opencoap.cli.TransportProvider;
-import opencoap.packet.Opaque;
+import opencoap.core.Opaque;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
-import opencoap.transport.stdio.StreamBlockingTransport;
+import opencoap.transport.StreamBlockingTransport;
 
 public class StandardIoProvider implements TransportProvider {
 

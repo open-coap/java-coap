@@ -18,15 +18,14 @@ package protocolTests.utils;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import opencoap.packet.BlockOption;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.Code;
-import opencoap.packet.MessageType;
-import opencoap.packet.Method;
-import opencoap.packet.Opaque;
-import opencoap.transport.TransportContext;
-
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockOption;
+import opencoap.core.BlockSize;
+import opencoap.core.Code;
+import opencoap.core.MessageType;
+import opencoap.core.Method;
+import opencoap.core.Opaque;
+import opencoap.core.TransportContext;
 
 public class CoapPacketBuilder {
     public static final InetSocketAddress LOCAL_5683 = new InetSocketAddress("localhost", 5683);

@@ -20,11 +20,11 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import javax.net.SocketFactory;
 import opencoap.cli.TransportProvider;
-import opencoap.packet.Opaque;
+import opencoap.core.Opaque;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
-import opencoap.transport.javassl.SocketClientTransport;
-import opencoap.transport.udp.DatagramSocketTransport;
+import opencoap.transport.DatagramSocketTransport;
+import opencoap.transport.SocketClientTransport;
 
 public class PlainTextProvider implements TransportProvider {
     private final int bindPort;

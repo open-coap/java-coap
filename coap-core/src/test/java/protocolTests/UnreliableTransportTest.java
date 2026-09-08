@@ -17,9 +17,9 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapResponse.ok;
-import static opencoap.transmission.RetransmissionBackOff.ofExponential;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapResponse.ok;
+import static opencoap.endpoint.RetransmissionBackOff.ofExponential;
 import static opencoap.transport.InMemoryCoapTransport.createAddress;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,22 +29,21 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import opencoap.CoapConstants;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapException;
-import opencoap.exception.CoapTimeoutException;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.transmission.RetransmissionBackOff;
+import opencoap.codec.CoapPacket;
+import opencoap.core.CoapConstants;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.CoapTimeoutException;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.RetransmissionBackOff;
+import opencoap.routing.RouterService;
 import opencoap.transport.InMemoryCoapTransport;
-import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class UnreliableTransportTest {
 

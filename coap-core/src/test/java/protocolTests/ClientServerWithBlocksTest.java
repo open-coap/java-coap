@@ -17,13 +17,13 @@
 package protocolTests;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapRequest.post;
-import static opencoap.packet.CoapRequest.put;
-import static opencoap.packet.CoapResponse.coapResponse;
-import static opencoap.packet.Opaque.EMPTY;
-import static opencoap.packet.Opaque.of;
-import static opencoap.utils.Networks.localhost;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.post;
+import static opencoap.core.CoapRequest.put;
+import static opencoap.core.CoapResponse.coapResponse;
+import static opencoap.core.Opaque.EMPTY;
+import static opencoap.core.Opaque.of;
+import static opencoap.util.Networks.localhost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,25 +31,24 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapBlockException;
-import opencoap.exception.CoapException;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.packet.MediaTypes;
-import opencoap.packet.Opaque;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapBlockException;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.core.Opaque;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.routing.RouterService;
 import opencoap.transport.CoapTransport;
 import opencoap.transport.InMemoryCoapTransport;
-import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class ClientServerWithBlocksTest {
 

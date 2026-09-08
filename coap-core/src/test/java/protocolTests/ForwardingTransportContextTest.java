@@ -17,8 +17,8 @@
 package protocolTests;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapRequest.put;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.put;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.spy;
@@ -26,22 +26,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapException;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.server.observe.ObserversManager;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Service;
+import opencoap.core.TransportContext;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.observe.ObserversManager;
+import opencoap.routing.RouterService;
 import opencoap.transport.InMemoryCoapTransport;
-import opencoap.transport.TransportContext;
-import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class ForwardingTransportContextTest {
 

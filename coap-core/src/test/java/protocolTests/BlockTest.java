@@ -17,26 +17,25 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapRequest.put;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.put;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.Code;
-import opencoap.packet.MediaTypes;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
-import opencoap.server.messaging.RequestTagSupplier;
+import opencoap.core.BlockSize;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
-
 
 public class BlockTest {
     private static final InetSocketAddress SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", 5683);
@@ -51,7 +50,7 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .midSupplier(new MessageIdSupplierImpl(0))
+                .midSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(BlockSize.S_32)
                 .notificationsReceiver(notifReceiver)
                 .retransmission(ofFixed(ofMillis(500)))

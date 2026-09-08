@@ -20,15 +20,14 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-
-public final class PToken implements CharSequence, Serializable {
+final class PToken implements CharSequence, Serializable {
 
     private static final int validRangeStart = 33; //'!'
     private static final int validRangeStop = 126; //'~'
     private static final char[] nonValidInRange = {',', ';', '\\'};
     private final String val;
 
-    public PToken(String val) throws IllegalArgumentException {
+    PToken(String val) throws IllegalArgumentException {
         if (!validate(val)) {
             throw new IllegalArgumentException("Illegal character in a ptoken");
         }

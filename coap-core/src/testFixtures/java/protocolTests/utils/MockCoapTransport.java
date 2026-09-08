@@ -24,11 +24,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import opencoap.packet.CoapPacket;
+import opencoap.codec.CoapPacket;
+import opencoap.core.TransportContext;
 import opencoap.transport.BlockingCoapTransport;
-import opencoap.transport.TransportContext;
-import opencoap.utils.AsyncQueue;
-
+import opencoap.util.AsyncQueue;
 
 public class MockCoapTransport extends BlockingCoapTransport {
 

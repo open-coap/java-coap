@@ -15,7 +15,7 @@
  */
 package microbenchmark;
 
-import static opencoap.netty.CoapCodec.EMPTY_RESOLVER;
+import static opencoap.transport.CoapCodec.EMPTY_RESOLVER;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
@@ -36,11 +36,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import opencoap.netty.NettyCoapTransport;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.utils.Bytes;
+import opencoap.codec.CoapPacket;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapServer;
+import opencoap.transport.NettyCoapTransport;
+import opencoap.util.Bytes;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;

@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import opencoap.cli.providers.Pair;
-import opencoap.packet.Opaque;
+import opencoap.core.Opaque;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
 

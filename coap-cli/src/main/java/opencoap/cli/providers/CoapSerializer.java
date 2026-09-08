@@ -20,21 +20,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapTcpPacketSerializer;
+import opencoap.codec.CoapPacket;
+import opencoap.codec.CoapTcpPacketSerializer;
+import opencoap.core.CoapException;
 
 public interface CoapSerializer {
 
     CoapSerializer UDP = new CoapSerializer() {
         @Override
         public void serialize(OutputStream outputStream, CoapPacket coapPacket) {
-            opencoap.packet.CoapSerializer.serialize(coapPacket, outputStream);
+            opencoap.codec.CoapSerializer.serialize(coapPacket, outputStream);
         }
 
         @Override
         public CoapPacket deserialize(InputStream inputStream, InetSocketAddress sourceAddress) throws CoapException {
-            return opencoap.packet.CoapSerializer.deserialize(sourceAddress, inputStream);
+            return opencoap.codec.CoapSerializer.deserialize(sourceAddress, inputStream);
         }
     };
 

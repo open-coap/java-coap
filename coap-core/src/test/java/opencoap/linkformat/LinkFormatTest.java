@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Random;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import opencoap.packet.DataConvertingUtility;
+import opencoap.codec.DataConvertingUtility;
 import org.junit.jupiter.api.Test;
-
 
 public class LinkFormatTest {
 

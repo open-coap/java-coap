@@ -19,7 +19,7 @@ package opencoap.transport;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import opencoap.packet.CoapPacket;
+import opencoap.codec.CoapPacket;
 
 public interface CoapTransport {
     void start() throws IOException;

@@ -15,13 +15,13 @@
  */
 package protocolTests.utils;
 
-import static opencoap.utils.Assertions.assertEquals;
+import static opencoap.util.Assertions.assertEquals;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.SeparateResponse;
-import opencoap.server.observe.NotificationsReceiver;
+import opencoap.core.CoapResponse;
+import opencoap.core.SeparateResponse;
+import opencoap.observe.NotificationsReceiver;
 
 public class StubNotificationsReceiver implements NotificationsReceiver {
 

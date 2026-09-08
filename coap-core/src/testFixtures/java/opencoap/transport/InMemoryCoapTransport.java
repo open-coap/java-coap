@@ -16,7 +16,7 @@
  */
 package opencoap.transport;
 
-import static opencoap.utils.FutureHelpers.wrapExceptions;
+import static opencoap.util.FutureHelpers.wrapExceptions;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -26,10 +26,11 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.CoapSerializer;
-import opencoap.utils.AsyncQueue;
-import opencoap.utils.IpPortAddress;
+import opencoap.codec.CoapPacket;
+import opencoap.codec.CoapSerializer;
+import opencoap.core.TransportContext;
+import opencoap.util.AsyncQueue;
+import opencoap.util.IpPortAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

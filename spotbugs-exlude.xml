@@ -43,7 +43,7 @@
     </Match>
 
     <Match>
-        <Class name="opencoap.transport.stdio.OpensslProcessTransport"/>
+        <Class name="opencoap.transport.OpensslProcessTransport"/>
         <Bug pattern="COMMAND_INJECTION"/>
     </Match>
     <Match>
@@ -51,7 +51,7 @@
         <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
     </Match>
     <Match>
-        <Class name="opencoap.server.observe.ObserversManager"/>
+        <Class name="opencoap.observe.ObserversManager"/>
         <Bug pattern="WMI_WRONG_MAP_ITERATOR"/>
     </Match>
 
