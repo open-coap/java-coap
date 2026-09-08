@@ -15,9 +15,9 @@
  */
 package opencoap.cli.providers;
 
-import static opencoap.packet.Opaque.ofBytes;
+import static opencoap.core.Opaque.ofBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import opencoap.packet.Opaque;
+import opencoap.core.Opaque;
 import org.junit.jupiter.api.Test;
 
 class PairTest {

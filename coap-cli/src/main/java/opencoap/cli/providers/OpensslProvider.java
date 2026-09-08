@@ -30,10 +30,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
 import opencoap.cli.TransportProvider;
-import opencoap.packet.Opaque;
+import opencoap.core.Opaque;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
-import opencoap.transport.stdio.OpensslProcessTransport;
+import opencoap.transport.OpensslProcessTransport;
 
 public class OpensslProvider implements TransportProvider {
 

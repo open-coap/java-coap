@@ -16,20 +16,20 @@
  */
 package protocolTests;
 
-import static opencoap.utils.FutureHelpers.failedFuture;
+import static opencoap.util.FutureHelpers.failedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.Code;
-import opencoap.packet.MessageType;
-import opencoap.packet.Method;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
+import opencoap.codec.CoapPacket;
+import opencoap.core.CoapException;
+import opencoap.core.Code;
+import opencoap.core.MessageType;
+import opencoap.core.Method;
+import opencoap.endpoint.CoapServer;
+import opencoap.routing.RouterService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

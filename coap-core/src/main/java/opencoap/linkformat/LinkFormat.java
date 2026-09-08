@@ -16,7 +16,7 @@
  */
 package opencoap.linkformat;
 
-import static opencoap.utils.Validations.require;
+import static opencoap.util.Validations.require;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.HashMap;

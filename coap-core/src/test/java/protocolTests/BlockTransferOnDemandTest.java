@@ -16,27 +16,26 @@
  */
 package protocolTests;
 
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.packet.CoapResponse.coapResponse;
-import static opencoap.utils.Networks.localhost;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapResponse.coapResponse;
+import static opencoap.util.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapException;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.routing.RouterService;
 import opencoap.transport.InMemoryCoapTransport;
-import opencoap.utils.Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 /**
  * Block1 header option block transfer size limit tests.

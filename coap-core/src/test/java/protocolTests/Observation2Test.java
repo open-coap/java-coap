@@ -16,20 +16,19 @@
  */
 package protocolTests;
 
-import static opencoap.packet.CoapRequest.observe;
+import static opencoap.core.CoapRequest.observe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
-import opencoap.client.CoapClient;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
-
 
 public class Observation2Test {
 
@@ -45,7 +44,7 @@ public class Observation2Test {
 
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0))
+        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0))
                 .notificationsReceiver(notifReceiver)
                 .buildClient(SERVER_ADDRESS);
 

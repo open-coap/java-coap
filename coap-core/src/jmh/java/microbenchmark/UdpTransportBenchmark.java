@@ -15,8 +15,8 @@
  */
 package microbenchmark;
 
-import static opencoap.utils.Bytes.opaqueOfRandom;
-import static opencoap.utils.Networks.localhost;
+import static opencoap.util.Bytes.opaqueOfRandom;
+import static opencoap.util.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
@@ -24,11 +24,11 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapPacket;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.transport.udp.DatagramSocketTransport;
+import opencoap.codec.CoapPacket;
+import opencoap.core.CoapException;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapServer;
+import opencoap.transport.DatagramSocketTransport;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;

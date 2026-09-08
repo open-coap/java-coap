@@ -17,21 +17,20 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapException;
-import opencoap.exception.CoapTimeoutException;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.server.CoapServer;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.CoapTimeoutException;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.Test;
-
 
 public class TimeoutTest {
 

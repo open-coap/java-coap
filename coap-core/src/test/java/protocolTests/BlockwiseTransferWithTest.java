@@ -17,22 +17,21 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.put;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.CoapRequest.put;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import opencoap.client.CoapClient;
-import opencoap.packet.Code;
-import opencoap.packet.MediaTypes;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.TransportConnectorMock;
-
 
 public class BlockwiseTransferWithTest {
     private static final InetSocketAddress SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", 5683);
@@ -45,7 +44,7 @@ public class BlockwiseTransferWithTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0))
+        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0))
                 .retransmission(ofFixed(ofMillis(500)))
                 .buildClient(SERVER_ADDRESS);
     }

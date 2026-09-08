@@ -18,8 +18,8 @@ package opencoap.transport;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import opencoap.exception.CoapException;
-import opencoap.packet.CoapPacket;
+import opencoap.codec.CoapPacket;
+import opencoap.core.CoapException;
 
 public abstract class BlockingCoapTransport implements CoapTransport {
 

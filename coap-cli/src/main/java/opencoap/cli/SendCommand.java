@@ -17,26 +17,25 @@
 package opencoap.cli;
 
 import static opencoap.cli.TransportOptions.addressFromUri;
-import static opencoap.packet.CoapRequest.request;
+import static opencoap.core.CoapRequest.request;
 import java.net.URI;
 import java.util.concurrent.Callable;
-import opencoap.CoapConstants;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.MediaTypes;
-import opencoap.packet.Method;
-import opencoap.packet.Opaque;
-import opencoap.server.CoapServer;
-import opencoap.server.filter.TokenGeneratorFilter;
-import picocli.CommandLine;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapConstants;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.MediaTypes;
+import opencoap.core.Method;
+import opencoap.core.Opaque;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.filter.TokenGeneratorFilter;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
-
+import picocli.CommandLine;
 
 @Command(name = "send", mixinStandardHelpOptions = true, description = "Send CoAP requests", usageHelpAutoWidth = true)
 public class SendCommand implements Callable<Integer> {

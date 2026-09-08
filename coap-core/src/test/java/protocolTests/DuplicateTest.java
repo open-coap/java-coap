@@ -16,7 +16,7 @@
  */
 package protocolTests;
 
-import static opencoap.packet.CoapRequest.observe;
+import static opencoap.core.CoapRequest.observe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,20 +31,19 @@ import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import opencoap.client.CoapClient;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.server.observe.NotificationsReceiver;
-import opencoap.utils.Service;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.observe.NotificationsReceiver;
+import opencoap.routing.RouterService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;
 import protocolTests.utils.MockCoapTransport;
-
 
 public class DuplicateTest {
 

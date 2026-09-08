@@ -22,19 +22,18 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import javax.net.SocketFactory;
-import opencoap.client.CoapClient;
-import opencoap.packet.BlockSize;
-import opencoap.packet.CoapRequest;
-import opencoap.packet.CoapResponse;
-import opencoap.server.CoapServer;
-import opencoap.server.RouterService;
-import opencoap.server.TcpCoapServer;
-import opencoap.transport.javassl.SingleConnectionSocketServerTransport;
-import opencoap.transport.javassl.SocketClientTransport;
-import opencoap.utils.Filter;
-import opencoap.utils.Service;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.TcpCoapServer;
+import opencoap.routing.RouterService;
+import opencoap.transport.SingleConnectionSocketServerTransport;
+import opencoap.transport.SocketClientTransport;
 import org.junit.jupiter.api.Test;
-
 
 public class TcpIntegrationTest extends IntegrationTestBase {
 

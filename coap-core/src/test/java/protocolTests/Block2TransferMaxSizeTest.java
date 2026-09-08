@@ -17,20 +17,20 @@
 package protocolTests;
 
 import static java.time.Duration.ofMillis;
-import static opencoap.packet.CoapRequest.get;
-import static opencoap.transmission.RetransmissionBackOff.ofFixed;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
-import opencoap.client.CoapClient;
-import opencoap.exception.CoapBlockException;
-import opencoap.exception.CoapBlockTooLargeEntityException;
-import opencoap.packet.BlockSize;
-import opencoap.packet.Code;
-import opencoap.server.CoapServer;
-import opencoap.server.messaging.MessageIdSupplierImpl;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapBlockException;
+import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ public class Block2TransferMaxSizeTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0)).blockSize(BlockSize.S_32)
+        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0)).blockSize(BlockSize.S_32)
                 .retransmission(ofFixed(ofMillis(500)))
                 .maxIncomingBlockTransferSize(MAX_TRANSFER_SIZE)
                 .buildClient(SERVER_ADDRESS);

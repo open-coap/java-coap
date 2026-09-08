@@ -18,7 +18,7 @@ package opencoap.transport;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import opencoap.packet.CoapPacket;
+import opencoap.codec.CoapPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

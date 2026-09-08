@@ -237,7 +237,7 @@ EtagValidatorFilter filter3 = new EtagValidatorFilter();
 Service<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route);
 ```
 
-All request handling filters are under package [opencoap.server.filter](coap-core/src/main/java/opencoap/server/filter).
+All request handling filters are under package [opencoap.filter](coap-core/src/main/java/opencoap/filter).
 
 
 Coap command line client
