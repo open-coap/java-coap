@@ -5,9 +5,9 @@ import com.github.spotbugs.snom.SpotBugsTask
 plugins {
     id("java")
     id("maven-publish")
-    id("pl.allegro.tech.build.axion-release") version "1.21.3"
+    id("pl.allegro.tech.build.axion-release") version "1.21.4"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
-    id("com.github.ben-manes.versions") version "0.61.0"
+    id("com.github.ben-manes.versions") version "0.64.0"
     id("pmd")
     id("com.github.spotbugs") version "6.5.11"
     id("org.gradle.signing")

@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":coap-tcp"))
     implementation(project(":lwm2m"))
     implementation(project(":coap-mbedtls"))
-    implementation("org.slf4j:slf4j-api:2.0.18")
+    implementation("org.slf4j:slf4j-api:2.0.19")
     implementation("ch.qos.logback:logback-classic:1.6.3")
     implementation("info.picocli:picocli:4.7.7")
 

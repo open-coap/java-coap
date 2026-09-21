@@ -7,7 +7,7 @@ plugins {
 description = "coap-core"
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.18")
+    api("org.slf4j:slf4j-api:2.0.19")
 
     testFixturesApi("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testFixturesApi("org.assertj:assertj-core:3.27.7")

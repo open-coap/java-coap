@@ -6,7 +6,7 @@ description = "lwm2m"
 
 dependencies {
     api("com.google.code.gson:gson:2.14.0")
-    api("org.slf4j:slf4j-api:2.0.18")
+    api("org.slf4j:slf4j-api:2.0.19")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation("commons-io:commons-io:2.22.0")
