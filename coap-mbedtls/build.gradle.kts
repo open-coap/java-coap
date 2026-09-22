@@ -8,6 +8,7 @@ dependencies {
     api(project(":coap-core"))
     api("io.github.open-coap:kotlin-mbedtls:1.35.6")
     api("io.github.open-coap:kotlin-mbedtls-netty:1.35.6")
+    api("io.netty:netty-handler:4.2.18.Final")
 
     testImplementation(project(":coap-netty"))
 
