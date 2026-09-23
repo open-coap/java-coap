@@ -25,7 +25,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class TokenGeneratorFilterTest {
@@ -33,7 +33,7 @@ class TokenGeneratorFilterTest {
 
     @Test
     void shouldSetTokenToRequest() {
-        Service<CoapRequest, CoapResponse> service = filter.then(req -> {
+        Handler<CoapRequest, CoapResponse> service = filter.then(req -> {
             assertTrue(req.getToken().nonEmpty());
             System.out.println(req);
             return ok("ok").toFuture();
@@ -44,7 +44,7 @@ class TokenGeneratorFilterTest {
 
     @Test
     void shouldNotSetTokenToWhenAlreadyExists() {
-        Service<CoapRequest, CoapResponse> service = filter.then(req -> {
+        Handler<CoapRequest, CoapResponse> service = filter.then(req -> {
             assertEquals(Opaque.ofBytes(0x7b), req.getToken());
             return ok("ok").toFuture();
         });

@@ -20,18 +20,18 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /*
-Filter is a transformer of a 'service' that may intercept and transform inputs and outputs
+Filter is a transformer of a 'handler' that may intercept and transform inputs and outputs
  */
 @FunctionalInterface
-public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Service<IN_REQ, IN_RES>, CompletableFuture<RES>> {
+public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Handler<IN_REQ, IN_RES>, CompletableFuture<RES>> {
 
     @Override
-    CompletableFuture<RES> apply(REQ request, Service<IN_REQ, IN_RES> service);
+    CompletableFuture<RES> apply(REQ request, Handler<IN_REQ, IN_RES> handler);
 
     default <REQ2, RES2> Filter<REQ, RES, REQ2, RES2> andThen(Filter<IN_REQ, IN_RES, REQ2, RES2> next) {
-        return (request, service) -> {
-            Service<IN_REQ, IN_RES> nextService = request2 -> next.apply(request2, service);
-            return apply(request, nextService);
+        return (request, handler) -> {
+            Handler<IN_REQ, IN_RES> nextHandler = request2 -> next.apply(request2, handler);
+            return apply(request, nextHandler);
         };
     }
 
@@ -44,12 +44,12 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Servic
     }
 
     default <REQ2> Filter<REQ, RES, REQ2, IN_RES> andThenMap(Function<IN_REQ, REQ2> nextFunc) {
-        return this.andThen((request, service) ->
-                service.apply(nextFunc.apply(request))
+        return this.andThen((request, handler) ->
+                handler.apply(nextFunc.apply(request))
         );
     }
 
-    default Service<REQ, RES> then(Service<IN_REQ, IN_RES> function) {
+    default Handler<REQ, RES> then(Handler<IN_REQ, IN_RES> function) {
         return request -> apply(request, function);
     }
 
@@ -68,8 +68,8 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Servic
     static <REQ, RES> SimpleFilter<REQ, RES> identity() {
         return new SimpleFilter<REQ, RES>() {
             @Override
-            public CompletableFuture<RES> apply(REQ request, Service<REQ, RES> service) {
-                return service.apply(request);
+            public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> handler) {
+                return handler.apply(request);
             }
 
             @Override
@@ -78,14 +78,14 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Servic
             }
 
             @Override
-            public Service<REQ, RES> then(Service<REQ, RES> service) {
-                return service;
+            public Handler<REQ, RES> then(Handler<REQ, RES> handler) {
+                return handler;
             }
         };
     }
 
     static <REQ, RES, IN_REQ, IN_RES> Filter<REQ, RES, IN_REQ, IN_RES> of(Function<REQ, IN_REQ> nextFunc, Function<IN_RES, RES> respMapFunc) {
-        return (request, service) -> service
+        return (request, handler) -> handler
                 .apply(nextFunc.apply(request))
                 .thenApply(respMapFunc);
     }

@@ -30,7 +30,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class BlockWiseIncomingFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         BlockOption reqBlock = request.options().getBlock1Req();
 
         if (reqBlock == null) {

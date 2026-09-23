@@ -34,19 +34,19 @@ import opencoap.codec.CoapPacket;
 import opencoap.core.CoapException;
 import opencoap.core.Code;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;
 
 public class CoapDispatcherTest {
 
-    private final Service<CoapPacket, Boolean> sender = mock(Service.class);
-    private Service<CoapPacket, CoapPacket> observationHandler = mock(Service.class);
+    private final Handler<CoapPacket, Boolean> sender = mock(Handler.class);
+    private Handler<CoapPacket, CoapPacket> observationHandler = mock(Handler.class);
     private Function<CoapPacket, Boolean> handleResponse = mock(Function.class);
     private Function<SeparateResponse, Boolean> handleSeparateResponse = mock(Function.class);
     private CoapDispatcher udpMessaging;
-    private Service<CoapPacket, CoapPacket> inboundService = mock(Service.class);
+    private Handler<CoapPacket, CoapPacket> inboundService = mock(Handler.class);
 
 
     @BeforeEach

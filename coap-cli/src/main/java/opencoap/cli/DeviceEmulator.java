@@ -25,11 +25,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapServer;
 import opencoap.linkformat.RegistrationManager;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -75,15 +75,15 @@ public class DeviceEmulator implements Callable<Integer> {
         }
     }
 
-    protected Service<CoapRequest, CoapResponse> createRouting() {
-        Service<CoapRequest, CoapResponse> timeResource = __ -> CoapResponse.ok(Instant.now().toString()).toFuture();
+    protected Handler<CoapRequest, CoapResponse> createRouting() {
+        Handler<CoapRequest, CoapResponse> timeResource = __ -> CoapResponse.ok(Instant.now().toString()).toFuture();
 
         scheduledExecutor.scheduleAtFixedRate(() ->
                         obsManager.sendObservation("/time", timeResource),
                 30, 30, TimeUnit.SECONDS
         );
 
-        return RouterService.builder()
+        return RoutingHandler.builder()
                 .get("/3/0/1", __ -> CoapResponse.ok("Acme").toFuture())
                 .get("/3/0/2", __ -> CoapResponse.ok("Emulator").toFuture())
                 .get("/3/0/3", __ -> CoapResponse.ok("0.0.1").toFuture())

@@ -27,14 +27,14 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class EtagValidatorFilterTest {
 
     private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
     private final CoapResponse.Builder resource = ok("OK").etag(ofBytes(100)).maxAge(100);
-    private final Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> resource.toFuture());
+    private final Handler<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> resource.toFuture());
 
     @Test
     void shouldPassResponseWhenMissingEtagInRequest() {

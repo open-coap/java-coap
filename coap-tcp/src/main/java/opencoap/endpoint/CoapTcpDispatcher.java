@@ -24,7 +24,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.SignalingOptions;
 import opencoap.core.SignalingHeaderOptions;
 import opencoap.transport.CoapTcpListener;
@@ -36,13 +36,13 @@ class CoapTcpDispatcher implements CoapTcpListener {
 
     private final CapabilitiesStorage csmStorage;
     private final Capabilities ownCapability;
-    private final Service<CoapPacket, Boolean> sender;
-    private final Service<CoapRequest, CoapResponse> inboundService;
+    private final Handler<CoapPacket, Boolean> sender;
+    private final Handler<CoapRequest, CoapResponse> inboundService;
     private final Function<SeparateResponse, Boolean> outboundHandler;
     private final Function<SeparateResponse, Boolean> observationHandler;
 
-    CoapTcpDispatcher(Service<CoapPacket, Boolean> sender, CapabilitiesStorage csmStorage, Capabilities ownCapability,
-            Service<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
+    CoapTcpDispatcher(Handler<CoapPacket, Boolean> sender, CapabilitiesStorage csmStorage, Capabilities ownCapability,
+            Handler<CoapRequest, CoapResponse> inboundService, Function<SeparateResponse, Boolean> outboundHandler,
             Function<SeparateResponse, Boolean> observationHandler) {
         this.csmStorage = csmStorage;
         this.ownCapability = ownCapability;

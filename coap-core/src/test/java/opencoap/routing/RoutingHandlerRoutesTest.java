@@ -35,12 +35,12 @@ import nl.jqno.equalsverifier.Warning;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
-public class RoutingServiceTest {
+public class RoutingHandlerRoutesTest {
 
-    private Service<CoapRequest.Builder, CoapResponse> routeService = REQUEST_BUILDER_FILTER.then(RouterService.builder()
+    private Handler<CoapRequest.Builder, CoapResponse> routeHandler = REQUEST_BUILDER_FILTER.then(RoutingHandler.builder()
             .get("/test/1",
                     req -> CoapResponse.ok("Test1", TEXT_PLAIN).toFuture()
             )
@@ -74,8 +74,8 @@ public class RoutingServiceTest {
     public void shouldRouteWithExactUriPath() throws ExecutionException, InterruptedException {
 
         // when
-        CompletableFuture<CoapResponse> resp1 = routeService.apply(get("/test/1"));
-        CompletableFuture<CoapResponse> resp2 = routeService.apply(post("/test/bad-request"));
+        CompletableFuture<CoapResponse> resp1 = routeHandler.apply(get("/test/1"));
+        CompletableFuture<CoapResponse> resp2 = routeHandler.apply(post("/test/bad-request"));
 
         // then
         assertEquals(CoapResponse.ok("Test1", TEXT_PLAIN), resp1.get());
@@ -86,13 +86,13 @@ public class RoutingServiceTest {
     public void shouldReturnNotFoundWhenNoRoute() throws ExecutionException, InterruptedException {
 
         // when
-        CompletableFuture<CoapResponse> resp1 = routeService.apply(get("/test/321"));
-        CompletableFuture<CoapResponse> resp2 = routeService.apply(post("/test/1"));
-        CompletableFuture<CoapResponse> resp3 = routeService.apply(put("/test/1"));
-        CompletableFuture<CoapResponse> resp4 = routeService.apply(delete("/no"));
-        CompletableFuture<CoapResponse> resp5 = routeService.apply(fetch("/test/"));
-        CompletableFuture<CoapResponse> resp6 = routeService.apply(patch("/no"));
-        CompletableFuture<CoapResponse> resp7 = routeService.apply(iPatch("/no"));
+        CompletableFuture<CoapResponse> resp1 = routeHandler.apply(get("/test/321"));
+        CompletableFuture<CoapResponse> resp2 = routeHandler.apply(post("/test/1"));
+        CompletableFuture<CoapResponse> resp3 = routeHandler.apply(put("/test/1"));
+        CompletableFuture<CoapResponse> resp4 = routeHandler.apply(delete("/no"));
+        CompletableFuture<CoapResponse> resp5 = routeHandler.apply(fetch("/test/"));
+        CompletableFuture<CoapResponse> resp6 = routeHandler.apply(patch("/no"));
+        CompletableFuture<CoapResponse> resp7 = routeHandler.apply(iPatch("/no"));
 
         // then
         assertEquals(CoapResponse.notFound(), resp1.get());
@@ -108,9 +108,9 @@ public class RoutingServiceTest {
     public void shouldRouteWithPrefixPath() throws ExecutionException, InterruptedException {
 
         // when
-        CompletableFuture<CoapResponse> resp1 = routeService.apply(put("/path1/123"));
-        CompletableFuture<CoapResponse> resp2 = routeService.apply(put("/path1/321123"));
-        CompletableFuture<CoapResponse> resp3 = routeService.apply(delete("/test/1"));
+        CompletableFuture<CoapResponse> resp1 = routeHandler.apply(put("/path1/123"));
+        CompletableFuture<CoapResponse> resp2 = routeHandler.apply(put("/path1/321123"));
+        CompletableFuture<CoapResponse> resp3 = routeHandler.apply(delete("/test/1"));
 
         // then
         assertEquals(CoapResponse.of(Code.C204_CHANGED), resp1.get());
@@ -121,11 +121,11 @@ public class RoutingServiceTest {
     @Test
     void shouldRouteToAnyMethod() throws ExecutionException, InterruptedException {
         // when
-        CompletableFuture<CoapResponse> resp1 = routeService.apply(put("/test2"));
-        CompletableFuture<CoapResponse> resp2 = routeService.apply(post("/test2"));
-        CompletableFuture<CoapResponse> resp3 = routeService.apply(delete("/test2"));
-        CompletableFuture<CoapResponse> resp4 = routeService.apply(get("/test3/dsds"));
-        CompletableFuture<CoapResponse> resp5 = routeService.apply(delete("/test3/fsdfs"));
+        CompletableFuture<CoapResponse> resp1 = routeHandler.apply(put("/test2"));
+        CompletableFuture<CoapResponse> resp2 = routeHandler.apply(post("/test2"));
+        CompletableFuture<CoapResponse> resp3 = routeHandler.apply(delete("/test2"));
+        CompletableFuture<CoapResponse> resp4 = routeHandler.apply(get("/test3/dsds"));
+        CompletableFuture<CoapResponse> resp5 = routeHandler.apply(delete("/test3/fsdfs"));
 
         // then
         assertEquals(CoapResponse.ok("Reply to PUT"), resp1.get());
@@ -138,7 +138,7 @@ public class RoutingServiceTest {
 
     @Test
     public void equalsAndHashTest() {
-        EqualsVerifier.forClass(RouterService.RequestMatcher.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(RoutingHandler.RequestMatcher.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 
 }

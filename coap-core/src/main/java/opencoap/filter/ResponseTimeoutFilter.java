@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import opencoap.core.CoapTimeoutException;
 import opencoap.core.Filter.SimpleFilter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.util.Timer;
 
 public class ResponseTimeoutFilter<REQ, RES> implements SimpleFilter<REQ, RES> {
@@ -34,7 +34,7 @@ public class ResponseTimeoutFilter<REQ, RES> implements SimpleFilter<REQ, RES> {
     }
 
     @Override
-    public CompletableFuture<RES> apply(REQ request, Service<REQ, RES> service) {
+    public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> service) {
         CompletableFuture<RES> promise = service.apply(request);
 
         Runnable cancel = timer.schedule(timeoutResolver.apply(request), () ->

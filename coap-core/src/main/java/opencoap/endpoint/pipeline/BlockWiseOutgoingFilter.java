@@ -22,7 +22,7 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 
 public class BlockWiseOutgoingFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
@@ -36,7 +36,7 @@ public class BlockWiseOutgoingFilter implements Filter.SimpleFilter<CoapRequest,
 
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
 
         try {
             BlockWiseCallback blockCallback = new BlockWiseCallback(

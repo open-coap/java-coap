@@ -41,7 +41,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +51,7 @@ class BlockWiseOutgoingFilterTest {
     private CompletableFuture<CoapResponse.Builder> promise;
     private CoapRequest lastReq;
     private BlockWiseOutgoingFilter filter = new BlockWiseOutgoingFilter(__ -> capability, 100_000);
-    private Service<CoapRequest, CoapResponse> service = filter.then(this::newPromise);
+    private Handler<CoapRequest, CoapResponse> service = filter.then(this::newPromise);
 
     private CompletableFuture<CoapResponse> newPromise(CoapRequest req) {
         promise = new CompletableFuture<>();

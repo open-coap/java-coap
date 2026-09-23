@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -35,7 +35,7 @@ public class RequestLoggerFilter implements Filter.SimpleFilter<CoapRequest, Coa
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest req, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest req, Handler<CoapRequest, CoapResponse> service) {
         long startTime = System.currentTimeMillis();
         return service.apply(req).thenApply((resp) -> {
             long endTime = System.currentTimeMillis();

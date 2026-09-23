@@ -31,12 +31,12 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ public class ForwardingTransportContextTest {
     @BeforeEach
     public void setUp() throws IOException {
         server = CoapServer.builder()
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", coapResourceTest)
                         .put("/test", coapResourceTest)
                         .get("/obs", observersManager.then(__ -> CoapResponse.ok("A").toFuture()))
@@ -110,7 +110,7 @@ public class ForwardingTransportContextTest {
     }
 
 
-    private static class CoapResourceTest implements Service<CoapRequest, CoapResponse> {
+    private static class CoapResourceTest implements Handler<CoapRequest, CoapResponse> {
 
         TransportContext transportContext;
 

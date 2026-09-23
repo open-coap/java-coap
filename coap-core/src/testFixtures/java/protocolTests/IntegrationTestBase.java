@@ -51,13 +51,13 @@ import opencoap.core.ContentFormat;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.linkformat.LinkFormat;
 import opencoap.linkformat.LinkFormatBuilder;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.util.Bytes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +80,7 @@ abstract class IntegrationTestBase {
         observersManager = new ObserversManager();
         slowResourcePromise = new CompletableFuture<>();
         TestResource testResource = new TestResource();
-        final Service<CoapRequest, CoapResponse> route = RouterService.builder()
+        final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
                 .get("/", __ -> CoapResponse.ok("Shortest path").toFuture())
                 .get("/test/1", req ->
                         ok("Dziala", ContentFormat.TEXT_PLAIN).toFuture()
@@ -121,7 +121,7 @@ abstract class IntegrationTestBase {
 
     abstract protected CoapClient buildClient(int port) throws IOException;
 
-    abstract protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) throws IOException;
+    abstract protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException;
 
     @AfterEach
     public void tearDown() throws IOException {
@@ -328,14 +328,14 @@ abstract class IntegrationTestBase {
     }
 
 
-    static CompletableFuture<CoapResponse> routeFilter(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    static CompletableFuture<CoapResponse> routeFilter(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         if ("/route-filter".equals(request.options().getUriPath())) {
             return CoapResponse.ok("Intercepted").toFuture();
         }
         return service.apply(request);
     }
 
-    private static class TestResource implements Service<CoapRequest, CoapResponse> {
+    private static class TestResource implements Handler<CoapRequest, CoapResponse> {
 
         private Opaque payload = of("Dziala2");
         private int contentType = ContentFormat.TEXT_PLAIN;

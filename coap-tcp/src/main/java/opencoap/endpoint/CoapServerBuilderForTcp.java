@@ -31,7 +31,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.pipeline.BlockWiseIncomingFilter;
 import opencoap.endpoint.pipeline.BlockWiseNotificationFilter;
 import opencoap.endpoint.pipeline.BlockWiseOutgoingFilter;
@@ -45,13 +45,13 @@ import opencoap.observe.NotificationsReceiver;
 import opencoap.observe.ObservationHandler;
 import opencoap.observe.ObservationsStore;
 import opencoap.observe.ObserveRequestFilter;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.LoggingCoapTransport;
 
 public class CoapServerBuilderForTcp {
     private CoapTcpTransport coapTransport;
-    private Service<CoapRequest, CoapResponse> route = RouterService.NOT_FOUND_SERVICE;
+    private Handler<CoapRequest, CoapResponse> route = RoutingHandler.NOT_FOUND;
     private int maxMessageSize = 1152; //default
     private CapabilitiesStorage csmStorage;
     private int maxIncomingBlockTransferSize = 10_000_000; //default to 10 MB
@@ -82,12 +82,12 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
-    public CoapServerBuilderForTcp route(Service<CoapRequest, CoapResponse> route) {
+    public CoapServerBuilderForTcp route(Handler<CoapRequest, CoapResponse> route) {
         this.route = route;
         return this;
     }
 
-    public CoapServerBuilderForTcp route(RouterService.RouteBuilder routeBuilder) {
+    public CoapServerBuilderForTcp route(RoutingHandler.RouteBuilder routeBuilder) {
         return route(routeBuilder.build());
     }
 
@@ -155,17 +155,17 @@ public class CoapServerBuilderForTcp {
     }
 
     public CoapServer build() {
-        Service<CoapPacket, Boolean> sender = (isTransportLoggingEnabled ? LoggingCoapTransport.wrap(coapTransport) : coapTransport)::sendPacket;
+        Handler<CoapPacket, Boolean> sender = (isTransportLoggingEnabled ? LoggingCoapTransport.wrap(coapTransport) : coapTransport)::sendPacket;
 
         // NOTIFICATION
-        Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
+        Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThenMap(CoapTcpPacketConverter::toCoapPacket)
                 .andThen(new PayloadSizeVerifier<>(csmStorage))
                 .then(sender);
 
         // INBOUND
-        Service<CoapRequest, CoapResponse> inboundService = new RescueFilter()
+        Handler<CoapRequest, CoapResponse> inboundService = new RescueFilter()
                 .andThenIf(hasRoute(), new CriticalOptionVerifier(recognizedCustomOptions))
                 .andThenIf(hasRoute(), new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(routeFilter)
@@ -173,7 +173,7 @@ public class CoapServerBuilderForTcp {
 
         // OUTBOUND
         TcpExchangeFilter exchangeFilter = new TcpExchangeFilter();
-        Service<CoapRequest, CoapResponse> outboundService = outboundFilter
+        Handler<CoapRequest, CoapResponse> outboundService = outboundFilter
                 .andThen(new ObserveRequestFilter(observationsStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
@@ -199,6 +199,6 @@ public class CoapServerBuilderForTcp {
     }
 
     private boolean hasRoute() {
-        return !Objects.equals(route, RouterService.NOT_FOUND_SERVICE);
+        return !Objects.equals(route, RoutingHandler.NOT_FOUND);
     }
 }

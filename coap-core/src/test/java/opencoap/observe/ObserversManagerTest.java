@@ -40,7 +40,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.util.IpPortAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 
 class ObserversManagerTest {
 
-    private Service<SeparateResponse, Boolean> outboundObservation = mock(Service.class);
+    private Handler<SeparateResponse, Boolean> outboundObservation = mock(Handler.class);
     private ObserversManager obsMgr = new ObserversManager();
     private static final InetSocketAddress PEER_1 = IpPortAddress.local(15683).toInetSocketAddress();
     private static final InetSocketAddress PEER_2 = IpPortAddress.local(25683).toInetSocketAddress();
@@ -198,7 +198,7 @@ class ObserversManagerTest {
         assertEquals(1, obsMgr.size());
     }
 
-    private static final Service<CoapRequest, CoapResponse> okResource = req -> {
+    private static final Handler<CoapRequest, CoapResponse> okResource = req -> {
         switch (req.options().getAccept().intValue()) {
             case TEXT_PLAIN:
                 return ok("OK", TEXT_PLAIN).toFuture();

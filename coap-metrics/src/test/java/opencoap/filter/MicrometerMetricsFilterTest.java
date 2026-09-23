@@ -30,15 +30,15 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.concurrent.ExecutionException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MicrometerMetricsFilterTest {
     private final MeterRegistry registry = new SimpleMeterRegistry();
     private final MicrometerMetricsFilter filter = MicrometerMetricsFilter.builder().registry(registry).build();
-    private final Service<CoapRequest.Builder, CoapResponse> okService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> ok("OK").toFuture());
-    private final Service<CoapRequest.Builder, CoapResponse> failingService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> failedFuture(new Exception("error message")));
+    private final Handler<CoapRequest.Builder, CoapResponse> okService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> ok("OK").toFuture());
+    private final Handler<CoapRequest.Builder, CoapResponse> failingService = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> failedFuture(new Exception("error message")));
 
     @BeforeEach
     public void beforeEach() {
@@ -109,7 +109,7 @@ class MicrometerMetricsFilterTest {
                 .registry(registry)
                 .build();
 
-        Service<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.andThen(filterWithRoute).then(__ -> ok("OK").toFuture());
+        Handler<CoapRequest.Builder, CoapResponse> svc = REQUEST_BUILDER_FILTER.andThen(filterWithRoute).then(__ -> ok("OK").toFuture());
         svc.apply(get("/test/1")).join();
         svc.apply(get("/test/2")).join();
         svc.apply(get("/hello")).join();

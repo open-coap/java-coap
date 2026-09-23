@@ -26,11 +26,11 @@ import opencoap.core.BlockSize;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.TcpCoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.SingleConnectionSocketServerTransport;
 import opencoap.transport.SocketClientTransport;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 public class TcpIntegrationTest extends IntegrationTestBase {
 
     @Override
-    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) throws IOException {
+    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException {
         return TcpCoapServer.builder()
                 .transport(new SingleConnectionSocketServerTransport(port))
                 .blockSize(BlockSize.S_1024_BERT)
@@ -75,7 +75,7 @@ public class TcpIntegrationTest extends IntegrationTestBase {
 
         server.stop();
 
-        server = buildServer(port, Filter.identity(), RouterService.builder().build()).start();
+        server = buildServer(port, Filter.identity(), RoutingHandler.builder().build()).start();
 
         await().ignoreExceptions().untilAsserted(() ->
                 assertTrue(client.ping().get())

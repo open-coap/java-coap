@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class NettyTest {
         server = CoapServer.builder()
                 .transport(new NettyCoapTransport(createBootstrap(0), EMPTY_RESOLVER))
                 .executor(eventLoopGroup)
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK").toFuture())
                         .post("/echo", req -> ok(req.getPayload()).toFuture())
                 )

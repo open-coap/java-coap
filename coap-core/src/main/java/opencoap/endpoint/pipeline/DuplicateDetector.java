@@ -21,7 +21,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapRequestId;
 import opencoap.endpoint.DuplicatedCoapMessageCallback;
 import opencoap.endpoint.PutOnlyMap;
@@ -42,7 +42,7 @@ public class DuplicateDetector implements Filter.SimpleFilter<CoapPacket, CoapPa
     }
 
     @Override
-    public CompletableFuture<CoapPacket> apply(CoapPacket request, Service<CoapPacket, CoapPacket> service) {
+    public CompletableFuture<CoapPacket> apply(CoapPacket request, Handler<CoapPacket, CoapPacket> service) {
         CoapPacket duplResp = getResponseForRepeatedRequest(request);
 
         if (duplResp != null) {

@@ -22,12 +22,12 @@ import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
 public class EtagValidatorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         return service
                 .apply(request)
                 .thenApply(resp -> {

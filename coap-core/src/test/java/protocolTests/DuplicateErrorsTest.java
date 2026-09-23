@@ -29,7 +29,7 @@ import opencoap.core.Code;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ public class DuplicateErrorsTest {
         MockCoapTransport serverTransport = new MockCoapTransport();
         client = serverTransport.client();
         server = CoapServer.builder().transport(serverTransport)
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/failed", __ -> failedFuture(new NullPointerException("failed")))
                 )
                 .duplicatedCoapMessageCallback(

@@ -23,10 +23,10 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.observe.ObserversManager;
 
-public class ObservableResource implements Service<CoapRequest, CoapResponse> {
+public class ObservableResource implements Handler<CoapRequest, CoapResponse> {
 
     private final ObserversManager observersManager;
     private CoapResponse current;

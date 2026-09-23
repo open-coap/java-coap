@@ -37,7 +37,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.pipeline.BlockWiseIncomingFilter;
 import opencoap.endpoint.pipeline.BlockWiseNotificationFilter;
 import opencoap.endpoint.pipeline.BlockWiseOutgoingFilter;
@@ -57,7 +57,7 @@ import opencoap.observe.ObservationHandler;
 import opencoap.observe.ObservationMapper;
 import opencoap.observe.ObservationsStore;
 import opencoap.observe.ObserveRequestFilter;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.CoapTransport;
 import opencoap.transport.LoggingCoapTransport;
 import opencoap.util.Timer;
@@ -77,7 +77,7 @@ public final class CoapServerBuilder {
     private int maxIncomingBlockTransferSize = 10_000_000; //default to 10 MB
     private BlockSize blockSize;
     private int maxMessageSize = 1152; //default
-    private Service<CoapRequest, CoapResponse> route = RouterService.NOT_FOUND_SERVICE;
+    private Handler<CoapRequest, CoapResponse> route = RoutingHandler.NOT_FOUND;
     private int maxQueueSize = 100;
     private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> routeFilter = Filter.identity();
@@ -108,12 +108,12 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder route(Service<CoapRequest, CoapResponse> route) {
+    public CoapServerBuilder route(Handler<CoapRequest, CoapResponse> route) {
         this.route = requireNonNull(route);
         return this;
     }
 
-    public CoapServerBuilder route(RouterService.RouteBuilder routeBuilder) {
+    public CoapServerBuilder route(RoutingHandler.RouteBuilder routeBuilder) {
         return route(routeBuilder.build());
     }
 
@@ -248,14 +248,14 @@ public final class CoapServerBuilder {
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
         Timer timer = toTimer(effectiveExecutorService);
 
-        Service<CoapPacket, Boolean> sender = coapTransport::sendPacket;
+        Handler<CoapPacket, Boolean> sender = coapTransport::sendPacket;
 
         // OUTBOUND
         ExchangeFilter exchangeFilter = new ExchangeFilter();
         RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(timer, retransmissionBackOff, CoapPacket::isConfirmable);
         PiggybackedExchangeFilter piggybackedExchangeFilter = new PiggybackedExchangeFilter();
 
-        Service<CoapRequest, CoapResponse> outboundService = outboundFilter
+        Handler<CoapRequest, CoapResponse> outboundService = outboundFilter
                 .andThen(new ObserveRequestFilter(observationStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
@@ -270,7 +270,7 @@ public final class CoapServerBuilder {
 
 
         // OBSERVATION
-        Service<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
+        Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(Filter.of(CoapPacket::from, CoapPacket::isAck))
@@ -282,7 +282,7 @@ public final class CoapServerBuilder {
         // INBOUND
         PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
-        Service<CoapPacket, CoapPacket> inboundService = duplicateDetector
+        Handler<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
@@ -292,7 +292,7 @@ public final class CoapServerBuilder {
                 .then(route);
 
 
-        Service<CoapPacket, CoapPacket> inboundObservation = duplicateDetector
+        Handler<CoapPacket, CoapPacket> inboundObservation = duplicateDetector
                 .andThen(new ObservationMapper())
                 .then(new ObservationHandler(notificationsReceiver, observationStore));
 

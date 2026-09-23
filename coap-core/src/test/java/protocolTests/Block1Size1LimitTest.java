@@ -34,7 +34,7 @@ import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ public class Block1Size1LimitTest {
     public void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(udp())
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test/1", __ -> CoapResponse.ok("alive").toFuture())
                         .put("/test/1", __ -> coapResponse(Code.C204_CHANGED).toFuture())
                 )

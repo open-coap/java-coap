@@ -42,7 +42,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.SignalingHeaderOptions;
 import opencoap.core.SignalingOptions;
 import org.junit.jupiter.api.AfterEach;
@@ -53,8 +53,8 @@ import protocolTests.utils.CoapPacketBuilder;
 
 class CoapTcpDispatcherTest {
 
-    private Service<CoapPacket, Boolean> sender = Mockito.mock(Service.class);
-    private Service<CoapRequest, CoapResponse> inboundService = Mockito.mock(Service.class);
+    private Handler<CoapPacket, Boolean> sender = Mockito.mock(Handler.class);
+    private Handler<CoapRequest, CoapResponse> inboundService = Mockito.mock(Handler.class);
     private Function<SeparateResponse, Boolean> outboundHandler = Mockito.mock(Function.class);
     private Function<SeparateResponse, Boolean> observationHandler = Mockito.mock(Function.class);
     private CapabilitiesStorage csmStorage = new HashMapCapabilitiesStorage();

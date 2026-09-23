@@ -27,12 +27,12 @@ import static opencoap.util.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class MaxAllowedPayloadFilterTest {
 
-    private final Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(new MaxAllowedPayloadFilter(50, "too much"))
+    private final Handler<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(new MaxAllowedPayloadFilter(50, "too much"))
             .then(coapRequest -> completedFuture(of(C201_CREATED)));
 
     @Test

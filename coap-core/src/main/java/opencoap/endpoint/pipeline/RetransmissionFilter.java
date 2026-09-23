@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import opencoap.core.CoapTimeoutException;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.util.Timer;
 
@@ -40,7 +40,7 @@ public final class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter
     }
 
     @Override
-    public CompletableFuture<RES> apply(REQ request, Service<REQ, RES> service) {
+    public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> service) {
         CompletableFuture<RES> promise = service.apply(request);
 
         if (!doRetransmit.test(request)) {

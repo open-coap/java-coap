@@ -43,7 +43,7 @@ import opencoap.core.CoapException;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.CoapServerGroup;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -86,7 +86,7 @@ public class MultithreadedMbedtlsNettyTest {
         Set<String> usedThreads = new HashSet<>();
         CoapServerGroup server = CoapServer.builder()
                 .transport(() -> new NettyCoapTransport(serverBootstrap, EMPTY_RESOLVER))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/currentThread", req -> supplyAsync(() -> ok(currentThread().getName()).build(), eventLoopGroup))
                 )
                 .buildGroup(threads)

@@ -27,7 +27,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
@@ -37,7 +37,7 @@ class ObservationHandlerTest {
     private final StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
     private final ObservationsStore obsMap = ObservationsStore.inMemory();
     private final ObservationHandler obs = new ObservationHandler(notifReceiver, obsMap);
-    private final Service<CoapRequest, CoapResponse> service = mock(Service.class);
+    private final Handler<CoapRequest, CoapResponse> service = mock(Handler.class);
 
 
     @BeforeEach

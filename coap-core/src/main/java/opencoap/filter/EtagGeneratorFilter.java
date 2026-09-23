@@ -24,7 +24,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
 public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
 
@@ -37,7 +37,7 @@ public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapReques
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         return service
                 .apply(request)
                 .thenApply(this::updateEtag);

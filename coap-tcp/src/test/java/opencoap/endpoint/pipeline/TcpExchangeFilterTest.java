@@ -36,12 +36,12 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class TcpExchangeFilterTest {
     private TcpExchangeFilter exchange = new TcpExchangeFilter();
-    private final Service<CoapRequest, Boolean> sender = __ -> completedFuture(true);
+    private final Handler<CoapRequest, Boolean> sender = __ -> completedFuture(true);
 
     private CompletableFuture<CoapResponse> resp;
     private CompletableFuture<CoapResponse> resp2;

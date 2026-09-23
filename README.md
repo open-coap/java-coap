@@ -176,8 +176,8 @@ server = CoapServer.builder()
         // configure with plain text UDP transport, listening on port 5683
         .transport(new DatagramSocketTransport(5683))
         // define routing
-        // (note that each resource function is a `Service` type and can be decorated/transformed with `Filter`)
-        .route(RouterService.builder()
+        // (note that each resource function is a `Handler` type and can be decorated/transformed with `Filter`)
+        .route(RoutingHandler.builder()
                 .get("/.well-known/core", req ->
                         CoapResponse.ok("</sensors/temperature>", ContentFormat.APPLICATION_LINK_FORMAT).toFuture()
                 )
@@ -196,9 +196,9 @@ observersManager.init(server);
 server.start();
 ```
 
-### Services and Filters
+### Handlers and Filters
 
-All requests are handled by implementing `Service<REQ, RES>` interface, which is a simple function:
+All requests are handled by implementing `Handler<REQ, RES>` interface, which is a simple function:
 
 ```java
 (REQ) -> CompletableFuture<RES>
@@ -207,25 +207,25 @@ All requests are handled by implementing `Service<REQ, RES>` interface, which is
 Intercepting is achieved by implementing `Filter` interface, which is again a simple function:
 
 ```java
-(REQ, Service<IN_REQ, IN_RES>) -> CompletableFuture<RES>
+(REQ, Handler<IN_REQ, IN_RES>) -> CompletableFuture<RES>
 ```
 
-Filter interface has a set of helper functions to compose with another `Filter` and `Service`.
+Filter interface has a set of helper functions to compose with another `Filter` and `Handler`.
 Together it creates a pipeline of request handling functions.
 
 It is following "server as a function" design concept. It is a very simple, flexible and testable way to model data processing in a pipeline.
 It is best described in this white paper: [Your Server as a Function](https://monkey.org/~marius/funsrv.pdf), and has a great implementation in [Finagle](https://twitter.github.io/finagle) project.
 
-#### Decorating services with filters
+#### Decorating handlers with filters
 
-Every `Service` implementation can be decorated with `Filter`. It can be used to implement any kind of authorisation, authentication, validation, rate limitations etc.
+Every `Handler` implementation can be decorated with `Filter`. It can be used to implement any kind of authorisation, authentication, validation, rate limitations etc.
 
 For example, if we want to limit allowed payload size, it could be done:
 
 ```java
 MaxAllowedPayloadFilter filter = new MaxAllowedPayloadFilter(100, "too big");
 
-Service<CoapRequest, CoapResponse> filteredRoute = filter.then(route);
+Handler<CoapRequest, CoapResponse> filteredRoute = filter.then(route);
 ```
 
 Another example, is to use auto generated `etag` for responses and validate it in requests:
@@ -234,7 +234,7 @@ Another example, is to use auto generated `etag` for responses and validate it i
 EtagGeneratorFilter filter2 = EtagGeneratorFilter.PAYLOAD_HASHING;
 EtagValidatorFilter filter3 = new EtagValidatorFilter();
 
-Service<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route);
+Handler<CoapRequest, CoapResponse> filteredRoute = filter3.andThen(filter2).then(route);
 ```
 
 All request handling filters are under package [opencoap.filter](coap-core/src/main/java/opencoap/filter).

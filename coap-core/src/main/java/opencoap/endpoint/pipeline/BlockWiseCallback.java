@@ -29,7 +29,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +45,10 @@ final class BlockWiseCallback {
     private final int numberOfBertBlocks;
     private final Capabilities csm;
     private final int maxIncomingBlockTransferSize;
-    private final Service<CoapRequest, CoapResponse> sendService;
+    private final Handler<CoapRequest, CoapResponse> sendService;
 
 
-    BlockWiseCallback(Service<CoapRequest, CoapResponse> sendService, Capabilities csm, CoapRequest request, int maxIncomingBlockTransferSize) throws CoapException {
+    BlockWiseCallback(Handler<CoapRequest, CoapResponse> sendService, Capabilities csm, CoapRequest request, int maxIncomingBlockTransferSize) throws CoapException {
         this.request = request;
         this.requestPayload = request.getPayload();
         this.csm = csm;
@@ -70,7 +70,7 @@ final class BlockWiseCallback {
         }
     }
 
-    BlockWiseCallback(Service<CoapRequest, CoapResponse> sendService, Capabilities csm, CoapRequest.Builder request, int maxIncomingBlockTransferSize) throws CoapException {
+    BlockWiseCallback(Handler<CoapRequest, CoapResponse> sendService, Capabilities csm, CoapRequest.Builder request, int maxIncomingBlockTransferSize) throws CoapException {
         this(sendService, csm, request.build(), maxIncomingBlockTransferSize);
     }
 

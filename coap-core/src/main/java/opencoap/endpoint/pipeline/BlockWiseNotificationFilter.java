@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import opencoap.endpoint.CapabilitiesResolver;
 
@@ -32,7 +32,7 @@ public class BlockWiseNotificationFilter implements Filter.SimpleFilter<Separate
     }
 
     @Override
-    public CompletableFuture<Boolean> apply(SeparateResponse blockObs, Service<SeparateResponse, Boolean> service) {
+    public CompletableFuture<Boolean> apply(SeparateResponse blockObs, Handler<SeparateResponse, Boolean> service) {
         SeparateResponse obs = blockObs;
         Capabilities csm = capabilities.getOrDefault(obs.getPeerAddress());
         if (csm.useBlockTransfer(obs.getPayload())) {

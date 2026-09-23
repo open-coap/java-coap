@@ -30,12 +30,12 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import opencoap.endpoint.HashMapCapabilitiesStorage;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.TcpCoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;
@@ -48,14 +48,14 @@ public class CoapServerBlocksTest {
     private MockCoapTransport.MockClient client;
     private HashMapCapabilitiesStorage capabilities = new HashMapCapabilitiesStorage();
 
-    private Service<CoapRequest, CoapResponse> blockResource = null;
+    private Handler<CoapRequest, CoapResponse> blockResource = null;
 
-    private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
+    private final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
             .get("/block", req -> blockResource.apply(req))
             .put("/block", req -> blockResource.apply(req))
             .build();
 
-    private final Service<CoapRequest, CoapResponse> alwaysFailService = request -> {
+    private final Handler<CoapRequest, CoapResponse> alwaysFailService = request -> {
         fail("Should not receive exchange");
         return null;
     };
@@ -292,7 +292,7 @@ public class CoapServerBlocksTest {
         return newPayload;
     }
 
-    private Service<CoapRequest, CoapResponse> newResource(final String payload) {
+    private Handler<CoapRequest, CoapResponse> newResource(final String payload) {
         return req -> CoapResponse.ok(payload).toFuture();
     }
 

@@ -22,22 +22,22 @@ import java.util.function.Function;
 import opencoap.codec.CoapPacket;
 import opencoap.core.MessageType;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class CoapDispatcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoapDispatcher.class);
-    private final Service<CoapPacket, Boolean> sender;
+    private final Handler<CoapPacket, Boolean> sender;
 
-    private final Service<CoapPacket, CoapPacket> observationHandler;
-    private final Service<CoapPacket, CoapPacket> inboundService;
+    private final Handler<CoapPacket, CoapPacket> observationHandler;
+    private final Handler<CoapPacket, CoapPacket> inboundService;
     private final Function<CoapPacket, Boolean> handleResponse;
     private final Function<SeparateResponse, Boolean> handleSeparateResponse;
 
-    CoapDispatcher(Service<CoapPacket, Boolean> sender,
-            Service<CoapPacket, CoapPacket> observationHandler, Service<CoapPacket, CoapPacket> inboundService,
+    CoapDispatcher(Handler<CoapPacket, Boolean> sender,
+            Handler<CoapPacket, CoapPacket> observationHandler, Handler<CoapPacket, CoapPacket> inboundService,
             Function<CoapPacket, Boolean> handleResponse, Function<SeparateResponse, Boolean> handleSeparateResponse) {
 
         this.sender = sender;

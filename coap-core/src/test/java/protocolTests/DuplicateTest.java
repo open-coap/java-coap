@@ -34,11 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.observe.NotificationsReceiver;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class DuplicateTest {
     private final CompletableFuture<CoapResponse> delayResource = new CompletableFuture<>();
     private final NotificationsReceiver notifReceiver = mock(NotificationsReceiver.class);
 
-    private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
+    private final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
             .put("/test", req ->
                     CoapResponse.ok("dupa").toFuture()
             )

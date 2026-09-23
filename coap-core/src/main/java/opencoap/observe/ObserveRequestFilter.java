@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
 public class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
     private final AtomicLong nextToken = new AtomicLong(0);
@@ -33,7 +33,7 @@ public class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, Co
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest req, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest req, Handler<CoapRequest, CoapResponse> service) {
         if (!INIT_OBSERVE.equals(req.options().getObserve())) {
             return service.apply(req);
         }

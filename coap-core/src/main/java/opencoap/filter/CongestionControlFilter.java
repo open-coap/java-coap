@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
 public class CongestionControlFilter<DEST, REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
     private final int maxWaitingRequests;
@@ -35,7 +35,7 @@ public class CongestionControlFilter<DEST, REQ, RES> implements Filter.SimpleFil
     }
 
     @Override
-    public CompletableFuture<RES> apply(REQ request, Service<REQ, RES> service) {
+    public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> service) {
         DEST dest = destinationFunc.apply(request);
 
         CompletableFuture<RES> respFuture = add(dest, () -> service.apply(request));

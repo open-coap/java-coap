@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,7 +43,7 @@ import protocolTests.utils.CoapPacketBuilder;
 
 class PiggybackedExchangeFilterTest {
     private final PiggybackedExchangeFilter transactionFilter = new PiggybackedExchangeFilter();
-    private final Service<CoapPacket, Boolean> sendService = Mockito.mock(Service.class);
+    private final Handler<CoapPacket, Boolean> sendService = Mockito.mock(Handler.class);
     private final Function<CoapPacketBuilder, CompletableFuture<CoapPacket>> service = transactionFilter
             .then(sendService)
             .compose(CoapPacketBuilder::build);

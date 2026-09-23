@@ -20,10 +20,10 @@ import static opencoap.transport.DtlsTransportContext.DTLS_SESSION_SUSPENSION_HI
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 
-public class DtlsSessionSuspensionService implements Service<CoapRequest, CoapResponse> {
+public class DtlsSessionSuspensionHandler implements Handler<CoapRequest, CoapResponse> {
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request) {
         if (!request.getTransContext(NON_CONFIRMABLE)) {

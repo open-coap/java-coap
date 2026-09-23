@@ -35,7 +35,7 @@ import opencoap.endpoint.CoapServer;
 import opencoap.filter.TokenGeneratorFilter;
 import opencoap.observe.HashMapObservationsStore;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.DatagramSocketTransport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,8 +68,8 @@ public class UsageTest {
                 // configure with plain text UDP transport, listening on port 5683
                 .transport(new DatagramSocketTransport(5683))
                 // define routing
-                // (note that each resource function is a `Service` type and can be decorated/transformed with `Filter`)
-                .route(RouterService.builder()
+                // (note that each resource function is a `Handler` type and can be decorated/transformed with `Filter`)
+                .route(RoutingHandler.builder()
                         .get("/.well-known/core", req ->
                                 CoapResponse.ok("</sensors/temperature>", ContentFormat.APPLICATION_LINK_FORMAT).toFuture()
                         )

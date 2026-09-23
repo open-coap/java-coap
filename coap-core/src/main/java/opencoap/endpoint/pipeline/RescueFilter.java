@@ -22,7 +22,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public class RescueFilter implements Filter.SimpleFilter<CoapRequest, CoapRespon
     private static final Logger LOGGER = LoggerFactory.getLogger(RescueFilter.class);
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         try {
             return service.apply(request).exceptionally(this::rescue);
         } catch (Exception ex) {

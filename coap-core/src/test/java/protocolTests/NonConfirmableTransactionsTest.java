@@ -38,9 +38,9 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;
@@ -52,7 +52,7 @@ public class NonConfirmableTransactionsTest {
     private MockCoapTransport.MockClient client;
     private Function<CoapResponse, Boolean> consumer = mock(Function.class);
 
-    private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
+    private final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
             .get("/test", req -> {
                         require(req.getTransContext(NON_CONFIRMABLE));
                         return ok("OK").toFuture();

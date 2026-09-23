@@ -25,7 +25,7 @@ import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -64,7 +64,7 @@ public class ServerBenchmark {
 
         server = CoapServer.builder()
                 .transport(mockTransport)
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/path1/sub2/sub3", __ ->
                                 CoapResponse.ok("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890").maxAge((int) requestCounter++).toFuture()
                         )

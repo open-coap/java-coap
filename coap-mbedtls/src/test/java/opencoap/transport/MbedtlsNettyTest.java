@@ -56,7 +56,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -92,7 +92,7 @@ public class MbedtlsNettyTest {
         server = CoapServer.builder()
                 .transport(serverTransport)
                 .executor(eventLoopGroup)
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK!").toFuture())
                         .post("/echo", req -> ok(req.getPayload()).toFuture())
                         .get("/dtls-ctx", req -> {

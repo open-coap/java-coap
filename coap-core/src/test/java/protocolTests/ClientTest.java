@@ -31,7 +31,7 @@ import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.filter.EtagGeneratorFilter;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +45,7 @@ public class ClientTest {
     void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", req -> ok("OK!").toFuture())
                         .post("/fresh", this::handleFresh))
                 .build()
