@@ -487,22 +487,6 @@ public class BasicHeaderOptions {
     }
 
     /**
-     * Returns all Uri-Query option values joined with '&amp;'.
-     *
-     * @return joined Uri-Query values, or null when no Uri-Query option is present
-     * @deprecated the returned string looks like a URL query component but is not one. Uri-Query
-     * option values hold already decoded characters (RFC 7252, section 6.4), so they are
-     * never percent-encoded, and a value containing '&amp;' is indistinguishable from an
-     * option boundary. Do not splice the result into a URL. Use
-     * {@link #getUriQueryEncoded()} to compose a CoAP URI, {@link #getUriQueryList()} for
-     * the unambiguous per-option values, or {@link #getUriQueryMap()} for name/value pairs.
-     */
-    @Deprecated
-    public String getUriQuery() {
-        return uriQuery == null ? null : String.join("&", uriQuery);
-    }
-
-    /**
      * Returns the query component of the CoAP URI built from the Uri-Query options, following the
      * rules of RFC 7252, section 6.5, step 8. Each option value is percent-encoded and the results
      * are joined with '&amp;'. The leading '?' is not included.
@@ -527,28 +511,13 @@ public class BasicHeaderOptions {
     }
 
     /**
-     * Replaces all Uri-Query options, splitting the given string on '&amp;'.
-     *
-     * @param uriQuery '&amp;' separated query, empty string clears the option
-     * @deprecated splitting on '&amp;' cannot express a value that itself contains '&amp;'. Use
-     * {@link #setUriQueryList(List)} or {@link #addUriQuery(String)} instead.
-     */
-    @Deprecated
-    public void setUriQuery(String uriQuery) {
-        if (uriQuery.isEmpty()) {
-            this.uriQuery = null;
-        } else {
-            this.uriQuery = new ArrayList<>(Arrays.asList(uriQuery.split("&")));
-        }
-    }
-
-    /**
      * Returns the value of each Uri-Query option, in order, exactly as carried on the wire.
      * Values hold already decoded characters (RFC 7252, section 6.4), so they are never
      * percent-encoded and may contain any character, including '&amp;', '=' and '?'.
      *
-     * <p>This is the lossless view of the option: unlike {@link #getUriQuery()} it keeps option
-     * boundaries, and unlike {@link #getUriQueryMap()} it keeps repeated names and ordering.
+     * <p>This is the lossless view of the option: unlike {@link #getUriQueryEncoded()} it keeps
+     * the values decoded, and unlike {@link #getUriQueryMap()} it keeps repeated names and
+     * ordering.
      *
      * @return unmodifiable list of Uri-Query values, empty when no Uri-Query option is present
      */

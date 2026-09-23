@@ -76,7 +76,7 @@ class CoapTcpPacketConverterTest {
                 .maxAge(412)
                 .etag(Opaque.of("123"))
                 .payload("<test>")
-                .toSeparate(variableUInt(142), LOCAL_5683, TransportContext.EMPTY);
+                .toSeparate(variableUInt(142), LOCAL_5683);
 
         // when
         CoapPacket coapPacket = CoapTcpPacketConverter.toCoapPacket(resp);
