@@ -76,7 +76,7 @@ public final class RegistrationManager {
 
     public CompletableFuture<Void> register() {
         return client.send(post(registrationUri.getPath())
-                        .query(registrationUri.getQuery())
+                        .queries(registrationUri.getQuery().split("&"))
                         .payload(registrationLinks, MediaTypes.CT_APPLICATION_LINK__FORMAT)
                 )
                 .thenAccept(resp -> {

@@ -17,6 +17,7 @@ package opencoap.core;
 
 import java.net.InetSocketAddress;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class SeparateResponse {
     private final CoapResponse response;
@@ -27,11 +28,6 @@ public final class SeparateResponse {
         this.response = Objects.requireNonNull(response);
         this.token = Objects.requireNonNull(token);
         this.peerAddress = peerAddress;
-    }
-
-    @Deprecated
-    public SeparateResponse(CoapResponse response, Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
-        this(response.withContext(transContext), token, peerAddress);
     }
 
     @Override
@@ -98,5 +94,50 @@ public final class SeparateResponse {
 
     public SeparateResponse duplicate() {
         return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()).withContext(response.getTransContext()), token, peerAddress);
+    }
+
+    public Builder modify() {
+        return new Builder(response.modify(), token, peerAddress);
+    }
+
+    public static class Builder {
+        private final CoapResponse.Builder response;
+        private final Opaque token;
+        private final InetSocketAddress peerAddress;
+
+        private Builder(CoapResponse.Builder response, Opaque token, InetSocketAddress peerAddress) {
+            this.response = response;
+            this.token = token;
+            this.peerAddress = peerAddress;
+        }
+
+        public Builder payload(Opaque payload) {
+            response.payload(payload);
+            return this;
+        }
+
+        public Builder payload(String payload) {
+            response.payload(payload);
+            return this;
+        }
+
+        public Builder options(Consumer<CoapOptionsBuilder> optionsFunc) {
+            response.options(optionsFunc);
+            return this;
+        }
+
+        public Builder context(TransportContext newTransportContext) {
+            response.context(newTransportContext);
+            return this;
+        }
+
+        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
+            response.addContext(key, value);
+            return this;
+        }
+
+        public SeparateResponse build() {
+            return new SeparateResponse(response.build(), token, peerAddress);
+        }
     }
 }

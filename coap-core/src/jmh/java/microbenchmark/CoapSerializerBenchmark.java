@@ -63,7 +63,7 @@ public class CoapSerializerBenchmark {
         packet.headers().setBlock1Req(new BlockOption(13, BlockSize.S_16, true));
         packet.headers().setContentFormat(MediaTypes.CT_APPLICATION_XML);
         packet.headers().setLocationPath("/1/222/33333/4444444/555555555555555555555555");
-        packet.headers().setUriQuery("ppar=val1&par222222222222222222222=val2222222222222222222222222222222222");
+        packet.headers().setUriQueryList("ppar=val1", "par222222222222222222222=val2222222222222222222222222222222222");
         packet.setPayload("<k>12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</k>");
 
         // System.out.println("MSG SIZE: " + packet.toByteArray().length);

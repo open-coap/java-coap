@@ -72,6 +72,25 @@ class CoapResponseTest {
     }
 
     @Test
+    public void shouldModifyWithBuilder() {
+        CoapResponse response = coapResponse(C205_CONTENT).payload("moi").maxAge(100).addContext(DUMMY_KEY, "test").build();
+
+        // when
+        CoapResponse response2 = response.modify()
+                .payload("czesc")
+                .options(o -> o.maxAge(200))
+                .addContext(DUMMY_KEY2, "test2")
+                .build();
+
+        // then
+        assertEquals(coapResponse(C205_CONTENT).payload("czesc").maxAge(200).addContext(DUMMY_KEY, "test").addContext(DUMMY_KEY2, "test2").build(), response2);
+
+        // and original object is not changed
+        assertEquals("moi", response.getPayloadString());
+        assertEquals(100, response.options().getMaxAge());
+    }
+
+    @Test
     public void equalsAndHashTest() {
         EqualsVerifier.forClass(CoapResponse.class)
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)
@@ -91,8 +110,7 @@ class CoapResponseTest {
     }
 
     @Test
-    void shouldAccessTransportContext() {
-        // when
+    void shouldAccessTransportContext() {        // when
         CoapResponse response = CoapResponse.ok()
                 .context(TransportContext.EMPTY)
                 .addContext(DUMMY_KEY, "test")
@@ -151,7 +169,7 @@ class CoapResponseTest {
         @Test
         public void shouldReturnSeparateResponse() {
             SeparateResponse separateResponse = coapResponse(C204_CHANGED).toSeparate(decodeHex("0102"), LOCAL_5683);
-            SeparateResponse expected = new SeparateResponse(CoapResponse.of(C204_CHANGED), decodeHex("0102"), LOCAL_5683, TransportContext.EMPTY);
+            SeparateResponse expected = new SeparateResponse(CoapResponse.of(C204_CHANGED), decodeHex("0102"), LOCAL_5683);
 
             assertEquals(expected, separateResponse);
         }

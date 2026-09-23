@@ -129,7 +129,7 @@ final class BlockWiseCallback {
         // see https://tools.ietf.org/html/draft-ietf-core-block-18#section-4 , Implementation notes
         request.options().setSize1(null);
         Opaque blockPayload = BlockWiseTransfer.createBlockPart(responseBlock, requestPayload, maxBlockPayload);
-        request = request.withPayload(blockPayload);
+        request = request.modify().payload(blockPayload).build();
         LOGGER.trace("BlockWiseCallback.call() next block b1: {}", request);
         return makeRequest();
     }
@@ -218,7 +218,7 @@ final class BlockWiseCallback {
         request.options().setBlock1Req(block1Req);
 
         Opaque blockPayload = BlockWiseTransfer.createBlockPart(block1Req, requestPayload, block1Req.getSize());
-        request = request.withPayload(blockPayload);
+        request = request.modify().payload(blockPayload).build();
 
         return makeRequest();
     }

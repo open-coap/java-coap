@@ -168,18 +168,6 @@ public class CoapOptionsBuilder {
     }
 
     /**
-     * Replaces all Uri-Query options, splitting the given string on '&amp;'.
-     *
-     * @deprecated splitting on '&amp;' cannot express a value that itself contains '&amp;'. Use
-     *         {@link #query(String, String)} or {@link #queries(List)} instead.
-     */
-    @Deprecated
-    public CoapOptionsBuilder query(String query) {
-        options.setUriQuery(query);
-        return this;
-    }
-
-    /**
      * Replaces all Uri-Query options, one per given value. Values are written verbatim, so they
      * must hold decoded characters (RFC 7252, section 6.4), not percent-encoded ones.
      */

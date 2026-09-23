@@ -100,11 +100,6 @@ public final class CoapResponse {
         return payload.toUtf8String();
     }
 
-    @Deprecated
-    public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
-        return new SeparateResponse(this.withContext(transContext), token, peerAddress);
-    }
-
     public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
         return new SeparateResponse(this, token, peerAddress);
     }
@@ -165,23 +160,30 @@ public final class CoapResponse {
         return new CoapResponse(code, payload, options, transContext.with(otherTransContext));
     }
 
+    public Builder modify() {
+        return new Builder(code, CoapOptionsBuilder.from(options), payload, transContext);
+    }
+
     public static class Builder {
         private final Code code;
-        private final CoapOptionsBuilder options = CoapOptionsBuilder.options();
+        private final CoapOptionsBuilder options;
         private Opaque payload = Opaque.EMPTY;
         private TransportContext transContext = TransportContext.EMPTY;
 
         private Builder(Code code) {
             this.code = code;
+            this.options = CoapOptionsBuilder.options();
+        }
+
+        private Builder(Code code, CoapOptionsBuilder options, Opaque payload, TransportContext transContext) {
+            this.code = code;
+            this.options = options;
+            this.payload = payload;
+            this.transContext = transContext;
         }
 
         public CoapResponse build() {
             return new CoapResponse(code, payload, options.build(), transContext);
-        }
-
-        @Deprecated
-        public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress, TransportContext transContext) {
-            return build().toSeparate(token, peerAddress, transContext);
         }
 
         public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
