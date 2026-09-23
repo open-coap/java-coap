@@ -21,24 +21,24 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
 
-class SignallingHeaderOptionsTest {
+class SignalingHeaderOptionsTest {
 
     @Test
     void duplicate() {
-        SignallingHeaderOptions signOpts = new SignallingHeaderOptions(Code.C701_CSM);
-        signOpts.putSignallingOptions(SignalingOptions.capabilities(100, true));
+        SignalingHeaderOptions signOpts = new SignalingHeaderOptions(Code.C701_CSM);
+        signOpts.putSignalingOptions(SignalingOptions.capabilities(100, true));
 
         assertEquals(signOpts, signOpts.duplicate());
     }
 
     @Test
     public void failWhenNotCSMCode() {
-        assertThrows(IllegalArgumentException.class, () -> new SignallingHeaderOptions(Code.C205_CONTENT));
+        assertThrows(IllegalArgumentException.class, () -> new SignalingHeaderOptions(Code.C205_CONTENT));
     }
 
     @Test
     public void equalsAndHashTest() throws Exception {
-        EqualsVerifier.forClass(SignallingHeaderOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(SignalingHeaderOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 
 }

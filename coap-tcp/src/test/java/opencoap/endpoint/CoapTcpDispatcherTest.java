@@ -43,8 +43,8 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Service;
+import opencoap.core.SignalingHeaderOptions;
 import opencoap.core.SignalingOptions;
-import opencoap.core.SignallingHeaderOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class CoapTcpDispatcherTest {
     private Service<CoapRequest, CoapResponse> inboundService = Mockito.mock(Service.class);
     private Function<SeparateResponse, Boolean> outboundHandler = Mockito.mock(Function.class);
     private Function<SeparateResponse, Boolean> observationHandler = Mockito.mock(Function.class);
-    private CapabilitiesStorage csmStorage = new CapabilitiesStorageImpl();
+    private CapabilitiesStorage csmStorage = new HashMapCapabilitiesStorage();
 
     private CoapTcpDispatcher dispatcher = new CoapTcpDispatcher(sender, csmStorage, new Capabilities(501, false), inboundService, outboundHandler, observationHandler);
 
@@ -230,9 +230,9 @@ class CoapTcpDispatcherTest {
         packet.setMessageType(null);
         packet.setCode(Code.C701_CSM);
 
-        SignallingHeaderOptions headers = new SignallingHeaderOptions(packet.getCode());
+        SignalingHeaderOptions headers = new SignalingHeaderOptions(packet.getCode());
         if (signOpt != null) {
-            headers.putSignallingOptions(signOpt);
+            headers.putSignalingOptions(signOpt);
         }
 
         packet.setHeaderOptions(headers);

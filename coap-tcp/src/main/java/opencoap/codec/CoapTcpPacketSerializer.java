@@ -31,7 +31,7 @@ import opencoap.core.Code;
 import opencoap.core.HeaderOptions;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.SignallingHeaderOptions;
+import opencoap.core.SignalingHeaderOptions;
 
 /**
  * This class implements serialization on de-serialization for CoAP over TCP packet.
@@ -77,7 +77,7 @@ public final class CoapTcpPacketSerializer {
 
         HeaderOptions options;
         if (pkt.getCode() != null && pkt.getCode().isSignaling()) {
-            options = new SignallingHeaderOptions(pkt.getCode());
+            options = new SignalingHeaderOptions(pkt.getCode());
         } else {
             options = new HeaderOptions();
         }

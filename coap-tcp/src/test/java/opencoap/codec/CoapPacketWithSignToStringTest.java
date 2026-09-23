@@ -17,8 +17,8 @@ package opencoap.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import opencoap.core.Code;
+import opencoap.core.SignalingHeaderOptions;
 import opencoap.core.SignalingOptions;
-import opencoap.core.SignallingHeaderOptions;
 import org.junit.jupiter.api.Test;
 
 public class CoapPacketWithSignToStringTest {
@@ -26,19 +26,19 @@ public class CoapPacketWithSignToStringTest {
     @Test
     public void toString_withCapabilities() {
         CoapPacket cp = new CoapPacket(Code.C701_CSM, null, null);
-        SignallingHeaderOptions headers = new SignallingHeaderOptions(cp.getCode());
+        SignalingHeaderOptions headers = new SignalingHeaderOptions(cp.getCode());
         cp.setHeaderOptions(headers);
 
-        headers.putSignallingOptions(SignalingOptions.capabilities(2000, true));
+        headers.putSignalingOptions(SignalingOptions.capabilities(2000, true));
         assertEquals("701 MID:0 MaxMsgSz:2000 Blocks", cp.toString());
 
-        headers.putSignallingOptions(SignalingOptions.capabilities(2000, false));
+        headers.putSignalingOptions(SignalingOptions.capabilities(2000, false));
         assertEquals("701 MID:0 MaxMsgSz:2000", cp.toString());
 
 
         SignalingOptions signalingOptions = new SignalingOptions();
         signalingOptions.setBlockWiseTransfer(true);
-        headers.putSignallingOptions(signalingOptions);
+        headers.putSignalingOptions(signalingOptions);
         assertEquals("701 MID:0 Blocks", cp.toString());
     }
 }

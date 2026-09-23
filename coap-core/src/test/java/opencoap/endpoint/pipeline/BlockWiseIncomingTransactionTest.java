@@ -164,7 +164,7 @@ public class BlockWiseIncomingTransactionTest {
 
         assertThatThrownBy(() ->
                 bwReq.appendBlock(put("/").block1Req(8, S_1024_BERT, false).payload(opaqueOfSize(2000)).to(LOCAL_5683))
-        ).isExactlyInstanceOf(CoapRequestEntityTooLarge.class);
+        ).isExactlyInstanceOf(CoapRequestEntityTooLargeException.class);
     }
 
     @Test
@@ -192,13 +192,13 @@ public class BlockWiseIncomingTransactionTest {
         //missing previous blocks
         assertThatThrownBy(() ->
                 bwReq.appendBlock(get("/").block1Req(2, S_512, false).payload(opaqueOfSize(512)).from(LOCAL_5683))
-        ).isExactlyInstanceOf(CoapRequestEntityIncomplete.class);
+        ).isExactlyInstanceOf(CoapRequestEntityIncompleteException.class);
 
 
         //size too large for defined capabilities
         assertThatThrownBy(() ->
                 bwReq.appendBlock(get("/").size1(11_000).block1Req(0, S_512, true).payload(opaqueOfSize(512)).from(LOCAL_5683))
-        ).isExactlyInstanceOf(CoapRequestEntityTooLarge.class);
+        ).isExactlyInstanceOf(CoapRequestEntityTooLargeException.class);
 
         //payload size does not match block size
         assertCodeException(Code.C413_REQUEST_ENTITY_TOO_LARGE, () ->

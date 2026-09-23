@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.BlockOption;
 import opencoap.core.CoapBlockException;
-import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.CoapBlockEntityTooLargeException;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
@@ -285,7 +285,7 @@ public class BlockWiseCallbackTest {
 
         //then, fail
         assertNothingSent();
-        assertThatThrownBy(() -> response.get()).hasCauseExactlyInstanceOf(CoapBlockTooLargeEntityException.class);
+        assertThatThrownBy(() -> response.get()).hasCauseExactlyInstanceOf(CoapBlockEntityTooLargeException.class);
     }
 
     @Test

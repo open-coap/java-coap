@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
- * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
+ * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opencoap.core;
+package opencoap.endpoint;
 
-/**
- * Too large entity received
- */
-public class CoapBlockTooLargeEntityException extends CoapBlockException {
-    public CoapBlockTooLargeEntityException(String message) {
-        super(message);
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
+final class SequentialMessageIdSupplier implements MessageIdSupplier {
+
+    private final AtomicInteger globalMid;
+
+    SequentialMessageIdSupplier() {
+        this(new Random().nextInt(0xFFFF));
+    }
+
+    SequentialMessageIdSupplier(int initMid) {
+        this.globalMid = new AtomicInteger(initMid);
+    }
+
+    @Override
+    public int getNextMID() {
+        return 0xFFFF & globalMid.incrementAndGet();
     }
 }

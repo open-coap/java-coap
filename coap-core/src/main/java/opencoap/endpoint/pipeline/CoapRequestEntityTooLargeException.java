@@ -21,18 +21,18 @@ import opencoap.core.CoapCodeException;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 
-class CoapRequestEntityTooLarge extends CoapCodeException {
+class CoapRequestEntityTooLargeException extends CoapCodeException {
 
     private final int maxSize;
     private final BlockOption blockOptionHint;
 
-    CoapRequestEntityTooLarge(int maxSize, String message) {
+    CoapRequestEntityTooLargeException(int maxSize, String message) {
         super(Code.C413_REQUEST_ENTITY_TOO_LARGE, message);
         this.maxSize = maxSize;
         this.blockOptionHint = null;
     }
 
-    CoapRequestEntityTooLarge(BlockOption blockOptionHint, String message) {
+    CoapRequestEntityTooLargeException(BlockOption blockOptionHint, String message) {
         super(Code.C413_REQUEST_ENTITY_TOO_LARGE, message);
         this.maxSize = 0;
         this.blockOptionHint = blockOptionHint;

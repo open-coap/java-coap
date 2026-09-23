@@ -32,7 +32,7 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.Service;
 import opencoap.endpoint.Capabilities;
-import opencoap.endpoint.CapabilitiesStorageImpl;
+import opencoap.endpoint.HashMapCapabilitiesStorage;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.TcpCoapServer;
 import opencoap.routing.RouterService;
@@ -46,7 +46,7 @@ public class CoapServerBlocksTest {
 
     private CoapServer server;
     private MockCoapTransport.MockClient client;
-    private CapabilitiesStorageImpl capabilities = new CapabilitiesStorageImpl();
+    private HashMapCapabilitiesStorage capabilities = new HashMapCapabilitiesStorage();
 
     private Service<CoapRequest, CoapResponse> blockResource = null;
 

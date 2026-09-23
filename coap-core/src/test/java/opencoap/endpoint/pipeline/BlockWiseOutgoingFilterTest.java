@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import opencoap.core.BlockSize;
 import opencoap.core.CoapBlockException;
-import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.CoapBlockEntityTooLargeException;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
@@ -155,7 +155,7 @@ class BlockWiseOutgoingFilterTest {
 
 
         assertTrue(respFut.isCompletedExceptionally());
-        assertThatThrownBy(respFut::get).hasCauseExactlyInstanceOf(CoapBlockTooLargeEntityException.class);
+        assertThatThrownBy(respFut::get).hasCauseExactlyInstanceOf(CoapBlockEntityTooLargeException.class);
     }
 
     @Test

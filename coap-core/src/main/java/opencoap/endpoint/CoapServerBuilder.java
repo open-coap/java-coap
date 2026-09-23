@@ -70,7 +70,7 @@ public final class CoapServerBuilder {
     private int duplicationMaxSize = 10000;
     private PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectionCache;
     private ScheduledExecutorService scheduledExecutorService;
-    private MessageIdSupplier midSupplier = new MessageIdSupplierImpl();
+    private MessageIdSupplier midSupplier = new SequentialMessageIdSupplier();
     private Duration responseTimeout = Duration.ofMillis(DELAYED_TRANSACTION_TIMEOUT_MS);
     private DuplicatedCoapMessageCallback duplicatedCoapMessageCallback = DuplicatedCoapMessageCallback.NULL;
     private RetransmissionBackOff retransmissionBackOff = RetransmissionBackOff.ofDefault();
