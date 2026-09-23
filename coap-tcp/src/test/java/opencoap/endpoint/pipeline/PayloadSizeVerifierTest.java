@@ -26,12 +26,12 @@ import opencoap.codec.CoapPacket;
 import opencoap.core.CoapException;
 import opencoap.core.Service;
 import opencoap.endpoint.Capabilities;
-import opencoap.endpoint.CapabilitiesStorageImpl;
+import opencoap.endpoint.HashMapCapabilitiesStorage;
 import org.junit.jupiter.api.Test;
 
 class PayloadSizeVerifierTest {
 
-    private final CapabilitiesStorageImpl csmStorage = new CapabilitiesStorageImpl();
+    private final HashMapCapabilitiesStorage csmStorage = new HashMapCapabilitiesStorage();
     private PayloadSizeVerifier<Boolean> verifier = new PayloadSizeVerifier<>(csmStorage);
     private final Service<CoapPacket, Boolean> service = __ -> completedFuture(true);
 

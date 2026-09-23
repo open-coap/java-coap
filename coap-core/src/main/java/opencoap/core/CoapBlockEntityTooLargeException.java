@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opencoap.endpoint.pipeline;
+package opencoap.core;
 
-import opencoap.core.CoapCodeException;
-import opencoap.core.Code;
-
-class CoapRequestEntityIncomplete extends CoapCodeException {
-
-    CoapRequestEntityIncomplete() {
-        super(Code.C408_REQUEST_ENTITY_INCOMPLETE);
+/**
+ * Too large entity received
+ */
+public class CoapBlockEntityTooLargeException extends CoapBlockException {
+    public CoapBlockEntityTooLargeException(String message) {
+        super(message);
     }
 }

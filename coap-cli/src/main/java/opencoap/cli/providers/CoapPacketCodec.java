@@ -24,9 +24,9 @@ import opencoap.codec.CoapPacket;
 import opencoap.codec.CoapTcpPacketSerializer;
 import opencoap.core.CoapException;
 
-public interface CoapSerializer {
+public interface CoapPacketCodec {
 
-    CoapSerializer UDP = new CoapSerializer() {
+    CoapPacketCodec UDP = new CoapPacketCodec() {
         @Override
         public void serialize(OutputStream outputStream, CoapPacket coapPacket) {
             opencoap.codec.CoapSerializer.serialize(coapPacket, outputStream);
@@ -38,7 +38,7 @@ public interface CoapSerializer {
         }
     };
 
-    CoapSerializer TCP = new CoapSerializer() {
+    CoapPacketCodec TCP = new CoapPacketCodec() {
         @Override
         public void serialize(OutputStream outputStream, CoapPacket coapPacket) throws CoapException, IOException {
             CoapTcpPacketSerializer.writeTo(outputStream, coapPacket);

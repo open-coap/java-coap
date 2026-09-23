@@ -18,7 +18,7 @@ package opencoap.core;
 
 public enum Method {
 
-    GET, POST, PUT, DELETE, FETCH, PATCH, iPATCH;
+    GET, POST, PUT, DELETE, FETCH, PATCH, IPATCH;
 
     public static Method valueOf(int methodCode) throws CoapException {
         switch (methodCode) {
@@ -35,7 +35,7 @@ public enum Method {
             case 6:
                 return PATCH;
             case 7:
-                return iPATCH;
+                return IPATCH;
             default:
                 throw new CoapException("Wrong method code");
         }

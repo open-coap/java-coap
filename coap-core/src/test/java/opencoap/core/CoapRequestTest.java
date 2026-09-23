@@ -87,7 +87,7 @@ class CoapRequestTest {
         assertEquals("CoapRequest[GET URI:/test]", get("/test").build().toString());
         assertEquals("CoapRequest[FETCH URI:/test, pl(4):64757061]", fetch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[PATCH URI:/test, pl(4):64757061]", CoapRequest.patch("/test").payload("dupa").build().toString());
-        assertEquals("CoapRequest[iPATCH URI:/test, pl(4):64757061]", CoapRequest.iPatch("/test").payload("dupa").build().toString());
+        assertEquals("CoapRequest[IPATCH URI:/test, pl(4):64757061]", CoapRequest.iPatch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[GET URI:/test obs:0]", CoapRequest.observe("/test").build().toString());
         assertEquals("CoapRequest[PING]", CoapRequest.ping(LOCAL_5683, TransportContext.EMPTY).toString());
     }

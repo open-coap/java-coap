@@ -41,7 +41,7 @@ import opencoap.core.Code;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SignalingOptions;
-import opencoap.core.SignallingHeaderOptions;
+import opencoap.core.SignalingHeaderOptions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import protocolTests.utils.CoapPacketBuilder;
@@ -171,13 +171,13 @@ public class CoapTcpPacketSerializerTest {
         CoapPacket cp = new CoapPacket(null);
         cp.setCode(Code.C701_CSM);
         cp.setMessageType(null);
-        SignallingHeaderOptions headers = new SignallingHeaderOptions(cp.getCode());
+        SignalingHeaderOptions headers = new SignalingHeaderOptions(cp.getCode());
         cp.setHeaderOptions(headers);
 
         SignalingOptions sign = new SignalingOptions();
         sign.setMaxMessageSize(7);
         sign.setBlockWiseTransfer(true);
-        headers.putSignallingOptions(sign);
+        headers.putSignalingOptions(sign);
         cp.headers().setMaxAge(100L);
 
         byte[] rawCp = CoapTcpPacketSerializer.serialize(cp);
@@ -188,8 +188,8 @@ public class CoapTcpPacketSerializerTest {
         assertArrayEquals(rawCp, CoapTcpPacketSerializer.serialize(cp2));
         assertEquals(Code.C701_CSM, cp2.getCode());
         assertEquals(null, cp2.getMessageType());
-        assertEquals(7, ((SignallingHeaderOptions) cp2.headers()).toSignallingOptions(Code.C701_CSM).getMaxMessageSize().intValue());
-        assertTrue(((SignallingHeaderOptions) cp2.headers()).toSignallingOptions(Code.C701_CSM).getBlockWiseTransfer());
+        assertEquals(7, ((SignalingHeaderOptions) cp2.headers()).toSignalingOptions(Code.C701_CSM).getMaxMessageSize().intValue());
+        assertTrue(((SignalingHeaderOptions) cp2.headers()).toSignalingOptions(Code.C701_CSM).getBlockWiseTransfer());
         assertEquals(100, cp2.headers().getMaxAgeValue());
 
         assertSimilar(cp, cp2);

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.InetSocketAddress;
-import opencoap.cli.providers.CoapSerializer;
+import opencoap.cli.providers.CoapPacketCodec;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.TcpCoapServer;
@@ -43,11 +43,11 @@ public class StreamBlockingTransportTest {
         serverOut.connect(clientIn);
         clientOut.connect(serverIn);
 
-        CoapServer server = TcpCoapServer.builder().transport(new StreamBlockingTransport(serverOut, serverIn, adr, CoapSerializer.TCP)).build();
+        CoapServer server = TcpCoapServer.builder().transport(new StreamBlockingTransport(serverOut, serverIn, adr, CoapPacketCodec.TCP)).build();
         server.start();
 
         CoapClient client = TcpCoapServer.builder()
-                .transport(new StreamBlockingTransport(clientOut, clientIn, adr, CoapSerializer.TCP))
+                .transport(new StreamBlockingTransport(clientOut, clientIn, adr, CoapPacketCodec.TCP))
                 .buildClient(adr);
 
         assertNotNull(client.ping().get());
@@ -62,7 +62,7 @@ public class StreamBlockingTransportTest {
         PipedOutputStream outputStream = new PipedOutputStream(clientIn);
 
         //given
-        StreamBlockingTransport streamBlockingTransport = new StreamBlockingTransport(clientOut, clientIn, adr, CoapSerializer.UDP);
+        StreamBlockingTransport streamBlockingTransport = new StreamBlockingTransport(clientOut, clientIn, adr, CoapPacketCodec.UDP);
         streamBlockingTransport.start();
 
         await().until(streamBlockingTransport::isRunning);
