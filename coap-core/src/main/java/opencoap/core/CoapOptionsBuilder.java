@@ -59,7 +59,7 @@ public class CoapOptionsBuilder {
         return this;
     }
 
-    public CoapOptionsBuilder contentFormat(Short contentFormat) {
+    public CoapOptionsBuilder contentFormat(Integer contentFormat) {
         options.setContentFormat(contentFormat);
         return this;
     }
@@ -145,7 +145,7 @@ public class CoapOptionsBuilder {
         return this;
     }
 
-    public CoapOptionsBuilder accept(Short accept) {
+    public CoapOptionsBuilder accept(Integer accept) {
         if (accept != null) {
             options.setAccept(accept);
         }

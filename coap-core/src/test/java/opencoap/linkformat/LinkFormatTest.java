@@ -102,7 +102,7 @@ public class LinkFormatTest {
         lf.setTitle("my title");
         lf.setType("example type");
         lf.setAnchor("/test/anch");
-        lf.setContentType((short) 12);
+        lf.setContentType(12);
         lf.setOAutobservable(true);
 
         LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
@@ -526,7 +526,7 @@ public class LinkFormatTest {
         lf.setTitle("my title");
         lf.setType("example type");
         lf.setAnchor("/test/anch");
-        lf.setContentType((short) 12);
+        lf.setContentType(12);
 
         String nullVal = null;
         //set null
@@ -571,7 +571,7 @@ public class LinkFormatTest {
 
         LinkFormat lf2 = new LinkFormat("/deva/temp");
         lf2.setInterfaceDescription("ns.wadl#c");
-        lf2.setContentType((short) 1398);
+        lf2.setContentType(1398);
         lf2.set("unknown", "param-value");
         lf2.set("unknown2", new PToken("TEST-TOKEN"));
         lf2.set("unknown3", Boolean.TRUE);
@@ -579,7 +579,7 @@ public class LinkFormatTest {
         //        assertEquals("/deva/temp", lf[0].getUri());
         //        assertEquals(new String[]{"ns.wadl#c"}, lf[0].getInterfaceDescription());
         //        assertNull(lf[0].getResourceType());
-        //        assertEquals((Short) (short) 1398, lf[0].getContentType());
+        //        assertEquals((Integer) 1398, lf[0].getContentType());
         assertEquals("param-value", lf.getParam("unknown"));
         assertEquals(lf2, lf);
     }
@@ -605,7 +605,7 @@ public class LinkFormatTest {
         assertNull(lf.getContentType());
 
         lf.set("ct", "12");
-        assertEquals(12, lf.getContentType().shortValue());
+        assertEquals(12, lf.getContentType().intValue());
     }
 
     @Test

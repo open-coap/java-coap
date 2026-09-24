@@ -21,9 +21,9 @@ import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapResponse.coapResponse;
 import static opencoap.core.CoapResponse.notFound;
 import static opencoap.core.CoapResponse.ok;
-import static opencoap.core.ContentFormat.CT_APPLICATION_JSON;
-import static opencoap.core.ContentFormat.CT_APPLICATION_XML;
-import static opencoap.core.ContentFormat.CT_TEXT_PLAIN;
+import static opencoap.core.ContentFormat.APPLICATION_JSON;
+import static opencoap.core.ContentFormat.APPLICATION_XML;
+import static opencoap.core.ContentFormat.TEXT_PLAIN;
 import static opencoap.core.Opaque.variableUInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -111,15 +111,15 @@ class ObserversManagerTest {
     @Test
     public void sendObservation_different_for_each_subscriber_accept() {
         // given
-        obsMgr.apply(get("/test").token(13).observe().accept(CT_TEXT_PLAIN).from(PEER_1), okResource);
-        obsMgr.apply(get("/test").token(1312).observe().accept(CT_APPLICATION_XML).from(PEER_2), okResource);
+        obsMgr.apply(get("/test").token(13).observe().accept(TEXT_PLAIN).from(PEER_1), okResource);
+        obsMgr.apply(get("/test").token(1312).observe().accept(APPLICATION_XML).from(PEER_2), okResource);
 
         // when
         obsMgr.sendObservation("/test", okResource);
 
         // then
-        verify(outboundObservation).apply(eq(ok().payload("OK", CT_TEXT_PLAIN).observe(1).toSeparate(variableUInt(13), PEER_1)));
-        verify(outboundObservation).apply(eq(ok().payload("<r>OK</r>").contentFormat(CT_APPLICATION_XML).observe(1).toSeparate(variableUInt(1312), PEER_2)));
+        verify(outboundObservation).apply(eq(ok().payload("OK", TEXT_PLAIN).observe(1).toSeparate(variableUInt(13), PEER_1)));
+        verify(outboundObservation).apply(eq(ok().payload("<r>OK</r>").contentFormat(APPLICATION_XML).observe(1).toSeparate(variableUInt(1312), PEER_2)));
     }
 
     @Test
@@ -199,13 +199,13 @@ class ObserversManagerTest {
     }
 
     private static final Service<CoapRequest, CoapResponse> okResource = req -> {
-        switch (req.options().getAccept().shortValue()) {
-            case CT_TEXT_PLAIN:
-                return ok("OK", CT_TEXT_PLAIN).toFuture();
-            case CT_APPLICATION_JSON:
-                return ok("{\"r\":\"OK\"}", CT_APPLICATION_JSON).toFuture();
-            case CT_APPLICATION_XML:
-                return ok("<r>OK</r>", CT_APPLICATION_XML).toFuture();
+        switch (req.options().getAccept().intValue()) {
+            case TEXT_PLAIN:
+                return ok("OK", TEXT_PLAIN).toFuture();
+            case APPLICATION_JSON:
+                return ok("{\"r\":\"OK\"}", APPLICATION_JSON).toFuture();
+            case APPLICATION_XML:
+                return ok("<r>OK</r>", APPLICATION_XML).toFuture();
             default:
                 return ok("OK").toFuture();
         }

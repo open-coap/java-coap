@@ -116,7 +116,7 @@ class CoapCliTest {
                         .proxyUri("http://another-uri")
                         .requestTag(sendCommand.request.options().getRequestTag()) // it's random
                 )
-                .payload(Opaque.of("{\"id\":\"22da5c828e9c4f10bc57\"}"), ContentFormat.CT_APPLICATION_JSON);
+                .payload(Opaque.of("{\"id\":\"22da5c828e9c4f10bc57\"}"), ContentFormat.APPLICATION_JSON);
         assertEquals(expected, sendCommand.request);
     }
 
@@ -130,8 +130,8 @@ class CoapCliTest {
         assertEquals("\nReceived 27\n", sw.toString().replace("\r", ""));
 
         CoapRequest.Builder expected = CoapRequest.post("/test")
-                .payload(Opaque.decodeHex("a16e626573745f6775697461726973746a476172795f4d6f6f7265"), ContentFormat.CT_APPLICATION_CBOR)
-                .accept(ContentFormat.CT_APPLICATION_JSON);
+                .payload(Opaque.decodeHex("a16e626573745f6775697461726973746a476172795f4d6f6f7265"), ContentFormat.APPLICATION_CBOR)
+                .accept(ContentFormat.APPLICATION_JSON);
         assertEquals(expected, sendCommand.request);
     }
 

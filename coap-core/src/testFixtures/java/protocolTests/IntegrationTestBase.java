@@ -83,7 +83,7 @@ abstract class IntegrationTestBase {
         final Service<CoapRequest, CoapResponse> route = RouterService.builder()
                 .get("/", __ -> CoapResponse.ok("Shortest path").toFuture())
                 .get("/test/1", req ->
-                        ok("Dziala", ContentFormat.CT_TEXT_PLAIN).toFuture()
+                        ok("Dziala", ContentFormat.TEXT_PLAIN).toFuture()
                 )
                 .any("/test2", testResource)
                 .get("/large", __ ->
@@ -108,7 +108,7 @@ abstract class IntegrationTestBase {
                 .fetch("/obs", req -> observersManager.apply(req, __ -> obsResource.toFuture()))
                 .get("/slow", __ -> slowResourcePromise.thenApply(CoapResponse.Builder::build))
                 .get(CoapConstants.WELL_KNOWN_CORE, req ->
-                        ok("<test/1>,<test2>", ContentFormat.CT_APPLICATION_LINK__FORMAT).toFuture()
+                        ok("<test/1>,<test2>", ContentFormat.APPLICATION_LINK_FORMAT).toFuture()
                 ).build();
 
         server = buildServer(0, IntegrationTestBase::routeFilter, route);
@@ -149,7 +149,7 @@ abstract class IntegrationTestBase {
 
     @Test
     public void requestWithAccept() throws Exception {
-        CoapRequest.Builder request = get("/test2").accept(ContentFormat.CT_APPLICATION_JSON);
+        CoapRequest.Builder request = get("/test2").accept(ContentFormat.APPLICATION_JSON);
 
         assertEquals(Code.C406_NOT_ACCEPTABLE, client.sendSync(request).getCode());
     }
@@ -338,7 +338,7 @@ abstract class IntegrationTestBase {
     private static class TestResource implements Service<CoapRequest, CoapResponse> {
 
         private Opaque payload = of("Dziala2");
-        private short contentType = ContentFormat.CT_TEXT_PLAIN;
+        private int contentType = ContentFormat.TEXT_PLAIN;
 
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest request) {
@@ -374,7 +374,8 @@ abstract class IntegrationTestBase {
 
         public CoapResponse put(CoapRequest request) {
             payload = request.getPayload();
-            contentType = request.options().getContentFormat();
+            Integer requestContentFormat = request.options().getContentFormat();
+            contentType = requestContentFormat != null ? requestContentFormat : ContentFormat.TEXT_PLAIN;
             return CoapResponse.of(Code.C204_CHANGED);
         }
 

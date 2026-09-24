@@ -25,10 +25,10 @@ public class ContentFormatTest {
     @Test
     public void should_return_null_for_unknown_content_format() {
         assertNull(ContentFormat.contentFormatToString(null));
-        assertNull(ContentFormat.contentFormatToString((short) -2));
-        assertNull(ContentFormat.contentFormatToString((short) 1));
-        assertNull(ContentFormat.contentFormatToString((short) 9745));
-        assertNull(ContentFormat.contentFormatToString((short) 164));
+        assertNull(ContentFormat.contentFormatToString((int) -2));
+        assertNull(ContentFormat.contentFormatToString((int) 1));
+        assertNull(ContentFormat.contentFormatToString((int) 9745));
+        assertNull(ContentFormat.contentFormatToString((int) 164));
 
         assertNull(ContentFormat.parseContentFormat(null));
         assertNull(ContentFormat.parseContentFormat("non/existing"));
@@ -36,28 +36,28 @@ public class ContentFormatTest {
 
     @Test
     public void contentTypeConverterTest() {
-        assertEquals("text/plain", ContentFormat.contentFormatToString((short) 0));
-        assertEquals("application/xml", ContentFormat.contentFormatToString((short) 41));
-        assertEquals("application/octet-stream", ContentFormat.contentFormatToString((short) 42));
-        assertEquals("application/exi", ContentFormat.contentFormatToString((short) 47));
-        assertEquals("application/json", ContentFormat.contentFormatToString((short) 50));
-        assertEquals("application/link-format", ContentFormat.contentFormatToString((short) 40));
+        assertEquals("text/plain", ContentFormat.contentFormatToString((int) 0));
+        assertEquals("application/xml", ContentFormat.contentFormatToString((int) 41));
+        assertEquals("application/octet-stream", ContentFormat.contentFormatToString((int) 42));
+        assertEquals("application/exi", ContentFormat.contentFormatToString((int) 47));
+        assertEquals("application/json", ContentFormat.contentFormatToString((int) 50));
+        assertEquals("application/link-format", ContentFormat.contentFormatToString((int) 40));
 
-        assertEquals("application/cbor", ContentFormat.contentFormatToString((short) 60));
-        assertEquals("application/cose; cose-type=\"cose-mac\"", ContentFormat.contentFormatToString((short) 97));
-        assertEquals("application/cose; cose-type=\"cose-sign1\"", ContentFormat.contentFormatToString((short) 18));
-        assertEquals("application/coap-group+json", ContentFormat.contentFormatToString((short) 256));
+        assertEquals("application/cbor", ContentFormat.contentFormatToString((int) 60));
+        assertEquals("application/cose; cose-type=\"cose-mac\"", ContentFormat.contentFormatToString((int) 97));
+        assertEquals("application/cose; cose-type=\"cose-sign1\"", ContentFormat.contentFormatToString((int) 18));
+        assertEquals("application/coap-group+json", ContentFormat.contentFormatToString((int) 256));
 
 
-        assertEquals((Short) ContentFormat.CT_TEXT_PLAIN, ContentFormat.parseContentFormat("text/plain"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_EXI, ContentFormat.parseContentFormat("application/exi"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_JSON, ContentFormat.parseContentFormat("application/json"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_LINK__FORMAT, ContentFormat.parseContentFormat("application/link-format"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_OCTET__STREAM, ContentFormat.parseContentFormat("application/octet-stream"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_XML, ContentFormat.parseContentFormat("application/xml"));
+        assertEquals((Integer) ContentFormat.TEXT_PLAIN, ContentFormat.parseContentFormat("text/plain"));
+        assertEquals((Integer) ContentFormat.APPLICATION_EXI, ContentFormat.parseContentFormat("application/exi"));
+        assertEquals((Integer) ContentFormat.APPLICATION_JSON, ContentFormat.parseContentFormat("application/json"));
+        assertEquals((Integer) ContentFormat.APPLICATION_LINK_FORMAT, ContentFormat.parseContentFormat("application/link-format"));
+        assertEquals((Integer) ContentFormat.APPLICATION_OCTET_STREAM, ContentFormat.parseContentFormat("application/octet-stream"));
+        assertEquals((Integer) ContentFormat.APPLICATION_XML, ContentFormat.parseContentFormat("application/xml"));
 
-        assertEquals((Short) ContentFormat.CT_APPLICATION_CODE_ENCRYPT0, ContentFormat.parseContentFormat("application/cose; cose-type=\"cose-encrypt0\""));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_CODE_KEY, ContentFormat.parseContentFormat("application/cose-key"));
-        assertEquals((Short) ContentFormat.CT_APPLICATION_MERGE_PATCH_JSON, ContentFormat.parseContentFormat("application/merge-patch+json"));
+        assertEquals((Integer) ContentFormat.APPLICATION_COSE_ENCRYPT0, ContentFormat.parseContentFormat("application/cose; cose-type=\"cose-encrypt0\""));
+        assertEquals((Integer) ContentFormat.APPLICATION_COSE_KEY, ContentFormat.parseContentFormat("application/cose-key"));
+        assertEquals((Integer) ContentFormat.APPLICATION_MERGE_PATCH_JSON, ContentFormat.parseContentFormat("application/merge-patch+json"));
     }
 }
