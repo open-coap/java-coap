@@ -87,7 +87,7 @@ public class LinkFormat implements Serializable {
         if (LINK_MAXIMUM_SIZE.equals(paramName)) {
             lf.setMaximumSize(Integer.parseInt(val.toString()));
         } else if (LINK_CONTENT_TYPE.equals(paramName)) {
-            lf.setContentType(Short.parseShort(val.toString().split(" ")[0]));
+            lf.setContentType(Integer.parseInt(val.toString().split(" ")[0]));
         } else if (LINK_HREFLANG.equals(paramName)) {
             lf.setHRefLang(((PToken) val).toString());
         } else if (LINK_RELATIONS.equals(paramName)) {
@@ -240,7 +240,7 @@ public class LinkFormat implements Serializable {
         return getParamInt(LINK_MAXIMUM_SIZE);
     }
 
-    public void setContentType(Short val) {
+    public void setContentType(Integer val) {
         params.put(LINK_CONTENT_TYPE, val);
     }
 
@@ -393,25 +393,17 @@ public class LinkFormat implements Serializable {
         return null;
     }
 
-    private Short getParamShort(String name) {
+    private Integer getParamInt(String name) {
         Object val = params.get(name);
         if (val != null) {
-            if (val instanceof Short) {
-                return (Short) val;
+            if (val instanceof Integer) {
+                return (Integer) val;
             }
             try {
-                return Short.parseShort(val.toString().split(" ")[0]);
+                return Integer.parseInt(val.toString().split(" ")[0]);
             } catch (NumberFormatException ex) {
                 return null;
             }
-        }
-        return null;
-    }
-
-    private Integer getParamInt(String name) {
-        Object val = params.get(name);
-        if (val instanceof Integer) {
-            return (Integer) val;
         }
         return null;
     }
@@ -517,8 +509,8 @@ public class LinkFormat implements Serializable {
      *
      * @return Content type
      */
-    public Short getContentType() {
-        return getParamShort(LINK_CONTENT_TYPE);
+    public Integer getContentType() {
+        return getParamInt(LINK_CONTENT_TYPE);
     }
 
     /**

@@ -220,12 +220,12 @@ public final class CoapRequest {
             );
         }
 
-        public Builder payload(Opaque payload, short contentFormat) {
+        public Builder payload(Opaque payload, int contentFormat) {
             this.payload = payload;
             return contentFormat(contentFormat);
         }
 
-        public Builder payload(String payload, short contentFormat) {
+        public Builder payload(String payload, int contentFormat) {
             return payload(Opaque.of(payload), contentFormat);
         }
 
@@ -242,7 +242,7 @@ public final class CoapRequest {
             return payload(Opaque.of(payload));
         }
 
-        public Builder payload(byte[] payload, short contentFormat) {
+        public Builder payload(byte[] payload, int contentFormat) {
             return payload(Opaque.of(payload), contentFormat);
         }
 
@@ -291,7 +291,7 @@ public final class CoapRequest {
         }
 
 
-        public Builder accept(Short contentFormat) {
+        public Builder accept(Integer contentFormat) {
             options.accept(contentFormat);
             return this;
         }
@@ -354,7 +354,7 @@ public final class CoapRequest {
             return this;
         }
 
-        public Builder contentFormat(Short contentFormat) {
+        public Builder contentFormat(Integer contentFormat) {
             options.contentFormat(contentFormat);
             return this;
         }

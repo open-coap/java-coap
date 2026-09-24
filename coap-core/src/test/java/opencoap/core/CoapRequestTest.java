@@ -25,7 +25,7 @@ import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.ping;
 import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapResponseTest.newOptions;
-import static opencoap.core.ContentFormat.CT_APPLICATION_JSON;
+import static opencoap.core.ContentFormat.APPLICATION_JSON;
 import static opencoap.core.Opaque.EMPTY;
 import static opencoap.core.Opaque.decodeHex;
 import static opencoap.core.TransportContext.NON_CONFIRMABLE;
@@ -124,7 +124,7 @@ class CoapRequestTest {
                             .ifMatch(Opaque.ofBytes(9, 7, 5))
                     )
                     .token(45463L)
-                    .accept(CT_APPLICATION_JSON)
+                    .accept(APPLICATION_JSON)
                     .maxAge(Duration.ofHours(1))
                     .block1Req(0, S_32, true)
                     .block2Res(0, S_64, true)
@@ -134,7 +134,7 @@ class CoapRequestTest {
                     .query("b", "2")
                     .size1(342)
                     .observe()
-                    .payload("perse", ContentFormat.CT_TEXT_PLAIN)
+                    .payload("perse", ContentFormat.TEXT_PLAIN)
                     .addContext(RESPONSE_TIMEOUT, ofSeconds(12))
                     .addContext(DUMMY_KEY, "test")
                     .from(LOCAL_5683);
@@ -147,14 +147,14 @@ class CoapRequestTest {
                     TransportContext.of(RESPONSE_TIMEOUT, ofSeconds(12)).with(DUMMY_KEY, "test")
             );
             expected.options().setUriPath("/0/1/2");
-            expected.options().setAccept(CT_APPLICATION_JSON);
+            expected.options().setAccept(APPLICATION_JSON);
             expected.options().setObserve(0);
             expected.options().setEtag(decodeHex("010203"));
             expected.options().setUriHost("some.com");
             expected.options().setIfMatch(new Opaque[]{Opaque.ofBytes(9, 7, 5)});
             expected.options().setMaxAge(3600L);
             expected.options().setUriQueryList("p=1", "b=2");
-            expected.options().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
+            expected.options().setContentFormat(ContentFormat.TEXT_PLAIN);
             expected.options().setBlock1Req(new BlockOption(0, S_32, true));
             expected.options().setBlock2Res(new BlockOption(0, S_64, true));
             expected.options().setSize1(342);
@@ -186,9 +186,9 @@ class CoapRequestTest {
         public void shouldSetPayloadFromByteArrayWithContentFormat() {
             byte[] data = new byte[]{1, 2, 3, 4};
 
-            CoapRequest req = post("/test").payload(data, CT_APPLICATION_JSON).build();
+            CoapRequest req = post("/test").payload(data, APPLICATION_JSON).build();
             assertEquals(Opaque.of(data), req.getPayload());
-            assertEquals(CT_APPLICATION_JSON, req.options().getContentFormat());
+            assertEquals(APPLICATION_JSON, req.options().getContentFormat());
         }
 
         @Test

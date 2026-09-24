@@ -108,7 +108,7 @@ public class CoapPacketBuilder {
         return this;
     }
 
-    public CoapPacketBuilder contFormat(short contentFormat) {
+    public CoapPacketBuilder contFormat(int contentFormat) {
         coapPacket.headers().setContentFormat(contentFormat);
         return this;
     }
