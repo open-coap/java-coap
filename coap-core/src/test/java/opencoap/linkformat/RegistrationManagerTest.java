@@ -17,7 +17,7 @@
 package opencoap.linkformat;
 
 import static java.time.Duration.ofMinutes;
-import static opencoap.core.MediaTypes.CT_APPLICATION_LINK__FORMAT;
+import static opencoap.core.ContentFormat.CT_APPLICATION_LINK__FORMAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;

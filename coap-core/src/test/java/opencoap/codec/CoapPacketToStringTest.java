@@ -17,7 +17,7 @@
 package opencoap.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import org.junit.jupiter.api.Test;
@@ -32,22 +32,22 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(5):0x73686f7274", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+        cp.headers().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_XML);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
         assertEquals("CON GET MID:0 URI:/test ContTp:41 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_LWM2M_JSON);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_LWM2M_JSON);
         assertEquals("CON GET MID:0 URI:/test ContTp:11543 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_JSON);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_JSON);
         assertEquals("CON GET MID:0 URI:/test ContTp:50 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+        cp.headers().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl(5):0x73686f7274", cp.toString(false, true, false));
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_OCTET__STREAM);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_OCTET__STREAM);
         assertEquals("CON GET MID:0 URI:/test ContTp:42 pl(5):0x73686f7274", cp.toString());
 
         assertEquals("CON GET MID:0 URI:/test ContTp:42 pl(5)", cp.toString(false, false, false, true));
@@ -65,10 +65,10 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c..", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+        cp.headers().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl(51):'long payload long payload long payload long ..'", cp.toString());
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_EXI);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_EXI);
         assertEquals("CON GET MID:0 URI:/test ContTp:47 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c..", cp.toString());
 
         //unknown
@@ -84,10 +84,10 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164", cp.toString(true));
 
-        cp.headers().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+        cp.headers().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl:'long payload long payload long payload long payload'", cp.toString(true));
 
-        cp.headers().setContentFormat(MediaTypes.CT_APPLICATION_EXI);
+        cp.headers().setContentFormat(ContentFormat.CT_APPLICATION_EXI);
         assertEquals("CON GET MID:0 URI:/test ContTp:47 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164", cp.toString(true));
 
         //unknown

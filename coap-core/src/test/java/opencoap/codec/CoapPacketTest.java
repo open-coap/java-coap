@@ -55,7 +55,7 @@ import opencoap.core.BlockOption;
 import opencoap.core.BlockSize;
 import opencoap.core.CoapException;
 import opencoap.core.Code;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
@@ -506,26 +506,26 @@ public class CoapPacketTest {
 
     @Test
     void toCoapPacket() {
-        SeparateResponse response = ok("<dupa>", MediaTypes.CT_APPLICATION_XML).toSeparate(Opaque.of("100"), LOCAL_1_5683);
+        SeparateResponse response = ok("<dupa>", ContentFormat.CT_APPLICATION_XML).toSeparate(Opaque.of("100"), LOCAL_1_5683);
 
         CoapPacket packet = CoapPacket.from(response);
 
         CoapPacket expected = new CoapPacket(Code.C205_CONTENT, MessageType.Confirmable, LOCAL_1_5683);
         expected.setToken(Opaque.of("100"));
         expected.setPayload("<dupa>");
-        expected.headers().setContentFormat(MediaTypes.CT_APPLICATION_XML);
+        expected.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
 
         assertEquals(expected, packet);
     }
 
     @Test
     public void convertToSeparateResponse() {
-        CoapPacket packet = newCoapPacket(LOCAL_5683).mid(13).token(918).ack(Code.C201_CREATED).payload("OK").contFormat(MediaTypes.CT_TEXT_PLAIN).etag(99).build();
+        CoapPacket packet = newCoapPacket(LOCAL_5683).mid(13).token(918).ack(Code.C201_CREATED).payload("OK").contFormat(ContentFormat.CT_TEXT_PLAIN).etag(99).build();
 
         SeparateResponse separateResponse = packet.toSeparateResponse();
 
         assertEquals(
-                coapResponse(Code.C201_CREATED).etag(Opaque.ofBytes(99)).payload("OK", MediaTypes.CT_TEXT_PLAIN).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
+                coapResponse(Code.C201_CREATED).etag(Opaque.ofBytes(99)).payload("OK", ContentFormat.CT_TEXT_PLAIN).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
                 separateResponse
         );
     }
