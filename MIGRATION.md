@@ -15,6 +15,15 @@ This document outlines breaking changes and migration steps between versions of 
 - **Domain package reorganization:** Classes are organized into domain-focused packages (`opencoap.core`, `opencoap.codec`, `opencoap.endpoint`, `opencoap.filter`, `opencoap.routing`, `opencoap.observe`, `opencoap.transport`, `opencoap.linkformat`, `opencoap.util`).
 - **Fluently modify requests & responses:** Deprecated `CoapRequest.with*` methods are removed in favor of `modify()`. Added `modify()` to `CoapResponse` and `SeparateResponse`.
 - **Query options:** `query(String)` that split on `&` is removed. Use `queries(String...)`, `queries(List<String>)`, or `query(name, value)`.
+- **Class renames:**
+  - `MediaTypes` &rarr; `ContentFormat`
+  - `SignallingHeaderOptions` &rarr; `SignalingHeaderOptions`
+  - `Method.iPATCH` &rarr; `Method.IPATCH`
+  - `CoapRequestEntityIncomplete` &rarr; `CoapRequestEntityIncompleteException`
+  - `CoapRequestEntityTooLarge` &rarr; `CoapRequestEntityTooLargeException`
+  - `CoapBlockTooLargeEntityException` &rarr; `CoapBlockEntityTooLargeException`
+  - `MessageIdSupplierImpl` &rarr; `SequentialMessageIdSupplier`
+  - `CapabilitiesStorageImpl` &rarr; `HashMapCapabilitiesStorage`
 
 ---
 
@@ -197,4 +206,89 @@ The ambiguous `query(String)` method that split query strings on `&` has been re
 +// Or add individual query items:
 +options.addUriQuery("key1=val1");
 +options.addUriQuery("key2=val2");
+```
+
+---
+
+### 5. Renamed Classes and Members
+
+#### ContentFormat (RFC 7252 naming)
+
+Renamed from `MediaTypes` to `ContentFormat` to match the CoAP specification (RFC 7252) and describe the integer content format registry rather than MIME media types.
+
+```diff
+-import opencoap.core.MediaTypes;
++import opencoap.core.ContentFormat;
+
+-options.accept(MediaTypes.CT_APPLICATION_JSON);
++options.accept(ContentFormat.CT_APPLICATION_JSON);
+```
+
+#### Signaling Header Options (RFC 8323 spelling)
+
+Spelling corrected from `Signalling` to `Signaling` to match RFC 8323 and the existing `SignalingOptions` class.
+
+```diff
+-import com.mbed.coap.packet.SignallingHeaderOptions;
++import opencoap.core.SignalingHeaderOptions;
+
+-SignallingHeaderOptions options = new SignallingHeaderOptions(Code.C701_CSM);
+-options.putSignallingOptions(signalingOptions);
+-SignalingOptions sig = options.toSignallingOptions(Code.C701_CSM);
++SignalingHeaderOptions options = new SignalingHeaderOptions(Code.C701_CSM);
++options.putSignalingOptions(signalingOptions);
++SignalingOptions sig = options.toSignalingOptions(Code.C701_CSM);
+```
+
+#### Exception Class Renames
+
+Exceptions now uniformly end with the `Exception` suffix:
+
+```diff
+-catch (CoapRequestEntityTooLarge e) {
++catch (CoapRequestEntityTooLargeException e) {
+     // ...
+ }
+```
+
+```diff
+-catch (CoapRequestEntityIncomplete e) {
++catch (CoapRequestEntityIncompleteException e) {
+     // ...
+ }
+```
+
+```diff
+-catch (CoapBlockTooLargeEntityException e) {
++catch (CoapBlockEntityTooLargeException e) {
+     // ...
+ }
+```
+
+#### Implementation Class Renames
+
+Implementation classes have been renamed to describe their concrete structure rather than using an `Impl` suffix:
+
+```diff
+-MessageIdSupplier supplier = new MessageIdSupplierImpl();
++MessageIdSupplier supplier = new SequentialMessageIdSupplier();
+```
+
+```diff
+-CapabilitiesStorage storage = new CapabilitiesStorageImpl();
++CapabilitiesStorage storage = new HashMapCapabilitiesStorage();
+```
+
+#### Enum Constant Rename
+
+```diff
+-Method method = Method.iPATCH;
++Method method = Method.IPATCH;
+```
+
+#### CLI Transport Codec
+
+```diff
+-opencoap.cli.transport.CoapSerializer
++opencoap.cli.transport.CoapPacketCodec
 ```
