@@ -200,7 +200,7 @@ public class CoapPacketTest {
     public void coapPacketTestWithPathAndQuery() throws CoapException, ParseException {
         CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
         cp.headers().setUriPath("/test/path/1");
-        cp.headers().setUriQuery("par1=1&par2=201");
+        cp.headers().setUriQueryList("par1=1", "par2=201");
         cp.headers().setLocationPath("/loc/path/2");
         cp.headers().setLocationQuery("lpar1=1&lpar2=2");
         cp.setMessageId(3612);
@@ -305,7 +305,7 @@ public class CoapPacketTest {
         cp.setMessageId(2);
         cp.headers().setUriPath("/3/13/0/");
         cp.headers().setLocationPath("/2//1");
-        cp.headers().setUriQuery("te=12&&ble=14");
+        cp.headers().setUriQueryList("te=12", "", "ble=14");
         cp.setMessageId(17);
 
         CoapPacket cp2 = CoapSerializer.deserialize(null, serialize(cp));

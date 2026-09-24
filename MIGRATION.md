@@ -13,6 +13,8 @@ This document outlines breaking changes and migration steps between versions of 
 - **Module removed:** The deprecated `lwm2m` module is no longer published.
 - **Unified package prefix:** All packages under `com.mbed.coap.*` and `org.opencoap.*` are unified under the `opencoap.*` namespace.
 - **Domain package reorganization:** Classes are organized into domain-focused packages (`opencoap.core`, `opencoap.codec`, `opencoap.endpoint`, `opencoap.filter`, `opencoap.routing`, `opencoap.observe`, `opencoap.transport`, `opencoap.linkformat`, `opencoap.util`).
+- **Fluently modify requests & responses:** Deprecated `CoapRequest.with*` methods are removed in favor of `modify()`. Added `modify()` to `CoapResponse` and `SeparateResponse`.
+- **Query options:** `query(String)` that split on `&` is removed. Use `queries(String...)`, `queries(List<String>)`, or `query(name, value)`.
 
 ---
 
@@ -112,3 +114,87 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `org.opencoap.coap.netty` | `opencoap.transport` | `NettyCoapTransport`, `CoapCodec`, `NettyUtils` |
 | `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionService`, `DtlsTransportContext` |
 | `org.opencoap.coap.metrics.micrometer` | `opencoap.filter` | `MicrometerMetricsFilter` |
+
+---
+
+### 3. Deprecated Methods & Builders
+
+#### Modifying CoapRequest
+
+The `with*` mutation methods on `CoapRequest` have been removed in favor of `modify()`.
+
+```diff
+-CoapRequest updated = request.withPayload(newPayload);
++CoapRequest updated = request.modify().payload(newPayload).build();
+```
+
+```diff
+-CoapRequest updated = request.withToken(newToken);
++CoapRequest updated = request.modify().token(newToken).build();
+```
+
+```diff
+-CoapRequest updated = request.withAddress(peerAddress);
++CoapRequest updated = request.modify().address(peerAddress).build();
+```
+
+```diff
+-CoapRequest updated = request.withOptions(opt -> opt.etag(etag));
++CoapRequest updated = request.modify().options(opt -> opt.etag(etag)).build();
+```
+
+#### Separate Responses
+
+The 4-argument `SeparateResponse` constructor and `toSeparate(..., TransportContext)` overloads have been removed. Set transport context on the response prior to converting to separate response, or use `modify()`:
+
+```diff
+-SeparateResponse sep = response.toSeparate(token, peerAddress, transContext);
++SeparateResponse sep = response.withContext(transContext).toSeparate(token, peerAddress);
+```
+
+```diff
+-SeparateResponse sep = new SeparateResponse(response, token, peerAddress, transContext);
++SeparateResponse sep = new SeparateResponse(response.withContext(transContext), token, peerAddress);
+```
+
+You can now also fluently modify existing `CoapResponse` and `SeparateResponse` instances:
+
+```java
+CoapResponse updatedResponse = response.modify().payload("new payload").build();
+SeparateResponse updatedSeparate = separateResponse.modify().payload("new payload").build();
+```
+
+---
+
+### 4. URI Query Options
+
+The ambiguous `query(String)` method that split query strings on `&` has been removed. Use `queries(String...)`, `queries(List<String>)`, or `query(String name, String value)`.
+
+#### On CoapRequest.Builder and CoapOptionsBuilder
+
+```diff
+-requestBuilder.query("key1=val1&key2=val2");
++requestBuilder.queries("key1=val1", "key2=val2");
+```
+
+```diff
+-requestBuilder.query("filter=active");
++requestBuilder.query("filter", "active");
+```
+
+#### On BasicHeaderOptions
+
+```diff
+-String query = options.getUriQuery();
++List<String> queryList = options.getUriQueryList();
++// Or, to get percent-encoded URI query string according to RFC 7252:
++String encodedQuery = options.getUriQueryEncoded();
+```
+
+```diff
+-options.setUriQuery("key1=val1&key2=val2");
++options.setUriQueryList(List.of("key1=val1", "key2=val2"));
++// Or add individual query items:
++options.addUriQuery("key1=val1");
++options.addUriQuery("key2=val2");
+```

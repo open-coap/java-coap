@@ -82,8 +82,9 @@ public class SendCommand implements Callable<Integer> {
             Thread.sleep(200);
 
             String uriPath = uri.getPath().isEmpty() ? CoapConstants.WELL_KNOWN_CORE : uri.getPath();
+            String uriQuery = uri.getQuery();
             request = request(method, uriPath)
-                    .query(uri.getQuery() == null ? "" : uri.getQuery())
+                    .queries(uriQuery == null ? new String[0] : uriQuery.split("&"))
                     .blockSize(blockSize)
                     .payload(hexPayload ? Opaque.decodeHex(payload) : Opaque.of(payload))
                     .contentFormat(contentFormat)
