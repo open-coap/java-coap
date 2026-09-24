@@ -16,17 +16,16 @@
  */
 package protocolTests.utils;
 
-import com.mbed.coap.packet.BlockOption;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MessageType;
-import com.mbed.coap.packet.Method;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.transport.TransportContext;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockOption;
+import opencoap.core.BlockSize;
+import opencoap.core.Code;
+import opencoap.core.MessageType;
+import opencoap.core.Method;
+import opencoap.core.Opaque;
+import opencoap.core.TransportContext;
 
 public class CoapPacketBuilder {
     public static final InetSocketAddress LOCAL_5683 = new InetSocketAddress("localhost", 5683);

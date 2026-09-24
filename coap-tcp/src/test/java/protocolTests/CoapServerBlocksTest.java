@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,26 +16,26 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static opencoap.core.Opaque.of;
+import static opencoap.util.FutureHelpers.failedFuture;
 import static org.junit.jupiter.api.Assertions.fail;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.TcpCoapServer;
-import com.mbed.coap.server.messaging.Capabilities;
-import com.mbed.coap.server.messaging.CapabilitiesStorageImpl;
-import com.mbed.coap.utils.Service;
 import java.util.Objects;
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Opaque;
+import opencoap.core.Service;
+import opencoap.endpoint.Capabilities;
+import opencoap.endpoint.CapabilitiesStorageImpl;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.TcpCoapServer;
+import opencoap.routing.RouterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.CoapPacketBuilder;

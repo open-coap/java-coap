@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,27 +16,26 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.put;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static java.time.Duration.ofMillis;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.put;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
-import com.mbed.coap.server.messaging.RequestTagSupplier;
 import java.net.InetSocketAddress;
+import opencoap.core.BlockSize;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
-
 
 public class BlockTest {
     private static final InetSocketAddress SERVER_ADDRESS = new InetSocketAddress("127.0.0.1", 5683);
@@ -51,7 +50,7 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .midSupplier(new MessageIdSupplierImpl(0))
+                .midSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(BlockSize.S_32)
                 .notificationsReceiver(notifReceiver)
                 .retransmission(ofFixed(ofMillis(500)))

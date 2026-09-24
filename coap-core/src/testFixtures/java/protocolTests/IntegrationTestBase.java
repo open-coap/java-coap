@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,54 +16,53 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.fetch;
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.iPatch;
-import static com.mbed.coap.packet.CoapRequest.observe;
-import static com.mbed.coap.packet.CoapRequest.patch;
-import static com.mbed.coap.packet.CoapRequest.post;
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.packet.Opaque.EMPTY;
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.server.observe.NotificationsReceiver.retrieveRemainingBlocks;
-import static com.mbed.coap.utils.Assertions.assertEquals;
-import static com.mbed.coap.utils.FutureHelpers.failedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static opencoap.core.CoapRequest.fetch;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.iPatch;
+import static opencoap.core.CoapRequest.observe;
+import static opencoap.core.CoapRequest.patch;
+import static opencoap.core.CoapRequest.post;
+import static opencoap.core.CoapResponse.coapResponse;
+import static opencoap.core.CoapResponse.ok;
+import static opencoap.core.Opaque.EMPTY;
+import static opencoap.core.Opaque.of;
+import static opencoap.observe.NotificationsReceiver.retrieveRemainingBlocks;
+import static opencoap.util.Assertions.assertEquals;
+import static opencoap.util.FutureHelpers.failedFuture;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.mbed.coap.CoapConstants;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapCodeException;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.linkformat.LinkFormat;
-import com.mbed.coap.linkformat.LinkFormatBuilder;
-import com.mbed.coap.packet.CoapOptionsBuilder;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.packet.SeparateResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.observe.ObserversManager;
-import com.mbed.coap.utils.Bytes;
-import com.mbed.coap.utils.Filter;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import opencoap.core.CoapCodeException;
+import opencoap.core.CoapConstants;
+import opencoap.core.CoapException;
+import opencoap.core.CoapOptionsBuilder;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Filter;
+import opencoap.core.MediaTypes;
+import opencoap.core.Opaque;
+import opencoap.core.SeparateResponse;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.linkformat.LinkFormat;
+import opencoap.linkformat.LinkFormatBuilder;
+import opencoap.observe.ObserversManager;
+import opencoap.routing.RouterService;
+import opencoap.util.Bytes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
-
 
 abstract class IntegrationTestBase {
 

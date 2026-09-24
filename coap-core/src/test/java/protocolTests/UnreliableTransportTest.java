@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,35 +16,34 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapResponse.ok;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofExponential;
-import static com.mbed.coap.transport.InMemoryCoapTransport.createAddress;
 import static java.time.Duration.ofMillis;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapResponse.ok;
+import static opencoap.endpoint.RetransmissionBackOff.ofExponential;
+import static opencoap.transport.InMemoryCoapTransport.createAddress;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import com.mbed.coap.CoapConstants;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.exception.CoapTimeoutException;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.transmission.RetransmissionBackOff;
-import com.mbed.coap.transport.InMemoryCoapTransport;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import opencoap.codec.CoapPacket;
+import opencoap.core.CoapConstants;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.CoapTimeoutException;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.RetransmissionBackOff;
+import opencoap.routing.RouterService;
+import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class UnreliableTransportTest {
 

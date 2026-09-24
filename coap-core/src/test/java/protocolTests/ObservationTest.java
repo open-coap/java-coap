@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,31 +16,30 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.observe;
-import static com.mbed.coap.packet.Opaque.EMPTY;
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.server.observe.NotificationsReceiver.REJECT_ALL;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
 import static java.time.Duration.ofMillis;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.observe;
+import static opencoap.core.Opaque.EMPTY;
+import static opencoap.core.Opaque.of;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
+import static opencoap.observe.NotificationsReceiver.REJECT_ALL;
+import static opencoap.transport.DatagramSocketTransport.udp;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.observe.ObserversManager;
-import com.mbed.coap.utils.ObservableResource;
 import java.net.InetSocketAddress;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.Opaque;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.observe.ObserversManager;
+import opencoap.routing.RouterService;
+import opencoap.util.ObservableResource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
-
 
 public class ObservationTest {
 

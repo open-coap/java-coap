@@ -24,7 +24,7 @@ tasks {
 }
 
 application {
-    mainClass.set("com.mbed.coap.cli.Main")
+    mainClass.set("opencoap.cli.Main")
 }
 
 distributions {

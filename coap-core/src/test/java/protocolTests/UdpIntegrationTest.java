@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.transport.udp.DatagramSocketTransport.udp;
-import static com.mbed.coap.utils.Networks.localhost;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.filter.TokenGeneratorFilter;
-import com.mbed.coap.utils.Filter;
-import com.mbed.coap.utils.Service;
+import static opencoap.transport.DatagramSocketTransport.udp;
+import static opencoap.util.Networks.localhost;
 import java.io.IOException;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.filter.TokenGeneratorFilter;
 
 public class UdpIntegrationTest extends IntegrationTestBase {
 

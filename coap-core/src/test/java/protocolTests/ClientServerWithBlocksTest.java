@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,40 +16,39 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.post;
-import static com.mbed.coap.packet.CoapRequest.put;
-import static com.mbed.coap.packet.CoapResponse.coapResponse;
-import static com.mbed.coap.packet.Opaque.EMPTY;
-import static com.mbed.coap.packet.Opaque.of;
-import static com.mbed.coap.utils.Networks.localhost;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.post;
+import static opencoap.core.CoapRequest.put;
+import static opencoap.core.CoapResponse.coapResponse;
+import static opencoap.core.Opaque.EMPTY;
+import static opencoap.core.Opaque.of;
+import static opencoap.util.Networks.localhost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapBlockException;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.transport.CoapTransport;
-import com.mbed.coap.transport.InMemoryCoapTransport;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import opencoap.codec.CoapPacket;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapBlockException;
+import opencoap.core.CoapException;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.core.Opaque;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.routing.RouterService;
+import opencoap.transport.CoapTransport;
+import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class ClientServerWithBlocksTest {
 
