@@ -148,10 +148,10 @@ CompletableFuture<CoapResponse> futureResponse2 = client.send(CoapRequest
         // set header options, for example:
         .options(opt -> opt
                 .etag(Opaque.decodeHex("0a8120"))
-                .accept(MediaTypes.CT_APPLICATION_JSON)
+                .accept(ContentFormat.CT_APPLICATION_JSON)
                 .maxAge(Duration.ofHours(1))
         )
-        .payload("{\"power\": \"on\"}", MediaTypes.CT_APPLICATION_JSON)
+        .payload("{\"power\": \"on\"}", ContentFormat.CT_APPLICATION_JSON)
         .addContext(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
 );
 futureResponse2.thenAccept(resp ->
@@ -179,7 +179,7 @@ server = CoapServer.builder()
         // (note that each resource function is a `Service` type and can be decorated/transformed with `Filter`)
         .route(RouterService.builder()
                 .get("/.well-known/core", req ->
-                        CoapResponse.ok("</sensors/temperature>", MediaTypes.CT_APPLICATION_LINK__FORMAT).toFuture()
+                        CoapResponse.ok("</sensors/temperature>", ContentFormat.CT_APPLICATION_LINK__FORMAT).toFuture()
                 )
                 .post("/actuators/switch", req -> {
                     // ...

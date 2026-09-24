@@ -38,7 +38,7 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.core.Opaque;
 import opencoap.core.Service;
 import opencoap.endpoint.CoapClient;
@@ -131,7 +131,7 @@ public class ClientServerWithBlocksTest {
 
         CoapClient client = CoapServer.builder().transport(InMemoryCoapTransport.create()).blockSize(BlockSize.S_128).buildClient(localhost(SERVER_PORT));
 
-        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, MediaTypes.CT_TEXT_PLAIN));
+        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, ContentFormat.CT_TEXT_PLAIN));
 
         assertEquals(Code.C204_CHANGED, resp.getCode());
         assertEquals(body, changeableBigResource.body);
@@ -157,7 +157,7 @@ public class ClientServerWithBlocksTest {
 
         CoapClient client = CoapServer.builder().transport(InMemoryCoapTransport.create()).blockSize(BlockSize.S_256).buildClient(localhost(SERVER_PORT));
 
-        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, MediaTypes.CT_TEXT_PLAIN));
+        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, ContentFormat.CT_TEXT_PLAIN));
 
         assertEquals(Code.C204_CHANGED, resp.getCode(), resp.getPayloadString());
         assertEquals(32, resp.options().getBlock1Req().getSize());
@@ -211,7 +211,7 @@ public class ClientServerWithBlocksTest {
         Opaque body = BIG_RESOURCE.concat(of("d"));
 
         CoapClient client = CoapServer.builder().transport(InMemoryCoapTransport.create()).blockSize(BlockSize.S_64).buildClient(localhost(SERVER_PORT));
-        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, MediaTypes.CT_TEXT_PLAIN));
+        CoapResponse resp = client.sendSync(put("/chang-res").payload(body, ContentFormat.CT_TEXT_PLAIN));
 
         assertEquals(Code.C204_CHANGED, resp.getCode());
         assertEquals(body, changeableBigResource.body);
@@ -254,7 +254,7 @@ public class ClientServerWithBlocksTest {
         String body = BIG_RESOURCE + "_doubleBlockRequestHardcore";
 
         CoapClient client = CoapServer.builder().transport(InMemoryCoapTransport.create()).blockSize(BlockSize.S_128).buildClient(localhost(SERVER_PORT));
-        CoapResponse resp = client.sendSync(post("/chang-res").payload(body, MediaTypes.CT_TEXT_PLAIN));
+        CoapResponse resp = client.sendSync(post("/chang-res").payload(body, ContentFormat.CT_TEXT_PLAIN));
 
         System.out.println(resp.getPayloadString());
 

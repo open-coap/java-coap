@@ -23,7 +23,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.HeaderOptions;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
@@ -428,11 +428,11 @@ public class CoapPacket {
         if (headers().getContentFormat() == null) {
             return false;
         }
-        return headers().getContentFormat() == MediaTypes.CT_TEXT_PLAIN
-                || headers().getContentFormat() == MediaTypes.CT_APPLICATION_JSON
-                || headers().getContentFormat() == MediaTypes.CT_APPLICATION_LINK__FORMAT
-                || headers().getContentFormat() == MediaTypes.CT_APPLICATION_XML
-                || headers().getContentFormat() == MediaTypes.CT_APPLICATION_LWM2M_JSON;
+        return headers().getContentFormat() == ContentFormat.CT_TEXT_PLAIN
+                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_JSON
+                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_LINK__FORMAT
+                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_XML
+                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_LWM2M_JSON;
     }
 
     public boolean isEmptyAck() {
