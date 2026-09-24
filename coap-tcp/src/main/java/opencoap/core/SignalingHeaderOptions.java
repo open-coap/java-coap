@@ -25,15 +25,15 @@ import opencoap.codec.RawOption;
  * Implements CoAP additional header options from
  * - RFC 8323
  */
-public class SignallingHeaderOptions extends HeaderOptions {
+public class SignalingHeaderOptions extends HeaderOptions {
 
     private static final byte SIGN_OPTION_2 = 2;
     private static final byte SIGN_OPTION_4 = 4;
     private final Code code;
-    private Opaque signallingOption2;
-    private Opaque signallingOption4;
+    private Opaque signalingOption2;
+    private Opaque signalingOption4;
 
-    public SignallingHeaderOptions(Code code) {
+    public SignalingHeaderOptions(Code code) {
         require(code.isSignaling());
         this.code = code;
     }
@@ -42,10 +42,10 @@ public class SignallingHeaderOptions extends HeaderOptions {
     public boolean parseOption(int type, Opaque data) {
         switch (type) {
             case SIGN_OPTION_2:
-                signallingOption2 = data;
+                signalingOption2 = data;
                 break;
             case SIGN_OPTION_4:
-                signallingOption4 = data;
+                signalingOption4 = data;
                 break;
             default:
                 return super.parseOption(type, data);
@@ -57,11 +57,11 @@ public class SignallingHeaderOptions extends HeaderOptions {
     @Override
     public List<RawOption> getRawOptions() {
         List<RawOption> l = super.getRawOptions();
-        if (signallingOption2 != null) {
-            l.add(new RawOption(SIGN_OPTION_2, signallingOption2));
+        if (signalingOption2 != null) {
+            l.add(new RawOption(SIGN_OPTION_2, signalingOption2));
         }
-        if (signallingOption4 != null) {
-            l.add(new RawOption(SIGN_OPTION_4, signallingOption4));
+        if (signalingOption4 != null) {
+            l.add(new RawOption(SIGN_OPTION_4, signalingOption4));
         }
 
         return l;
@@ -71,45 +71,45 @@ public class SignallingHeaderOptions extends HeaderOptions {
     public void buildToString(StringBuilder sb) {
         super.buildToString(sb);
 
-        if (signallingOption2 != null || signallingOption4 != null) {
+        if (signalingOption2 != null || signalingOption4 != null) {
             SignalingOptions signOpt = new SignalingOptions();
-            if (signallingOption2 != null) {
-                signOpt.parse(2, signallingOption2, code);
+            if (signalingOption2 != null) {
+                signOpt.parse(2, signalingOption2, code);
             }
-            if (signallingOption4 != null) {
-                signOpt.parse(4, signallingOption4, code);
+            if (signalingOption4 != null) {
+                signOpt.parse(4, signalingOption4, code);
             }
             sb.append(signOpt.toString());
         }
     }
 
-    public SignalingOptions toSignallingOptions(Code code) {
-        if (signallingOption2 == null && signallingOption4 == null) {
+    public SignalingOptions toSignalingOptions(Code code) {
+        if (signalingOption2 == null && signalingOption4 == null) {
             return null;
         } else {
             SignalingOptions signalingOptions = new SignalingOptions();
-            if (signallingOption2 != null) {
-                signalingOptions.parse(SIGN_OPTION_2, signallingOption2, code);
+            if (signalingOption2 != null) {
+                signalingOptions.parse(SIGN_OPTION_2, signalingOption2, code);
             }
-            if (signallingOption4 != null) {
-                signalingOptions.parse(SIGN_OPTION_4, signallingOption4, code);
+            if (signalingOption4 != null) {
+                signalingOptions.parse(SIGN_OPTION_4, signalingOption4, code);
             }
             return signalingOptions;
         }
     }
 
-    public void putSignallingOptions(SignalingOptions signalingOptions) {
-        this.signallingOption2 = signalingOptions.serializeOption2();
-        this.signallingOption4 = signalingOptions.serializeOption4();
+    public void putSignalingOptions(SignalingOptions signalingOptions) {
+        this.signalingOption2 = signalingOptions.serializeOption2();
+        this.signalingOption4 = signalingOptions.serializeOption4();
     }
 
     @Override
     public HeaderOptions duplicate() {
-        SignallingHeaderOptions opts = new SignallingHeaderOptions(code);
+        SignalingHeaderOptions opts = new SignalingHeaderOptions(code);
         super.duplicate(opts);
 
-        opts.signallingOption2 = signallingOption2;
-        opts.signallingOption4 = signallingOption4;
+        opts.signalingOption2 = signalingOption2;
+        opts.signalingOption4 = signalingOption4;
 
         return opts;
     }
@@ -126,12 +126,12 @@ public class SignallingHeaderOptions extends HeaderOptions {
             return false;
         }
 
-        SignallingHeaderOptions that = (SignallingHeaderOptions) o;
-        return code == that.code && Objects.equals(signallingOption2, that.signallingOption2) && Objects.equals(signallingOption4, that.signallingOption4);
+        SignalingHeaderOptions that = (SignalingHeaderOptions) o;
+        return code == that.code && Objects.equals(signalingOption2, that.signalingOption2) && Objects.equals(signalingOption4, that.signalingOption4);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), code, signallingOption2, signallingOption4);
+        return Objects.hash(super.hashCode(), code, signalingOption2, signalingOption4);
     }
 }

@@ -117,7 +117,7 @@ public enum Code {
                         return C201_CREATED;
                     case PUT:
                     case PATCH:
-                    case iPATCH:
+                    case IPATCH:
                         return C204_CHANGED;
                     case DELETE:
                         return C202_DELETED;

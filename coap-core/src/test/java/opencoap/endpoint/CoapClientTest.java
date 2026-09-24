@@ -20,7 +20,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.observe;
 import static opencoap.core.CoapRequest.ping;
-import static opencoap.core.MediaTypes.CT_TEXT_PLAIN;
+import static opencoap.core.ContentFormat.CT_TEXT_PLAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;

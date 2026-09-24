@@ -89,7 +89,7 @@ public class CoapOptionsBuilderTest {
     @Test
     public void shouldBuildWithAllOptions() {
         HeaderOptions options = options()
-                .contentFormat(MediaTypes.CT_APPLICATION_JSON)
+                .contentFormat(ContentFormat.CT_APPLICATION_JSON)
                 .maxAge(Duration.ofHours(1))
                 .uriPath("/test")
                 .host("host.com")
@@ -102,7 +102,7 @@ public class CoapOptionsBuilderTest {
                 .ifMatch(decodeHex("ff"))
                 .ifNonMatch()
                 .etag(decodeHex("00"))
-                .accept(MediaTypes.CT_APPLICATION_CBOR)
+                .accept(ContentFormat.CT_APPLICATION_CBOR)
                 .proxyUri("/proxy")
                 .proxyScheme("http")
                 .locationPath("/location")
@@ -114,7 +114,7 @@ public class CoapOptionsBuilderTest {
                 .build();
 
         HeaderOptions expected = new HeaderOptions();
-        expected.setContentFormat(MediaTypes.CT_APPLICATION_JSON);
+        expected.setContentFormat(ContentFormat.CT_APPLICATION_JSON);
         expected.setMaxAge(3600L);
         expected.setUriPath("/test");
         expected.setUriHost("host.com");
@@ -127,7 +127,7 @@ public class CoapOptionsBuilderTest {
         expected.setIfMatch(new Opaque[]{decodeHex("ff")});
         expected.setIfNonMatch(true);
         expected.setEtag(decodeHex("00"));
-        expected.setAccept(MediaTypes.CT_APPLICATION_CBOR);
+        expected.setAccept(ContentFormat.CT_APPLICATION_CBOR);
         expected.setProxyUri("/proxy");
         expected.setProxyScheme("http");
         expected.setLocationPath("/location");

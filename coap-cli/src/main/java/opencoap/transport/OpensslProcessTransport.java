@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Optional;
-import opencoap.cli.providers.CoapSerializer;
+import opencoap.cli.providers.CoapPacketCodec;
 import opencoap.cli.providers.Pair;
 import opencoap.core.Opaque;
 import org.slf4j.Logger;
@@ -31,8 +31,8 @@ public class OpensslProcessTransport extends StreamBlockingTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpensslProcessTransport.class);
     private final Process process;
 
-    public OpensslProcessTransport(Process process, InetSocketAddress destination, CoapSerializer coapSerializer) {
-        super(process.getOutputStream(), process.getInputStream(), destination, coapSerializer);
+    public OpensslProcessTransport(Process process, InetSocketAddress destination, CoapPacketCodec codec) {
+        super(process.getOutputStream(), process.getInputStream(), destination, codec);
         this.process = process;
     }
 

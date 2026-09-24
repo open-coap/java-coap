@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
- * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
+ * Copyright (C) 2011-2018 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opencoap.endpoint;
+package opencoap.endpoint.pipeline;
 
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import opencoap.core.CoapCodeException;
+import opencoap.core.Code;
 
-final class MessageIdSupplierImpl implements MessageIdSupplier {
+class CoapRequestEntityIncompleteException extends CoapCodeException {
 
-    private final AtomicInteger globalMid;
-
-    MessageIdSupplierImpl() {
-        this(new Random().nextInt(0xFFFF));
-    }
-
-    MessageIdSupplierImpl(int initMid) {
-        this.globalMid = new AtomicInteger(initMid);
-    }
-
-    @Override
-    public int getNextMID() {
-        return 0xFFFF & globalMid.incrementAndGet();
+    CoapRequestEntityIncompleteException() {
+        super(Code.C408_REQUEST_ENTITY_INCOMPLETE);
     }
 }

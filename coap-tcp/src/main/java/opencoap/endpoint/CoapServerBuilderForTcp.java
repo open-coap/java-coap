@@ -65,7 +65,7 @@ public class CoapServerBuilderForTcp {
     private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
     CoapServerBuilderForTcp() {
-        csmStorage = new CapabilitiesStorageImpl();
+        csmStorage = new HashMapCapabilitiesStorage();
     }
 
     private CapabilitiesStorage capabilities() {

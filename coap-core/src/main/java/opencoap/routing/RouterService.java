@@ -114,7 +114,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
         }
 
         public RouteBuilder iPatch(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.iPATCH, uriPath, service);
+            return add(Method.IPATCH, uriPath, service);
         }
 
         public RouteBuilder any(String uriPath, Service<CoapRequest, CoapResponse> service) {

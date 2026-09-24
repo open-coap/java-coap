@@ -28,7 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import opencoap.core.Code;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import org.slf4j.Logger;
@@ -77,7 +77,7 @@ public final class RegistrationManager {
     public CompletableFuture<Void> register() {
         return client.send(post(registrationUri.getPath())
                         .queries(registrationUri.getQuery().split("&"))
-                        .payload(registrationLinks, MediaTypes.CT_APPLICATION_LINK__FORMAT)
+                        .payload(registrationLinks, ContentFormat.CT_APPLICATION_LINK__FORMAT)
                 )
                 .thenAccept(resp -> {
                     if (resp.getCode() == Code.C201_CREATED) {

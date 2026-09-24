@@ -45,31 +45,31 @@ public class OpensslProvider implements TransportProvider {
 
     @Override
     public CoapTcpTransport createTCP(InetSocketAddress destAdr, KeyStore ks) throws GeneralSecurityException, IOException {
-        return create(CoapSerializer.TCP, destAdr, ks, false);
+        return create(CoapPacketCodec.TCP, destAdr, ks, false);
     }
 
     @Override
     public CoapTransport createUDP(InetSocketAddress destAdr, KeyStore ks, Pair<String, Opaque> psk) throws GeneralSecurityException, IOException {
         if (psk == null) {
-            return create(CoapSerializer.UDP, destAdr, ks, true);
+            return create(CoapPacketCodec.UDP, destAdr, ks, true);
         } else {
-            return create(CoapSerializer.UDP, destAdr, psk, true);
+            return create(CoapPacketCodec.UDP, destAdr, psk, true);
         }
     }
 
-    private CoapTransport create(CoapSerializer coapSerializer, InetSocketAddress destAdr, Pair<String, Opaque> psk, Boolean isDtls) throws GeneralSecurityException, IOException {
+    private CoapTransport create(CoapPacketCodec codec, InetSocketAddress destAdr, Pair<String, Opaque> psk, Boolean isDtls) throws GeneralSecurityException, IOException {
         ProcessBuilder process = OpensslProcessTransport.createProcess(psk, destAdr, isDtls, cipherSuite);
 
-        return new OpensslProcessTransport(process.start(), destAdr, coapSerializer);
+        return new OpensslProcessTransport(process.start(), destAdr, codec);
     }
 
-    private CoapTcpTransport create(CoapSerializer coapSerializer, InetSocketAddress destAdr, KeyStore ks, Boolean isDtls) throws GeneralSecurityException, IOException {
+    private CoapTcpTransport create(CoapPacketCodec codec, InetSocketAddress destAdr, KeyStore ks, Boolean isDtls) throws GeneralSecurityException, IOException {
         String alias = findKeyAlias(ks);
         File temp = keyPairToTempFile(alias, ks);
 
         ProcessBuilder process = OpensslProcessTransport.createProcess(temp.getAbsolutePath(), destAdr, isDtls, cipherSuite);
 
-        return new OpensslProcessTransport(process.start(), destAdr, coapSerializer);
+        return new OpensslProcessTransport(process.start(), destAdr, codec);
     }
 
     @SuppressWarnings("PMD.RelianceOnDefaultCharset") // in jdk 8 there is no support to specify charset

@@ -19,8 +19,12 @@ package opencoap.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MediaTypes {
-    //https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
+/**
+ * Constants from the IANA CoAP Content-Formats registry.
+ *
+ * @see <a href="https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats">IANA CoAP Content-Formats</a>
+ */
+public class ContentFormat {
 
     //RFC 7252
     public static final short CT_TEXT_PLAIN = 0;
@@ -102,33 +106,32 @@ public class MediaTypes {
     }
 
     /**
-     * Converts CoAP content type to HTML
+     * Converts CoAP content format to a MIME media type.
      *
-     * @param contentType content type
-     * @return HTML content type or null if could not convert
+     * @param contentFormat content format
+     * @return MIME media type or null if could not convert
      */
-    public static String contentFormatToString(Short contentType) {
-        if (contentType == null) {
+    public static String contentFormatToString(Short contentFormat) {
+        if (contentFormat == null) {
             return null;
         }
-        return MEDIA_TYPE_MAP.containsKey(contentType) ? MEDIA_TYPE_MAP.get(contentType) : null;
+        return MEDIA_TYPE_MAP.get(contentFormat);
     }
 
     /**
-     * Parses MIME content format to CoAP content format. If can not find
-     * matching content type, null is returned.
+     * Parses MIME media type to CoAP content format. If can not find
+     * matching content format, null is returned.
      *
      * @param contentType MIME content type
-     * @return CoAP content type
+     * @return CoAP content format
      */
     public static Short parseContentFormat(String contentType) {
         if (contentType == null) {
             return null;
         }
-        for (short ct : MEDIA_TYPE_MAP.keySet()) {
-            //if (ct)
-            if (MEDIA_TYPE_MAP.get(ct).equals(contentType)) {
-                return ct;
+        for (Map.Entry<Short, String> entry : MEDIA_TYPE_MAP.entrySet()) {
+            if (entry.getValue().equals(contentType)) {
+                return entry.getKey();
             }
         }
         return null;

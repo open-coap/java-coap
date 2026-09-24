@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import opencoap.core.CoapRequest;
 import opencoap.core.Code;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
@@ -35,7 +35,7 @@ class CoapTcpPacketConverterTest {
     void convertRequestToCoap() {
         CoapRequest req = post("/path1")
                 .token(123)
-                .payload("<test>", MediaTypes.CT_APPLICATION_XML)
+                .payload("<test>", ContentFormat.CT_APPLICATION_XML)
                 .to(LOCAL_5683);
 
         // when
@@ -47,7 +47,7 @@ class CoapTcpPacketConverterTest {
         expected.setToken(variableUInt(123));
         expected.setMethod(Method.POST);
         expected.headers().setUriPath("/path1");
-        expected.headers().setContentFormat(MediaTypes.CT_APPLICATION_XML);
+        expected.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
         expected.setPayload("<test>");
 
         assertEquals(expected, coapPacket);
