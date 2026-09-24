@@ -57,11 +57,11 @@ public class BlockwiseTransferWithTest {
     @Test
     public void block1_default_size() throws Exception {
 
-        transport.when(newCoapPacket(1).put().uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).payload("123456789012345|123456789012345|dupa").build())
+        transport.when(newCoapPacket(1).put().uriPath("/path1").contFormat(ContentFormat.TEXT_PLAIN).payload("123456789012345|123456789012345|dupa").build())
                 .then(newCoapPacket(1).ack(Code.C204_CHANGED).build());
 
 
-        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, ContentFormat.CT_TEXT_PLAIN)).getCode());
+        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, ContentFormat.TEXT_PLAIN)).getCode());
 
     }
 

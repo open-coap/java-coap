@@ -17,7 +17,7 @@
 package opencoap.linkformat;
 
 import static java.time.Duration.ofMinutes;
-import static opencoap.core.ContentFormat.CT_APPLICATION_LINK__FORMAT;
+import static opencoap.core.ContentFormat.APPLICATION_LINK_FORMAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,7 +62,7 @@ public class RegistrationManagerTest {
 
     @Test
     public void register_andScheduleUpdateBeforeExpiration() throws Exception {
-        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(1).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(3600));
         RegistrationManager reg = new RegistrationManager(deviceSrv, URI.create("coap://localhost:5683/rd?ep=stub-device-01&lt=7200"), "", scheduledExecutor);
 
@@ -77,7 +77,7 @@ public class RegistrationManagerTest {
 
     @Test
     public void register_shortLifetime() throws Exception {
-        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=59").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=59").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(1).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(59));
         RegistrationManager reg = new RegistrationManager(deviceSrv, URI.create("coap://localhost:5683/rd?ep=stub-device-01&lt=59"), "", scheduledExecutor);
 
@@ -91,7 +91,7 @@ public class RegistrationManagerTest {
 
     @Test
     public void register_failFromServer() throws Exception {
-        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(1).ack(Code.C400_BAD_REQUEST));
         RegistrationManager reg = new RegistrationManager(deviceSrv, URI.create("coap://localhost:5683/rd?ep=stub-device-01&lt=7200"), "", scheduledExecutor);
 
@@ -105,7 +105,7 @@ public class RegistrationManagerTest {
 
     @Test
     public void register_fail_connection() throws Exception {
-        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(APPLICATION_LINK_FORMAT))
                 .thenThrow(new IOException());
         RegistrationManager reg = new RegistrationManager(deviceSrv, URI.create("coap://localhost:5683/rd?ep=stub-device-01&lt=7200"), "", scheduledExecutor);
 
@@ -118,7 +118,7 @@ public class RegistrationManagerTest {
 
 
         //run scheduled task
-        trnsport.when(newCoapPacket(2).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(2).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=7200").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(2).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(3600));
 
         task.run();
@@ -165,7 +165,7 @@ public class RegistrationManagerTest {
 
         trnsport.when(newCoapPacket(2).post().uriPath("/stub/0001"))
                 .then(newCoapPacket(2).ack(Code.C404_NOT_FOUND));
-        trnsport.when(newCoapPacket(3).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(3).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(3).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(102));
 
         //when
@@ -183,7 +183,7 @@ public class RegistrationManagerTest {
 
         trnsport.when(newCoapPacket(2).post().uriPath("/stub/0001"))
                 .thenThrow(new IOException());
-        trnsport.when(newCoapPacket(3).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(3).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(3).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(102));
 
         //when
@@ -229,7 +229,7 @@ public class RegistrationManagerTest {
     }
 
     private RegistrationManager registered() {
-        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(CT_APPLICATION_LINK__FORMAT))
+        trnsport.when(newCoapPacket(1).post().uriPath("/rd").uriQuery("ep=stub-device-01&lt=100").contFormat(APPLICATION_LINK_FORMAT))
                 .then(newCoapPacket(1).ack(Code.C201_CREATED).locPath("/stub/0001").maxAge(100));
         RegistrationManager reg = new RegistrationManager(deviceSrv, URI.create("coap://localhost:5683/rd?ep=stub-device-01&lt=100"), "", scheduledExecutor);
 

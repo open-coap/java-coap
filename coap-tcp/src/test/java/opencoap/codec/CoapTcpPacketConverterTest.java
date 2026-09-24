@@ -35,7 +35,7 @@ class CoapTcpPacketConverterTest {
     void convertRequestToCoap() {
         CoapRequest req = post("/path1")
                 .token(123)
-                .payload("<test>", ContentFormat.CT_APPLICATION_XML)
+                .payload("<test>", ContentFormat.APPLICATION_XML)
                 .to(LOCAL_5683);
 
         // when
@@ -47,7 +47,7 @@ class CoapTcpPacketConverterTest {
         expected.setToken(variableUInt(123));
         expected.setMethod(Method.POST);
         expected.headers().setUriPath("/path1");
-        expected.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
+        expected.headers().setContentFormat(ContentFormat.APPLICATION_XML);
         expected.setPayload("<test>");
 
         assertEquals(expected, coapPacket);

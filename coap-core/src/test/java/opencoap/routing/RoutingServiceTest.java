@@ -23,8 +23,8 @@ import static opencoap.core.CoapRequest.iPatch;
 import static opencoap.core.CoapRequest.patch;
 import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapRequest.put;
-import static opencoap.core.ContentFormat.CT_APPLICATION_JSON;
-import static opencoap.core.ContentFormat.CT_TEXT_PLAIN;
+import static opencoap.core.ContentFormat.APPLICATION_JSON;
+import static opencoap.core.ContentFormat.TEXT_PLAIN;
 import static opencoap.util.Assertions.assertEquals;
 import static opencoap.util.CoapRequestBuilderFilter.REQUEST_BUILDER_FILTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +42,7 @@ public class RoutingServiceTest {
 
     private Service<CoapRequest.Builder, CoapResponse> routeService = REQUEST_BUILDER_FILTER.then(RouterService.builder()
             .get("/test/1",
-                    req -> CoapResponse.ok("Test1", CT_TEXT_PLAIN).toFuture()
+                    req -> CoapResponse.ok("Test1", TEXT_PLAIN).toFuture()
             )
             .post("/test/bad-request",
                     req -> CoapResponse.badRequest().toFuture()
@@ -54,7 +54,7 @@ public class RoutingServiceTest {
                     req -> completedFuture(CoapResponse.of(Code.C202_DELETED))
             )
             .fetch("/fetchtest/",
-                    req -> CoapResponse.ok("{\"key1:\" [\"value1\", \"value2\"]}", CT_APPLICATION_JSON).toFuture()
+                    req -> CoapResponse.ok("{\"key1:\" [\"value1\", \"value2\"]}", APPLICATION_JSON).toFuture()
             )
             .patch("/test4/",
                     req -> completedFuture(CoapResponse.of(Code.C204_CHANGED))
@@ -78,7 +78,7 @@ public class RoutingServiceTest {
         CompletableFuture<CoapResponse> resp2 = routeService.apply(post("/test/bad-request"));
 
         // then
-        assertEquals(CoapResponse.ok("Test1", CT_TEXT_PLAIN), resp1.get());
+        assertEquals(CoapResponse.ok("Test1", TEXT_PLAIN), resp1.get());
         assertEquals(CoapResponse.badRequest(), resp2.get());
     }
 

@@ -61,7 +61,7 @@ public class CoapSerializerBenchmark {
         packet.headers().setEtag(new Opaque(new byte[]{89, 10, 31, 7, 1}));
         packet.headers().setObserve(9876);
         packet.headers().setBlock1Req(new BlockOption(13, BlockSize.S_16, true));
-        packet.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
+        packet.headers().setContentFormat(ContentFormat.APPLICATION_XML);
         packet.headers().setLocationPath("/1/222/33333/4444444/555555555555555555555555");
         packet.headers().setUriQueryList("ppar=val1", "par222222222222222222222=val2222222222222222222222222222222222");
         packet.setPayload("<k>12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</k>");

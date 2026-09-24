@@ -20,7 +20,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.observe;
 import static opencoap.core.CoapRequest.ping;
-import static opencoap.core.ContentFormat.CT_TEXT_PLAIN;
+import static opencoap.core.ContentFormat.TEXT_PLAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -53,7 +53,7 @@ public class CoapClientTest {
     @Test
     public void request() {
         given(clientService.apply(get("/test").from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
+                .willReturn(CoapResponse.ok("ABC", TEXT_PLAIN).toFuture());
 
         // when
         CompletableFuture<CoapResponse> resp = client.send(get("/test").from(LOCAL_5683));
@@ -77,7 +77,7 @@ public class CoapClientTest {
     @Test
     public void syncRequest() throws CoapException {
         given(clientService.apply(get("/test").from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok("ABC", CT_TEXT_PLAIN).toFuture());
+                .willReturn(CoapResponse.ok("ABC", TEXT_PLAIN).toFuture());
 
         // when
         CoapResponse resp = client.sendSync(get("/test").from(LOCAL_5683));
@@ -90,7 +90,7 @@ public class CoapClientTest {
     @Test
     public void observationTest() throws Exception {
         given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
-                .willReturn(CoapResponse.ok().payload("1").contentFormat(CT_TEXT_PLAIN).observe(1).toFuture());
+                .willReturn(CoapResponse.ok().payload("1").contentFormat(TEXT_PLAIN).observe(1).toFuture());
 
         // when
         CompletableFuture<CoapResponse> resp = client.send(observe("/test").token(token1001));

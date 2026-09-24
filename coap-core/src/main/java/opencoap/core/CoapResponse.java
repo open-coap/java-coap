@@ -70,7 +70,7 @@ public final class CoapResponse {
         return new CoapResponse.Builder(Code.C205_CONTENT).payload(payload);
     }
 
-    public static CoapResponse.Builder ok(String payload, short contentFormat) {
+    public static CoapResponse.Builder ok(String payload, int contentFormat) {
         return new CoapResponse.Builder(Code.C205_CONTENT).payload(payload).contentFormat(contentFormat);
     }
 
@@ -203,7 +203,7 @@ public final class CoapResponse {
             return payload(Opaque.of(payload));
         }
 
-        public Builder payload(String payload, short contentFormat) {
+        public Builder payload(String payload, int contentFormat) {
             options.contentFormat(contentFormat);
             return payload(Opaque.of(payload));
         }
@@ -263,7 +263,7 @@ public final class CoapResponse {
             return this;
         }
 
-        public Builder contentFormat(short contentFormat) {
+        public Builder contentFormat(int contentFormat) {
             options.contentFormat(contentFormat);
             return this;
         }
