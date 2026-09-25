@@ -19,10 +19,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import opencoap.core.CoapOptions;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.HeaderOptions;
 import opencoap.core.Opaque;
 import opencoap.core.Service;
 
@@ -45,7 +45,7 @@ public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapReques
 
     private CoapResponse updateEtag(CoapResponse resp) {
         return resp.withOptions(o ->
-                o.ifNull(HeaderOptions::getEtagArray, __ ->
+                o.ifNull(CoapOptions::getEtagArray, __ ->
                         o.etag(etagGenerator.apply(resp.getPayload()))
                 )
         );

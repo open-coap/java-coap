@@ -27,12 +27,12 @@ import java.util.function.Consumer;
 public final class CoapRequest {
     private final Method method;
     private final Opaque token;
-    private final HeaderOptions options;
+    private final CoapOptions options;
     private final Opaque payload;
     private final InetSocketAddress peerAddress;
     private final TransportContext transContext;
 
-    public CoapRequest(Method method, Opaque token, HeaderOptions options, Opaque payload, InetSocketAddress peerAddress, TransportContext transContext) {
+    public CoapRequest(Method method, Opaque token, CoapOptions options, Opaque payload, InetSocketAddress peerAddress, TransportContext transContext) {
         this.method = Objects.requireNonNull(method);
         this.token = Objects.requireNonNull(token);
         this.options = Objects.requireNonNull(options);
@@ -45,7 +45,7 @@ public final class CoapRequest {
         // ping
         this.method = null;
         this.token = Opaque.EMPTY;
-        this.options = new HeaderOptions();
+        this.options = new CoapOptions();
         this.payload = Opaque.EMPTY;
         this.peerAddress = Objects.requireNonNull(peerAddress);
         this.transContext = Objects.requireNonNull(transContext);
@@ -104,7 +104,7 @@ public final class CoapRequest {
         return token;
     }
 
-    public HeaderOptions options() {
+    public CoapOptions options() {
         return options;
     }
 

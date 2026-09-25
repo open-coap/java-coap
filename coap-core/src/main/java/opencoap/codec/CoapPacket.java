@@ -22,7 +22,7 @@ import java.util.Objects;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.HeaderOptions;
+import opencoap.core.CoapOptions;
 import opencoap.core.ContentFormat;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
@@ -41,7 +41,7 @@ public class CoapPacket {
     private Method method;
     private Opaque payload = Opaque.EMPTY;
     private final InetSocketAddress remoteAddress;
-    private HeaderOptions options = new HeaderOptions();
+    private CoapOptions options = new CoapOptions();
     private Opaque token = Opaque.EMPTY;
     private TransportContext transportContext = TransportContext.EMPTY;
 
@@ -131,11 +131,11 @@ public class CoapPacket {
      *
      * @return header options instance
      */
-    public final HeaderOptions headers() {
+    public final CoapOptions headers() {
         return options;
     }
 
-    public void setHeaderOptions(HeaderOptions options) {
+    public void setHeaderOptions(CoapOptions options) {
         this.options = options;
     }
 

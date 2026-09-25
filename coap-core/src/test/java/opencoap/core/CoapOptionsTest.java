@@ -16,9 +16,9 @@
  */
 package opencoap.core;
 
-import static opencoap.core.BasicHeaderOptions.hasNoCacheKey;
-import static opencoap.core.BasicHeaderOptions.isCritical;
-import static opencoap.core.BasicHeaderOptions.isUnsave;
+import static opencoap.core.CoapOptions.hasNoCacheKey;
+import static opencoap.core.CoapOptions.isCritical;
+import static opencoap.core.CoapOptions.isUnsave;
 import static opencoap.core.Opaque.decodeHex;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -38,42 +38,43 @@ import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import opencoap.codec.CoapMessageFormatException;
+import opencoap.codec.CoapSerializer;
 import opencoap.codec.DataConvertingUtility;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class HeaderOptionsTest {
+public class CoapOptionsTest {
 
     @Test
     public void testEmpty() throws IOException, CoapException {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(0, baos.size());
     }
 
     @Test
     public void headerWithLargeDelta() throws IOException, CoapException {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setProxyUri("/testuri"); //35
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
         byte[] expected = new byte[]{(byte) 0xD8, 0x16, '/', 't', 'e', 's', 't', 'u', 'r', 'i'};
         assertArrayEquals(expected, baos.toByteArray());
-        BasicHeaderOptions hdr2 = new BasicHeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(expected));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(expected));
         assertEquals(hdr.getProxyUri(), hdr2.getProxyUri());
         assertEquals(hdr.getProxyScheme(), hdr2.getProxyScheme());
 
         //larger delta
-        hdr = new BasicHeaderOptions();
+        hdr = new CoapOptions();
         hdr.put(300, Opaque.of("test"));
 
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
         expected = new byte[]{(byte) 0xE4, 0x00, 0x1F, 't', 'e', 's', 't'};
         assertArrayEquals(expected, baos.toByteArray());
@@ -81,9 +82,9 @@ public class HeaderOptionsTest {
 
     @Test
     public void testMultipleHeaders() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setUriPath("/test/uri/path");
-        //hdr.setToken(HeaderOptions.convertVariableUInt(123456));
+        //hdr.setToken(CoapOptions.convertVariableUInt(123456));
         hdr.setContentFormat(1);
         hdr.setEtag(Opaque.variableUInt((56789)));
         hdr.setLocationPath("/location/path");
@@ -95,10 +96,10 @@ public class HeaderOptionsTest {
         hdr.put(36, Opaque.variableUInt((1357)));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
-        HeaderOptions hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
 
         System.out.println(hdr);
         System.out.println(hdr2);
@@ -110,15 +111,15 @@ public class HeaderOptionsTest {
 
     @Test
     public void testWithEmptyLocation() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         //hdr.setUriPath("/test/uri/path");
         hdr.setLocationPath("");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
-        HeaderOptions hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
 
         System.out.println(hdr);
         System.out.println(hdr2);
@@ -127,9 +128,9 @@ public class HeaderOptionsTest {
 
     @Test
     public void testWithAccept() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setAccept(123);
-        HeaderOptions hdr2 = deserialize(serialize(hdr));
+        CoapOptions hdr2 = deserialize(serialize(hdr));
 
         System.out.println(hdr.toString());
         System.out.println(hdr2.toString());
@@ -143,7 +144,7 @@ public class HeaderOptionsTest {
 
     @Test
     public void should_fail_when_illegal_accept_value() {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
 
         assertThatThrownBy(() -> hdr.setAccept(-1)).isExactlyInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> hdr.setAccept(0x10000)).isExactlyInstanceOf(IllegalArgumentException.class);
@@ -151,15 +152,15 @@ public class HeaderOptionsTest {
 
     @Test
     public void testWithPath() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setUriPath("/path2");
         hdr.setLocationPath("");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
-        HeaderOptions hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
 
         System.out.println(hdr);
         System.out.println(hdr2);
@@ -168,7 +169,7 @@ public class HeaderOptionsTest {
 
     @Test
     public void testMultipleExHeaders() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setBlock1Req(new BlockOption(2, BlockSize.S_16, true));
         hdr.setBlock2Res(new BlockOption(4, BlockSize.S_1024, false));
         hdr.setObserve(4321);
@@ -176,7 +177,7 @@ public class HeaderOptionsTest {
         hdr.setRequestTag(Opaque.of("tag-0001"));
         hdr.setCorrelationTag("RequestId1234");
 
-        HeaderOptions hdr2 = deserialize(serialize(hdr));
+        CoapOptions hdr2 = deserialize(serialize(hdr));
 
         System.out.println(hdr);
         System.out.println(hdr2);
@@ -188,16 +189,16 @@ public class HeaderOptionsTest {
 
     @Test
     public void testWithLargeOptionNumbers() throws IOException, CoapException {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.put(1000, Opaque.variableUInt(123456));
         hdr.put(12000, Opaque.variableUInt(98));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
-        HeaderOptions hdr2 = new HeaderOptions();
+        CoapOptions hdr2 = new CoapOptions();
         System.out.println(Arrays.toString(baos.toByteArray()));
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
     }
 
     @Test
@@ -222,17 +223,17 @@ public class HeaderOptionsTest {
                 + "123456789 1234567890123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
                 + "123456789 1234567890123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "); //900
 
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.put(101, OPT_VAL1);
         hdr.put(102, OPT_VAL2);
         hdr.put(103, OPT_VAL3);
         hdr.put(104, OPT_VAL4);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
 
-        BasicHeaderOptions hdr2 = new BasicHeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
         System.out.println(hdr);
         System.out.println(hdr2);
         assertEquals(hdr, hdr2);
@@ -247,11 +248,11 @@ public class HeaderOptionsTest {
 
     @Test
     public void specialHeaderValueSizes() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setUriPath("/123456789012"); //12
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(1 + 12, baos.size());
         assertEquals((byte) 0xBC, baos.toByteArray()[0]);    //header
         assertEquals((byte) '1', baos.toByteArray()[1]);     //first byte of option value
@@ -259,7 +260,7 @@ public class HeaderOptionsTest {
         hdr.setUriPath("/1234567890123"); //13
 
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(2 + 13, baos.size());
         assertEquals((byte) 0xBD, baos.toByteArray()[0]);    //header
         assertEquals((byte) 0x00, baos.toByteArray()[1]);    //extended len
@@ -270,7 +271,7 @@ public class HeaderOptionsTest {
                 + "12345678901234567890123456789012345678901234567890123456789012345678"); //268
 
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(2 + 268, baos.size());
         assertEquals((byte) 0xBD, baos.toByteArray()[0]);    //header
         assertEquals((byte) 0xFF, baos.toByteArray()[1]);    //extended len
@@ -281,7 +282,7 @@ public class HeaderOptionsTest {
                 + "123456789012345678901234567890123456789012345678901234567890123456789"); //269
 
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(3 + 269, baos.size());
         assertEquals((byte) 0xBE, baos.toByteArray()[0]);    //header
         assertEquals((byte) 0x00, baos.toByteArray()[1]);    //extended len
@@ -291,48 +292,48 @@ public class HeaderOptionsTest {
 
     @Test
     public void testWithLargeOptionAmount() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setUriPath("/1/2/3");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(6, baos.size());
 
         hdr.setUriPath("/1/2/3/4/5/6/7/8/9/0/1/2/3/4");
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(2 * 14, baos.size());
-        HeaderOptions hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
         assertEquals(hdr, hdr2);
 
         hdr.setUriPath("/1/2/3/4/5/6/7/8/9/0/1/2/3/4/5");
         baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         assertEquals(2 * 15, baos.size());
-        hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+        hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(baos.toByteArray()));
         assertEquals(hdr, hdr2);
 
     }
 
     @Test
     public void testEaquals() {
-        BasicHeaderOptions hdr1 = new BasicHeaderOptions();
+        CoapOptions hdr1 = new CoapOptions();
         hdr1.setContentFormat(1);
         hdr1.setUriPath("/test/uri");
 
-        BasicHeaderOptions hdr2 = new BasicHeaderOptions();
+        CoapOptions hdr2 = new CoapOptions();
         hdr2.setContentFormat(1);
         hdr2.setUriPath("/test/uri");
 
         assertTrue(hdr1.equals(hdr2));
         assertEquals(hdr1.hashCode(), hdr2.hashCode());
 
-        HeaderOptions hdr3 = new HeaderOptions();
+        CoapOptions hdr3 = new CoapOptions();
         hdr3.setContentFormat(1);
         hdr3.setUriPath("/test/uri3");
 
-        HeaderOptions hdr4 = new HeaderOptions();
+        CoapOptions hdr4 = new CoapOptions();
         hdr4.setContentFormat(1);
         hdr4.setUriPath("/test/uri");
 
@@ -360,7 +361,7 @@ public class HeaderOptionsTest {
 
     @Test
     public void testIllegalLocationPath() {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         assertThrows(IllegalArgumentException.class, () ->
                 hdr.setLocationPath(".")
         );
@@ -368,10 +369,10 @@ public class HeaderOptionsTest {
 
     @Test
     public void testSizeOption() throws IOException, CoapException {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setSize1(3211);
 
-        HeaderOptions hdr2 = deserialize(serialize(hdr));
+        CoapOptions hdr2 = deserialize(serialize(hdr));
         assertEquals(hdr, hdr2);
         assertEquals((Integer) 3211, hdr2.getSize1());
 
@@ -385,9 +386,9 @@ public class HeaderOptionsTest {
 
     @Test
     public void malformedHeaderWithIllegalDelta() throws IOException, CoapMessageFormatException {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         assertThrows(CoapMessageFormatException.class, () ->
-                hdr.deserialize(new ByteArrayInputStream(new byte[]{(byte) 0xF3}))
+                CoapSerializer.deserializeOptions(hdr, new ByteArrayInputStream(new byte[]{(byte) 0xF3}))
         );
     }
 
@@ -406,16 +407,16 @@ public class HeaderOptionsTest {
 
     @Test
     public void uriPath_withMultipleEmptyPathSegments() throws Exception {
-        HeaderOptions hdr = new HeaderOptions();
+        CoapOptions hdr = new CoapOptions();
         hdr.setUriPath("/3//");
-        HeaderOptions hdr2 = deserialize(serialize(hdr));
+        CoapOptions hdr2 = deserialize(serialize(hdr));
         assertEquals(hdr, hdr2);
         assertEquals("/3//", hdr2.getUriPath());
     }
 
     @Test
     public void criticalOptTest() throws Exception {
-        BasicHeaderOptions h = new BasicHeaderOptions();
+        CoapOptions h = new CoapOptions();
         assertFalse(h.containsUnrecognisedCriticalOption());
 
         h.put(1000, Opaque.of("foo"));
@@ -430,26 +431,26 @@ public class HeaderOptionsTest {
 
     @Test
     public void optionCharacteristics() throws Exception {
-        assertTrue(isCritical(HeaderOptions.IF_MATCH));
-        assertFalse(isUnsave(HeaderOptions.IF_MATCH));
-        assertFalse(hasNoCacheKey(HeaderOptions.IF_MATCH));
+        assertTrue(isCritical(CoapOptions.IF_MATCH));
+        assertFalse(isUnsave(CoapOptions.IF_MATCH));
+        assertFalse(hasNoCacheKey(CoapOptions.IF_MATCH));
 
-        assertFalse(isCritical(HeaderOptions.ETAG));
-        assertFalse(isUnsave(HeaderOptions.ETAG));
-        assertFalse(hasNoCacheKey(HeaderOptions.ETAG));
+        assertFalse(isCritical(CoapOptions.ETAG));
+        assertFalse(isUnsave(CoapOptions.ETAG));
+        assertFalse(hasNoCacheKey(CoapOptions.ETAG));
 
-        assertTrue(isCritical(HeaderOptions.URI_PORT));
-        assertTrue(isUnsave(HeaderOptions.URI_PORT));
-        assertFalse(hasNoCacheKey(HeaderOptions.URI_PORT));
+        assertTrue(isCritical(CoapOptions.URI_PORT));
+        assertTrue(isUnsave(CoapOptions.URI_PORT));
+        assertFalse(hasNoCacheKey(CoapOptions.URI_PORT));
 
-        assertFalse(isCritical(HeaderOptions.SIZE1));
-        assertFalse(isUnsave(HeaderOptions.SIZE1));
-        assertTrue(hasNoCacheKey(HeaderOptions.SIZE1));
+        assertFalse(isCritical(CoapOptions.SIZE1));
+        assertFalse(isUnsave(CoapOptions.SIZE1));
+        assertTrue(hasNoCacheKey(CoapOptions.SIZE1));
     }
 
     @Test
     public void settingValuesOverRange() throws Exception {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
 
         h.setMaxAge(null);
         assertNull(h.getMaxAge());
@@ -477,48 +478,48 @@ public class HeaderOptionsTest {
 
     @Test
     public void failWhenTooLargeToSerialize() throws Exception {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.put(100, new Opaque(new byte[65805]));
         assertThrows(IllegalArgumentException.class, () ->
-                h.serialize(Mockito.mock(OutputStream.class))
+                CoapSerializer.serializeOptions(h, Mockito.mock(OutputStream.class))
         );
     }
 
     @Test
     public void failWhenTooLargeDeltaToSerialize() throws Exception {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setIfNonMatch(false);
         h.put(65805, new Opaque(new byte[1]));
         assertThrows(IllegalArgumentException.class, () ->
-                h.serialize(Mockito.mock(OutputStream.class))
+                CoapSerializer.serializeOptions(h, Mockito.mock(OutputStream.class))
         );
     }
 
     @Test
     public void failToDeserializeWithMalformedData() throws Exception {
 
-        assertThatThrownBy(() -> new HeaderOptions().deserialize(new ByteArrayInputStream(new byte[]{(byte) 0xf2})))
+        assertThatThrownBy(() -> CoapSerializer.deserializeOptions(new CoapOptions(), new ByteArrayInputStream(new byte[]{(byte) 0xf2})))
                 .isExactlyInstanceOf(CoapMessageFormatException.class);
 
-        assertThatThrownBy(() -> new HeaderOptions().deserialize(new ByteArrayInputStream(new byte[]{0x3f})))
+        assertThatThrownBy(() -> CoapSerializer.deserializeOptions(new CoapOptions(), new ByteArrayInputStream(new byte[]{0x3f})))
                 .isExactlyInstanceOf(CoapMessageFormatException.class);
 
     }
 
     @Test
     public void equalsAndHashTest() throws Exception {
-        EqualsVerifier.forClass(HeaderOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(CoapOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
 
-        assertFalse(new BasicHeaderOptions().equals(null));
+        assertFalse(new CoapOptions().equals(null));
     }
 
     @Test
     void shouldUseQueryWithoutValue() throws CoapException, IOException {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         // when
         h.setUriQueryList("param1=val1", "q", "param2=val2");
         h.setLocationQuery("q");
-        HeaderOptions h2 = deserialize(serialize(h));
+        CoapOptions h2 = deserialize(serialize(h));
 
         // then
         assertEquals(Arrays.asList("param1=val1", "q", "param2=val2"), h2.getUriQueryList());
@@ -529,7 +530,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldPercentEncodeUriQueryPerRfc7252() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("filter=a&b", "note=hello world", "p=100%"));
 
         // '&' inside a value is escaped, so the joined result is unambiguous
@@ -538,7 +539,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldNotEncodeSubDelimsInUriQuery() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("current_version=1.0.0+sha", "a=x,y;z", "b=!$'()*"));
 
         // sub-delims other than '&', plus ':' '@' '/' '?', are legal unescaped in a CoAP URI query
@@ -547,7 +548,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldEncodeUriQueryAsUtf8() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("name=zażółć");
 
         assertEquals("name=za%C5%BC%C3%B3%C5%82%C4%87", h.getUriQueryEncoded());
@@ -555,7 +556,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldKeepSeparatorForEmptyUriQueryValue() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("", "a=1"));
 
         assertEquals("&a=1", h.getUriQueryEncoded());
@@ -563,10 +564,10 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldRoundTripEmptyUriQueryValue() throws CoapException, IOException {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("", "a=1"));
 
-        HeaderOptions h2 = deserialize(serialize(h));
+        CoapOptions h2 = deserialize(serialize(h));
 
         // a zero length Uri-Query option is its own option, not padding to be dropped
         assertEquals(Arrays.asList("", "a=1"), h2.getUriQueryList());
@@ -575,15 +576,15 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldReturnNullEncodedUriQueryWhenAbsent() {
-        assertNull(new HeaderOptions().getUriQueryEncoded());
+        assertNull(new CoapOptions().getUriQueryEncoded());
     }
 
     @Test
     void shouldRoundTripQueryValueContainingAmpersand() throws CoapException, IOException {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("filter=a&b", "page=1"));
 
-        HeaderOptions h2 = deserialize(serialize(h));
+        CoapOptions h2 = deserialize(serialize(h));
 
         // option boundaries survive, so the '&' stays part of the value
         assertEquals(Arrays.asList("filter=a&b", "page=1"), h2.getUriQueryList());
@@ -593,20 +594,20 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldNotTruncateQueryValueAtQuestionMark() throws CoapException, IOException {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("redirect=/a?b=c");
 
-        HeaderOptions h2 = deserialize(serialize(h));
+        CoapOptions h2 = deserialize(serialize(h));
 
         assertEquals("/a?b=c", h2.getUriQueryMap().get("redirect"));
     }
 
     @Test
     void shouldKeepRepeatedQueryNames() throws CoapException, IOException {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.setUriQueryList(Arrays.asList("a=1", "a=2"));
 
-        HeaderOptions h2 = deserialize(serialize(h));
+        CoapOptions h2 = deserialize(serialize(h));
 
         assertEquals(Arrays.asList("a=1", "a=2"), h2.getUriQueryList());
         // the map view collapses repeats, keeping the last one
@@ -615,7 +616,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldReturnEmptyQueryViewsWhenNoUriQuery() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
         assertEquals(Collections.emptyMap(), h.getUriQueryMap());
@@ -624,7 +625,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldClearUriQueryWithEmptyList() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("a=1");
 
         h.setUriQueryList(Collections.emptyList());
@@ -635,7 +636,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldClearUriQueryWithNullList() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("a=1");
 
         h.setUriQueryList((List<String>) null);
@@ -646,7 +647,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldClearUriQueryWithNullArray() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("a=1");
 
         h.setUriQueryList((String[]) null);
@@ -657,7 +658,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldSetUriQueryFromVarargs() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
 
         h.setUriQueryList("a=1", "filter=x&y");
 
@@ -666,7 +667,7 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldClearUriQueryWithEmptyVarargs() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("a=1");
 
         h.setUriQueryList();
@@ -677,10 +678,10 @@ public class HeaderOptionsTest {
 
     @Test
     void shouldNotShareUriQueryListBetweenDuplicates() {
-        HeaderOptions h = new HeaderOptions();
+        CoapOptions h = new CoapOptions();
         h.addUriQuery("a=1");
 
-        HeaderOptions copy = h.duplicate();
+        CoapOptions copy = h.duplicate();
         copy.addUriQuery("b=2");
 
         assertEquals(Collections.singletonList("a=1"), h.getUriQueryList());
@@ -689,27 +690,27 @@ public class HeaderOptionsTest {
 
     @Test
     void correlationOptionShouldBeElectiveAndSafeToForward() {
-        assertFalse(isCritical(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
-        assertFalse(isUnsave(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
-        assertFalse(hasNoCacheKey(HeaderOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(isCritical(CoapOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(isUnsave(CoapOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(hasNoCacheKey(CoapOptions.OPEN_COAP_CORRELATION_TAG));
     }
 
     @Test
     void getCustomOption_shouldReturnNull_whenNoCustomOptionsSet() {
-        BasicHeaderOptions hdr = new BasicHeaderOptions();
+        CoapOptions hdr = new CoapOptions();
 
         assertNull(hdr.getCustomOption(100));
     }
 
-    private static byte[] serialize(BasicHeaderOptions hdr) throws IOException, CoapException {
+    private static byte[] serialize(CoapOptions hdr) throws IOException, CoapException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        hdr.serialize(baos);
+        CoapSerializer.serializeOptions(hdr, baos);
         return baos.toByteArray();
     }
 
-    private static HeaderOptions deserialize(byte[] rawData) throws IOException, CoapException {
-        HeaderOptions hdr2 = new HeaderOptions();
-        hdr2.deserialize(new ByteArrayInputStream(rawData));
+    private static CoapOptions deserialize(byte[] rawData) throws IOException, CoapException {
+        CoapOptions hdr2 = new CoapOptions();
+        CoapSerializer.deserializeOptions(hdr2, new ByteArrayInputStream(rawData));
         return hdr2;
     }
 }

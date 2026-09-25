@@ -23,11 +23,11 @@ import java.util.function.Consumer;
 
 public final class CoapResponse {
     private final Code code;
-    private final HeaderOptions options;
+    private final CoapOptions options;
     private final Opaque payload;
     private final TransportContext transContext;
 
-    private CoapResponse(Code code, Opaque payload, HeaderOptions options, TransportContext transContext) {
+    private CoapResponse(Code code, Opaque payload, CoapOptions options, TransportContext transContext) {
         this.code = code;
         this.payload = Objects.requireNonNull(payload);
         this.options = Objects.requireNonNull(options);
@@ -37,14 +37,14 @@ public final class CoapResponse {
     // --- STATIC CONSTRUCTORS ---
 
     public static CoapResponse of(Code code) {
-        return new CoapResponse(code, Opaque.EMPTY, new HeaderOptions(), TransportContext.EMPTY);
+        return new CoapResponse(code, Opaque.EMPTY, new CoapOptions(), TransportContext.EMPTY);
     }
 
     public static CoapResponse of(Code code, Opaque payload) {
-        return new CoapResponse(code, payload, new HeaderOptions(), TransportContext.EMPTY);
+        return new CoapResponse(code, payload, new CoapOptions(), TransportContext.EMPTY);
     }
 
-    public static CoapResponse of(Code code, Opaque payload, HeaderOptions options) {
+    public static CoapResponse of(Code code, Opaque payload, CoapOptions options) {
         return new CoapResponse(code, payload, options, TransportContext.EMPTY);
     }
 
@@ -88,7 +88,7 @@ public final class CoapResponse {
         return code;
     }
 
-    public HeaderOptions options() {
+    public CoapOptions options() {
         return options;
     }
 
