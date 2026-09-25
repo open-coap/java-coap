@@ -15,8 +15,11 @@ This document outlines breaking changes and migration steps between versions of 
 - **Domain package reorganization:** Classes are organized into domain-focused packages (`opencoap.core`, `opencoap.codec`, `opencoap.endpoint`, `opencoap.filter`, `opencoap.routing`, `opencoap.observe`, `opencoap.transport`, `opencoap.linkformat`, `opencoap.util`).
 - **Fluently modify requests & responses:** Deprecated `CoapRequest.with*` methods are removed in favor of `modify()`. Added `modify()` to `CoapResponse` and `SeparateResponse`.
 - **Query options:** `query(String)` that split on `&` is removed. Use `queries(String...)`, `queries(List<String>)`, or `query(name, value)`.
+- **Header options unified:** `BasicHeaderOptions` and `HeaderOptions` are merged into a single `CoapOptions` class.
+- **Option wire framing moved:** `CoapOptions.serialize(OutputStream)` and `deserialize(InputStream, int)` moved to `CoapSerializer.serializeOptions(CoapOptions, OutputStream)` and `CoapSerializer.deserializeOptions(CoapOptions, InputStream, int)`.
 - **Class renames:**
   - `MediaTypes` &rarr; `ContentFormat`
+  - `BasicHeaderOptions` / `HeaderOptions` &rarr; `CoapOptions`
   - `SignallingHeaderOptions` &rarr; `SignalingHeaderOptions`
   - `Method.iPATCH` &rarr; `Method.IPATCH`
   - `CoapRequestEntityIncomplete` &rarr; `CoapRequestEntityIncompleteException`
@@ -97,7 +100,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | Old Package (6.x) | New Package (7.0) | Primary Contents |
 |---|---|---|
 | `com.mbed.coap` | `opencoap.core` | `CoapConstants` |
-| `com.mbed.coap.packet` | `opencoap.core` | `CoapRequest`, `CoapResponse`, `SeparateResponse`, `Code`, `Method`, `MessageType`, `ContentFormat`, `BlockOption`, `BlockSize`, `HeaderOptions`, `BasicHeaderOptions`, `SignalingOptions`, `Opaque` |
+| `com.mbed.coap.packet` | `opencoap.core` | `CoapRequest`, `CoapResponse`, `SeparateResponse`, `Code`, `Method`, `MessageType`, `ContentFormat`, `BlockOption`, `BlockSize`, `CoapOptions`, `SignalingOptions`, `Opaque` |
 | `com.mbed.coap.packet` | `opencoap.codec` | `CoapPacket`, `CoapSerializer`, `RawOption`, `DataConvertingUtility`, `CoapTcpPacketSerializer`, `CoapTcpPacketConverter` |
 | `com.mbed.coap.exception` | `opencoap.core` | `CoapException`, `CoapCodeException`, `CoapTimeoutException`, `CoapBlockException` |
 | `com.mbed.coap.exception` | `opencoap.codec` | `CoapMessageFormatException` |
@@ -192,7 +195,7 @@ The ambiguous `query(String)` method that split query strings on `&` has been re
 +requestBuilder.query("filter", "active");
 ```
 
-#### On BasicHeaderOptions
+#### On CoapOptions
 
 ```diff
 -String query = options.getUriQuery();
@@ -258,6 +261,10 @@ Spelling corrected from `Signalling` to `Signaling` to match RFC 8323 and the ex
 +SignalingOptions sig = options.toSignalingOptions(Code.C701_CSM);
 ```
 
+#### Header Options Unification
+
+`BasicHeaderOptions` and `HeaderOptions` are merged into a single `CoapOptions` class. See [Header Options Unification and Framing Extraction](#7-header-options-unification-and-framing-extraction).
+
 #### Exception Class Renames
 
 Exceptions now uniformly end with the `Exception` suffix:
@@ -322,9 +329,9 @@ RFC 7252 defines Content-Format identifiers as unsigned 16-bit integers (`uint16
 Content format is now uniformly represented as `int` / `Integer`:
 
 - **Constants:** `ContentFormat` constants are `public static final int`.
-- **Options & Builders:** `BasicHeaderOptions`, `CoapOptionsBuilder`, `CoapRequest.Builder`, and `CoapResponse.Builder` accept and return `int` / `Integer` for `contentFormat` and `accept`.
-- **Range validation:** `BasicHeaderOptions.setContentFormat(Integer)` and `setAccept(Integer)` validate that values fall within `0..65535` (`0xFFFF`), throwing `IllegalArgumentException` otherwise.
-- **Removed overload trap:** The `BasicHeaderOptions.setAccept(short)` overload has been removed to eliminate ambiguity with `setAccept(Integer)`.
+- **Options & Builders:** `CoapOptions`, `CoapOptionsBuilder`, `CoapRequest.Builder`, and `CoapResponse.Builder` accept and return `int` / `Integer` for `contentFormat` and `accept`.
+- **Range validation:** `CoapOptions.setContentFormat(Integer)` and `setAccept(Integer)` validate that values fall within `0..65535` (`0xFFFF`), throwing `IllegalArgumentException` otherwise.
+- **Removed overload trap:** The `CoapOptions.setAccept(short)` overload has been removed to eliminate ambiguity with `setAccept(Integer)`.
 - **LinkFormat:** `LinkFormat.getContentType()` and `setContentType(Integer)` now use `Integer` instead of `Short`.
 - **Utility methods:** `ContentFormat.contentFormatToString(Integer)` and `ContentFormat.parseContentFormat(String)` use `Integer`.
 
@@ -347,6 +354,65 @@ Content format is now uniformly represented as `int` / `Integer`:
 
 Other option-related constants and fields that could not represent their full domains have also been corrected:
 
-- **Option number constants:** `BasicHeaderOptions` option constants (`IF_MATCH`, `URI_HOST`, `ETAG`, `IF_NON_MATCH`, `URI_PORT`, `LOCATION_PATH`, `URI_PATH`, `CONTENT_FORMAT`, `MAX_AGE`, `URI_QUERY`, `ACCEPT`, `LOCATION_QUERY`, `PROXY_URI`, `PROXY_SCHEME`, `SIZE1`) changed from `byte` to `int` (CoAP option numbers are unsigned integers).
-- **Default Max-Age:** `BasicHeaderOptions.DEFAULT_MAX_AGE` changed from `short` (`60`) to `long` (`60L`), matching the `Long maxAge` field.
+- **Option number constants:** `CoapOptions` option constants (`IF_MATCH`, `URI_HOST`, `ETAG`, `IF_NON_MATCH`, `URI_PORT`, `LOCATION_PATH`, `URI_PATH`, `CONTENT_FORMAT`, `MAX_AGE`, `URI_QUERY`, `ACCEPT`, `LOCATION_QUERY`, `PROXY_URI`, `PROXY_SCHEME`, `SIZE1`) changed from `byte` to `int` (CoAP option numbers are unsigned integers).
+- **Default Max-Age:** `CoapOptions.DEFAULT_MAX_AGE` changed from `short` (`60`) to `long` (`60L`), matching the `Long maxAge` field.
 - **Max retransmit:** `CoapConstants.MAX_RETRANSMIT` changed from `Short` to primitive `int` (`4`).
+
+---
+
+### 7. Header Options Unification and Framing Extraction
+
+#### Unification of BasicHeaderOptions and HeaderOptions into CoapOptions
+
+In 6.x, options were split across `BasicHeaderOptions` (base RFC 7252 options) and `HeaderOptions` (extended options: Observe, Block1, Block2, Size2, Echo, Request-Tag, Correlation-Tag). In practice, `BasicHeaderOptions` was only used as the superclass of `HeaderOptions` and was not instantiated anywhere in application code.
+
+In 7.0, both classes are unified into a single `CoapOptions` class in `opencoap.core`. Packet structures and builders now consistently produce and consume `CoapOptions`:
+
+- `CoapRequest.options()` and `CoapResponse.options()` return `CoapOptions`.
+- `CoapPacket.headers()` returns `CoapOptions` and `setHeaderOptions(...)` accepts `CoapOptions`.
+- `CoapOptionsBuilder.build()` returns `CoapOptions`.
+- `SignalingHeaderOptions` now extends `CoapOptions` directly.
+
+```diff
+-import com.mbed.coap.packet.HeaderOptions;
+-import com.mbed.coap.packet.BasicHeaderOptions;
++import opencoap.core.CoapOptions;
+
+-HeaderOptions options = new HeaderOptions();
++CoapOptions options = new CoapOptions();
+```
+
+```diff
+-HeaderOptions options = request.options();
++CoapOptions options = request.options();
+```
+
+##### SignalingHeaderOptions Duplication Fix
+
+Because `HeaderOptions` did not override `duplicate(HeaderOptions)`, `SignalingHeaderOptions.duplicate()` previously invoked `super.duplicate(BasicHeaderOptions)`, silently dropping all extended option fields (Observe, Block1, Block2, Size2, Echo, Request-Tag, and Correlation-Tag) during duplication. With the unified `CoapOptions`, `duplicate()` now correctly copies all options.
+
+#### Option Wire Framing Extracted to CoapSerializer
+
+Byte-level wire serialization and deserialization of options have moved from the options class to static methods on `opencoap.codec.CoapSerializer`. `CoapOptions` now solely represents the header data model, while `CoapSerializer` handles wire encoding and decoding for both UDP and TCP transports.
+
+- `CoapOptions.serialize(OutputStream)` &rarr; `CoapSerializer.serializeOptions(CoapOptions, OutputStream)`
+- `CoapOptions.deserialize(InputStream, int)` &rarr; `CoapSerializer.deserializeOptions(CoapOptions, InputStream, int)`
+- Added `CoapSerializer.deserializeOptions(CoapOptions, InputStream)` which reads all available bytes from the stream and returns a `boolean` indicating whether a payload marker (`0xFF`) was present.
+
+```diff
++import opencoap.codec.CoapSerializer;
+ import opencoap.core.CoapOptions;
+
+ CoapOptions options = new CoapOptions();
+-options.serialize(outputStream);
++CoapSerializer.serializeOptions(options, outputStream);
+```
+
+```diff
++import opencoap.codec.CoapSerializer;
+ import opencoap.core.CoapOptions;
+
+ CoapOptions options = new CoapOptions();
+-options.deserialize(inputStream, availableBytes);
++CoapSerializer.deserializeOptions(options, inputStream, availableBytes);
+```
