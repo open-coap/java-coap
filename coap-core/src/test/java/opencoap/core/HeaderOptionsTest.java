@@ -91,7 +91,7 @@ public class HeaderOptionsTest {
         hdr.setProxyScheme("coap");
         hdr.setUriHost("uri-host");
         hdr.setUriPort(5683);
-        hdr.setUriQuery("par1=dupa&par2=dupa2");
+        hdr.setUriQueryList("par1=dupa", "par2=dupa2");
         hdr.put(36, Opaque.variableUInt((1357)));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -516,12 +516,12 @@ public class HeaderOptionsTest {
     void shouldUseQueryWithoutValue() throws CoapException, IOException {
         HeaderOptions h = new HeaderOptions();
         // when
-        h.setUriQuery("param1=val1&q&param2=val2");
+        h.setUriQueryList("param1=val1", "q", "param2=val2");
         h.setLocationQuery("q");
         HeaderOptions h2 = deserialize(serialize(h));
 
         // then
-        assertEquals("param1=val1&q&param2=val2", h2.getUriQuery());
+        assertEquals(Arrays.asList("param1=val1", "q", "param2=val2"), h2.getUriQueryList());
         assertEquals("", h2.getUriQueryMap().get("q"));
 
         assertEquals("?param1=val1&q&param2=val2 Loc:?q", h2.toString());
@@ -619,7 +619,7 @@ public class HeaderOptionsTest {
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
         assertEquals(Collections.emptyMap(), h.getUriQueryMap());
-        assertNull(h.getUriQuery());
+        assertNull(h.getUriQueryEncoded());
     }
 
     @Test
@@ -630,7 +630,7 @@ public class HeaderOptionsTest {
         h.setUriQueryList(Collections.emptyList());
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
-        assertNull(h.getUriQuery());
+        assertNull(h.getUriQueryEncoded());
     }
 
     @Test
@@ -641,7 +641,7 @@ public class HeaderOptionsTest {
         h.setUriQueryList((List<String>) null);
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
-        assertNull(h.getUriQuery());
+        assertNull(h.getUriQueryEncoded());
     }
 
     @Test
@@ -652,7 +652,7 @@ public class HeaderOptionsTest {
         h.setUriQueryList((String[]) null);
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
-        assertNull(h.getUriQuery());
+        assertNull(h.getUriQueryEncoded());
     }
 
     @Test
@@ -665,14 +665,14 @@ public class HeaderOptionsTest {
     }
 
     @Test
-    void shouldClearUriQueryWithEmptyString() {
+    void shouldClearUriQueryWithEmptyVarargs() {
         HeaderOptions h = new HeaderOptions();
         h.addUriQuery("a=1");
 
-        h.setUriQuery("");
+        h.setUriQueryList();
 
         assertEquals(Collections.emptyList(), h.getUriQueryList());
-        assertNull(h.getUriQuery());
+        assertNull(h.getUriQueryEncoded());
     }
 
     @Test

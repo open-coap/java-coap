@@ -51,8 +51,8 @@ class CoapRequestTest {
         CoapRequest ping = ping(LOCAL_5683, TransportContext.EMPTY);
 
         assertTrue(ping.isPing());
-        assertThrows(NullPointerException.class, () -> ping.withPayload(Opaque.of("a")).isPing());
-        assertThrows(NullPointerException.class, () -> ping.withToken(decodeHex("12")).isPing());
+        assertThrows(NullPointerException.class, () -> ping.modify().payload(Opaque.of("a")).build().isPing());
+        assertThrows(NullPointerException.class, () -> ping.modify().token(decodeHex("12")).build().isPing());
 
         assertFalse(new CoapRequest(Method.GET, EMPTY, new HeaderOptions(), EMPTY, LOCAL_5683, TransportContext.EMPTY).isPing());
     }
@@ -63,11 +63,12 @@ class CoapRequestTest {
         CoapRequest expected = new CoapRequest(Method.POST, decodeHex("ffff"), newOptions(o -> o.setUriPath("/test2")), Opaque.of("test-2"), LOCAL_1_5683, TransportContext.EMPTY);
 
         // when
-        CoapRequest request2 = request
-                .withToken(decodeHex("ffff"))
-                .withOptions(o -> o.uriPath("/test2"))
-                .withPayload(Opaque.of("test-2"))
-                .withAddress(LOCAL_1_5683);
+        CoapRequest request2 = request.modify()
+                .token(decodeHex("ffff"))
+                .options(o -> o.uriPath("/test2"))
+                .payload(Opaque.of("test-2"))
+                .address(LOCAL_1_5683)
+                .build();
 
         // then
         assertEquals(request2, expected);
@@ -129,7 +130,7 @@ class CoapRequestTest {
                     .block2Res(0, S_64, true)
                     .etag(decodeHex("010203"))
                     .host("some.com")
-                    .query("p=1")
+                    .queries("p=1")
                     .query("b", "2")
                     .size1(342)
                     .observe()
@@ -152,7 +153,7 @@ class CoapRequestTest {
             expected.options().setUriHost("some.com");
             expected.options().setIfMatch(new Opaque[]{Opaque.ofBytes(9, 7, 5)});
             expected.options().setMaxAge(3600L);
-            expected.options().setUriQuery("p=1&b=2");
+            expected.options().setUriQueryList("p=1", "b=2");
             expected.options().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
             expected.options().setBlock1Req(new BlockOption(0, S_32, true));
             expected.options().setBlock2Res(new BlockOption(0, S_64, true));

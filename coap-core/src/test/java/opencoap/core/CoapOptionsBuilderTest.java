@@ -118,7 +118,7 @@ public class CoapOptionsBuilderTest {
         expected.setMaxAge(3600L);
         expected.setUriPath("/test");
         expected.setUriHost("host.com");
-        expected.setUriQuery("param=value");
+        expected.setUriQueryList("param=value");
         expected.setObserve(13);
         expected.setBlock1Req(new BlockOption(1, BlockSize.S_256, false));
         expected.setSize1(312);

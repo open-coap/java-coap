@@ -53,7 +53,7 @@ class TcpExchangeFilterTest {
         assertEquals(1, exchange.transactions());
 
         // when
-        assertTrue(exchange.handleResponse(ok("ok").toSeparate(Opaque.EMPTY, LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok").toSeparate(Opaque.EMPTY, LOCAL_5683)));
 
         // then
         assertEquals(ok("ok"), resp.join());
@@ -70,14 +70,14 @@ class TcpExchangeFilterTest {
         assertEquals(2, exchange.transactions());
 
         // when (response in different order)
-        assertTrue(exchange.handleResponse(ok("ok").toSeparate(variableUInt(2002), LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok").toSeparate(variableUInt(2002), LOCAL_5683)));
 
         // then
         assertEquals(ok("ok"), resp2.join());
         assertEquals(1, exchange.transactions());
 
         // and
-        assertTrue(exchange.handleResponse(ok("ok2").toSeparate(variableUInt(1001), LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(ok("ok2").toSeparate(variableUInt(1001), LOCAL_5683)));
         assertTrue(resp.isDone());
         assertEquals(0, exchange.transactions());
     }
@@ -137,7 +137,7 @@ class TcpExchangeFilterTest {
         assertEquals(1, exchange.transactions());
 
         // when
-        assertTrue(exchange.handleResponse(new SeparateResponse(CoapResponse.of(Code.C703_PONG, Opaque.EMPTY), Opaque.EMPTY, LOCAL_5683, EMPTY)));
+        assertTrue(exchange.handleResponse(new SeparateResponse(CoapResponse.of(Code.C703_PONG, Opaque.EMPTY), Opaque.EMPTY, LOCAL_5683)));
 
         // then
         assertEquals(CoapResponse.of(Code.C703_PONG, Opaque.EMPTY), resp.join());

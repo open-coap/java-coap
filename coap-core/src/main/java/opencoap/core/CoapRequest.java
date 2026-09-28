@@ -20,6 +20,7 @@ import static opencoap.util.FutureHelpers.wrapExceptions;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -168,28 +169,6 @@ public final class CoapRequest {
 
 
     // ---  MODIFIERS ---
-    @Deprecated
-    public CoapRequest withToken(Opaque newToken) {
-        return new CoapRequest(method, newToken, options, payload, peerAddress, transContext);
-    }
-
-    @Deprecated
-    public CoapRequest withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
-        CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
-        optionsFunc.accept(optionsBuilder);
-        return new CoapRequest(method, token, optionsBuilder.build(), payload, peerAddress, transContext);
-    }
-
-    @Deprecated
-    public CoapRequest withPayload(Opaque newPayload) {
-        return new CoapRequest(method, token, options, newPayload, peerAddress, transContext);
-    }
-
-    @Deprecated
-    public CoapRequest withAddress(InetSocketAddress newPeerAddress) {
-        return new CoapRequest(method, token, options, payload, newPeerAddress, transContext);
-    }
-
     public Builder modify() {
         return new Builder(method, token, CoapOptionsBuilder.from(options), payload, peerAddress, transContext);
     }
@@ -350,8 +329,13 @@ public final class CoapRequest {
             return this;
         }
 
-        public Builder query(String query) {
-            options.query(query);
+        public Builder queries(List<String> queries) {
+            options.queries(queries);
+            return this;
+        }
+
+        public Builder queries(String... queries) {
+            options.queries(queries);
             return this;
         }
 
