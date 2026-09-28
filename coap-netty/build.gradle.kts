@@ -12,7 +12,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
 
     testImplementation(testFixtures(project(":coap-core")))
-    testImplementation("ch.qos.logback:logback-classic:1.6.3")
+    testImplementation("ch.qos.logback:logback-classic:1.6.4")
     testImplementation("io.netty:netty-transport-native-epoll:4.2.18.Final:linux-x86_64")
 
     jmhImplementation("io.netty:netty-all:4.2.18.Final")
