@@ -84,7 +84,7 @@ public class HeaderOptionsTest {
         HeaderOptions hdr = new HeaderOptions();
         hdr.setUriPath("/test/uri/path");
         //hdr.setToken(HeaderOptions.convertVariableUInt(123456));
-        hdr.setContentFormat((short) 1);
+        hdr.setContentFormat(1);
         hdr.setEtag(Opaque.variableUInt((56789)));
         hdr.setLocationPath("/location/path");
         hdr.setProxyUri("/proxy/uri");
@@ -128,7 +128,7 @@ public class HeaderOptionsTest {
     @Test
     public void testWithAccept() throws IOException, CoapException {
         HeaderOptions hdr = new HeaderOptions();
-        hdr.setAccept((short) 123);
+        hdr.setAccept(123);
         HeaderOptions hdr2 = deserialize(serialize(hdr));
 
         System.out.println(hdr.toString());
@@ -318,22 +318,22 @@ public class HeaderOptionsTest {
     @Test
     public void testEaquals() {
         BasicHeaderOptions hdr1 = new BasicHeaderOptions();
-        hdr1.setContentFormat((short) 1);
+        hdr1.setContentFormat(1);
         hdr1.setUriPath("/test/uri");
 
         BasicHeaderOptions hdr2 = new BasicHeaderOptions();
-        hdr2.setContentFormat((short) 1);
+        hdr2.setContentFormat(1);
         hdr2.setUriPath("/test/uri");
 
         assertTrue(hdr1.equals(hdr2));
         assertEquals(hdr1.hashCode(), hdr2.hashCode());
 
         HeaderOptions hdr3 = new HeaderOptions();
-        hdr3.setContentFormat((short) 1);
+        hdr3.setContentFormat(1);
         hdr3.setUriPath("/test/uri3");
 
         HeaderOptions hdr4 = new HeaderOptions();
-        hdr4.setContentFormat((short) 1);
+        hdr4.setContentFormat(1);
         hdr4.setUriPath("/test/uri");
 
         assertFalse(hdr3.equals(hdr4));

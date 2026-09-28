@@ -24,12 +24,13 @@ This document outlines breaking changes and migration steps between versions of 
   - `CoapBlockTooLargeEntityException` &rarr; `CoapBlockEntityTooLargeException`
   - `MessageIdSupplierImpl` &rarr; `SequentialMessageIdSupplier`
   - `CapabilitiesStorageImpl` &rarr; `HashMapCapabilitiesStorage`
+- **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
 ---
 
 ### 1. Module Changes
 
-The deprecated `lwm2m` module has been removed. If your project depended on it, remove the dependency. Note that standard IANA LwM2M content formats (`MediaTypes.CT_APPLICATION_LWM2M_TLV` and `MediaTypes.CT_APPLICATION_LWM2M_JSON`) remain available in `coap-core`.
+The deprecated `lwm2m` module has been removed. If your project depended on it, remove the dependency. Note that standard IANA LwM2M content formats (`ContentFormat.APPLICATION_LWM2M_TLV` and `ContentFormat.APPLICATION_LWM2M_JSON`, formerly `MediaTypes.CT_APPLICATION_LWM2M_*`) remain available in `coap-core`.
 
 #### Gradle
 
@@ -79,7 +80,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 +import opencoap.core.CoapRequest;
 +import opencoap.core.CoapResponse;
 +import opencoap.core.Filter;
-+import opencoap.core.MediaTypes;
++import opencoap.core.ContentFormat;
 +import opencoap.core.Opaque;
 +import opencoap.core.Service;
 +import opencoap.core.TransportContext;
@@ -96,7 +97,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | Old Package (6.x) | New Package (7.0) | Primary Contents |
 |---|---|---|
 | `com.mbed.coap` | `opencoap.core` | `CoapConstants` |
-| `com.mbed.coap.packet` | `opencoap.core` | `CoapRequest`, `CoapResponse`, `SeparateResponse`, `Code`, `Method`, `MessageType`, `MediaTypes`, `BlockOption`, `BlockSize`, `HeaderOptions`, `BasicHeaderOptions`, `SignalingOptions`, `Opaque` |
+| `com.mbed.coap.packet` | `opencoap.core` | `CoapRequest`, `CoapResponse`, `SeparateResponse`, `Code`, `Method`, `MessageType`, `ContentFormat`, `BlockOption`, `BlockSize`, `HeaderOptions`, `BasicHeaderOptions`, `SignalingOptions`, `Opaque` |
 | `com.mbed.coap.packet` | `opencoap.codec` | `CoapPacket`, `CoapSerializer`, `RawOption`, `DataConvertingUtility`, `CoapTcpPacketSerializer`, `CoapTcpPacketConverter` |
 | `com.mbed.coap.exception` | `opencoap.core` | `CoapException`, `CoapCodeException`, `CoapTimeoutException`, `CoapBlockException` |
 | `com.mbed.coap.exception` | `opencoap.codec` | `CoapMessageFormatException` |
@@ -216,13 +217,30 @@ The ambiguous `query(String)` method that split query strings on `&` has been re
 
 Renamed from `MediaTypes` to `ContentFormat` to match the CoAP specification (RFC 7252) and describe the integer content format registry rather than MIME media types.
 
+In addition, all `ContentFormat` constants dropped the redundant `CT_` prefix (e.g. `APPLICATION_JSON` rather than `CT_APPLICATION_JSON`), and long-standing defects in constant names were corrected:
+
 ```diff
--import opencoap.core.MediaTypes;
+-import com.mbed.coap.packet.MediaTypes;
 +import opencoap.core.ContentFormat;
 
 -options.accept(MediaTypes.CT_APPLICATION_JSON);
-+options.accept(ContentFormat.CT_APPLICATION_JSON);
++options.accept(ContentFormat.APPLICATION_JSON);
 ```
+
+##### Corrected Constant Names
+
+| Old Constant (6.x `MediaTypes`) | New Constant (7.0 `ContentFormat`) | Notes |
+|---|---|---|
+| `CT_APPLICATION_LINK__FORMAT` | `APPLICATION_LINK_FORMAT` | Removed double underscore |
+| `CT_APPLICATION_OCTET__STREAM` | `APPLICATION_OCTET_STREAM` | Removed double underscore |
+| `CT_APPLICATION_CODE_ENCRYPT0` | `APPLICATION_COSE_ENCRYPT0` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_MAC0` | `APPLICATION_COSE_MAC0` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_SIGN1` | `APPLICATION_COSE_SIGN1` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_ENCRYPT` | `APPLICATION_COSE_ENCRYPT` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_MAC` | `APPLICATION_COSE_MAC` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_SIGN` | `APPLICATION_COSE_SIGN` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_KEY` | `APPLICATION_COSE_KEY` | Corrected "CODE" typo to "COSE" (RFC 8152) |
+| `CT_APPLICATION_CODE_KEY_SET` | `APPLICATION_COSE_KEY_SET` | Corrected "CODE" typo to "COSE" (RFC 8152) |
 
 #### Signaling Header Options (RFC 8323 spelling)
 
@@ -292,3 +310,43 @@ Implementation classes have been renamed to describe their concrete structure ra
 -opencoap.cli.transport.CoapSerializer
 +opencoap.cli.transport.CoapPacketCodec
 ```
+
+---
+
+### 6. Content-Format and Option Types (uint16)
+
+#### uint16 Content-Format Representation
+
+RFC 7252 defines Content-Format identifiers as unsigned 16-bit integers (`uint16`, range `0..65535`). Previously, `java-coap` represented them as signed `short` / `Short` (`-32768..32767`). As a consequence, any content format &ge; 32768 (the upper half of the IANA registry, including the 65000+ experimental range) was truncated to a negative number during parsing and serialized incorrectly.
+
+Content format is now uniformly represented as `int` / `Integer`:
+
+- **Constants:** `ContentFormat` constants are `public static final int`.
+- **Options & Builders:** `BasicHeaderOptions`, `CoapOptionsBuilder`, `CoapRequest.Builder`, and `CoapResponse.Builder` accept and return `int` / `Integer` for `contentFormat` and `accept`.
+- **Range validation:** `BasicHeaderOptions.setContentFormat(Integer)` and `setAccept(Integer)` validate that values fall within `0..65535` (`0xFFFF`), throwing `IllegalArgumentException` otherwise.
+- **Removed overload trap:** The `BasicHeaderOptions.setAccept(short)` overload has been removed to eliminate ambiguity with `setAccept(Integer)`.
+- **LinkFormat:** `LinkFormat.getContentType()` and `setContentType(Integer)` now use `Integer` instead of `Short`.
+- **Utility methods:** `ContentFormat.contentFormatToString(Integer)` and `ContentFormat.parseContentFormat(String)` use `Integer`.
+
+```diff
+-short cf = MediaTypes.CT_APPLICATION_JSON;
++int cf = ContentFormat.APPLICATION_JSON;
+```
+
+```diff
+-CoapResponse response = CoapResponse.ok("{}", (short) 50);
++CoapResponse response = CoapResponse.ok("{}", ContentFormat.APPLICATION_JSON);
+```
+
+```diff
+-Short ct = linkFormat.getContentType();
++Integer ct = linkFormat.getContentType();
+```
+
+#### Option Numbers and Constant Type Corrections
+
+Other option-related constants and fields that could not represent their full domains have also been corrected:
+
+- **Option number constants:** `BasicHeaderOptions` option constants (`IF_MATCH`, `URI_HOST`, `ETAG`, `IF_NON_MATCH`, `URI_PORT`, `LOCATION_PATH`, `URI_PATH`, `CONTENT_FORMAT`, `MAX_AGE`, `URI_QUERY`, `ACCEPT`, `LOCATION_QUERY`, `PROXY_URI`, `PROXY_SCHEME`, `SIZE1`) changed from `byte` to `int` (CoAP option numbers are unsigned integers).
+- **Default Max-Age:** `BasicHeaderOptions.DEFAULT_MAX_AGE` changed from `short` (`60`) to `long` (`60L`), matching the `Long maxAge` field.
+- **Max retransmit:** `CoapConstants.MAX_RETRANSMIT` changed from `Short` to primitive `int` (`4`).

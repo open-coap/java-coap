@@ -43,26 +43,26 @@ import opencoap.codec.RawOption;
 @SuppressWarnings({"PMD.NPathComplexity"})
 public class BasicHeaderOptions {
 
-    public static final byte IF_MATCH = 1; //multiple
-    public static final byte URI_HOST = 3;
-    public static final byte ETAG = 4;      //multiple in request
-    public static final byte IF_NON_MATCH = 5;
-    public static final byte URI_PORT = 7;
-    public static final byte LOCATION_PATH = 8; //multiple
-    public static final byte URI_PATH = 11;  //multiple
-    public static final byte CONTENT_FORMAT = 12;
-    public static final byte MAX_AGE = 14;
-    public static final byte URI_QUERY = 15; //multiple
-    public static final byte ACCEPT = 17;   //multiple
-    public static final byte LOCATION_QUERY = 20; //multiple
-    public static final byte PROXY_URI = 35; //not repeatable
-    public static final byte PROXY_SCHEME = 39; //not repeatable
-    public static final byte SIZE1 = 60;
+    public static final int IF_MATCH = 1; //multiple
+    public static final int URI_HOST = 3;
+    public static final int ETAG = 4;      //multiple in request
+    public static final int IF_NON_MATCH = 5;
+    public static final int URI_PORT = 7;
+    public static final int LOCATION_PATH = 8; //multiple
+    public static final int URI_PATH = 11;  //multiple
+    public static final int CONTENT_FORMAT = 12;
+    public static final int MAX_AGE = 14;
+    public static final int URI_QUERY = 15; //multiple
+    public static final int ACCEPT = 17;   //multiple
+    public static final int LOCATION_QUERY = 20; //multiple
+    public static final int PROXY_URI = 35; //not repeatable
+    public static final int PROXY_SCHEME = 39; //not repeatable
+    public static final int SIZE1 = 60;
     //
-    public static final short DEFAULT_MAX_AGE = 60;
+    public static final long DEFAULT_MAX_AGE = 60;
     public static final String DEFAULT_URI_HOST = "";
     //
-    private Short contentFormat;
+    private Integer contentFormat;
     private Long maxAge;
     private Opaque[] etag;
     private String uriHost;
@@ -87,7 +87,8 @@ public class BasicHeaderOptions {
     protected boolean parseOption(int type, Opaque data) {
         switch (type) {
             case CONTENT_FORMAT:
-                setContentFormat((short) data.toLong());
+                // assigned directly, a malformed peer may send a value outside the uint16 range
+                contentFormat = (int) data.toLong();
                 break;
             case MAX_AGE:
                 setMaxAge(data.toLong());
@@ -339,16 +340,19 @@ public class BasicHeaderOptions {
      *
      * @return content format
      */
-    public Short getContentFormat() {
+    public Integer getContentFormat() {
         return contentFormat;
     }
 
     /**
      * Sets content format
      *
-     * @param contentFormat content format
+     * @param contentFormat content format, uint16 (0..65535) or null when absent
      */
-    public void setContentFormat(Short contentFormat) {
+    public void setContentFormat(Integer contentFormat) {
+        if (contentFormat != null && (contentFormat < 0 || contentFormat > 0xFFFF)) {
+            throw new IllegalArgumentException();
+        }
         this.contentFormat = contentFormat;
     }
 
@@ -569,10 +573,6 @@ public class BasicHeaderOptions {
             this.uriQuery = new ArrayList<>(1);
         }
         this.uriQuery.add(uriQuery);
-    }
-
-    public void setAccept(short accept) {
-        setAccept((int) accept);
     }
 
     public void setAccept(Integer accept) {

@@ -56,6 +56,7 @@ import opencoap.core.BlockSize;
 import opencoap.core.CoapException;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
+import opencoap.core.HeaderOptions;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
@@ -76,7 +77,7 @@ public class CoapPacketTest {
         assertEquals("/a/relay", lf[0].getUri());
         assertArrayEquals(new String[]{"ns.wadl#a"}, lf[0].getInterfaceDescriptionArray());
         assertArrayEquals(new String[]{"ns:relay"}, lf[0].getResourceTypeArray());
-        assertEquals((Short) (short) 0, lf[0].getContentType());
+        assertEquals((Integer) 0, lf[0].getContentType());
 
         linkFormatString = "</a/relay>;if=\"ns.wadl#a\";rt=\"ns:relay\";ct=\"0\","
                 + "</s/light>;if=\"ns.wadl#s\";rt=\"ucum:lx\";ct=\"0\","
@@ -225,12 +226,32 @@ public class CoapPacketTest {
     }
 
     @Test
+    public void shouldRoundTripUint16ContentFormat() throws CoapException {
+        for (int contentFormat : new int[]{0, 1, 255, 256, 32767, 32768, 65000, 65535}) {
+            CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", LOCAL_5683);
+            cp.headers().setContentFormat(contentFormat);
+
+            CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(serialize(cp)));
+
+            assertEquals(contentFormat, cp2.headers().getContentFormat().intValue());
+        }
+    }
+
+    @Test
+    public void shouldRejectContentFormatOutsideUint16Range() {
+        HeaderOptions options = new HeaderOptions();
+
+        assertThrows(IllegalArgumentException.class, () -> options.setContentFormat(-1));
+        assertThrows(IllegalArgumentException.class, () -> options.setContentFormat(0x10000));
+    }
+
+    @Test
     public void coapPacketTestWithHeaders() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
-        cp.headers().setAccept(((short) 432));
+        cp.headers().setAccept(432);
         cp.headers().setIfMatch(new Opaque[]{Opaque.variableUInt(0x9853)});
         cp.headers().setIfNonMatch(Boolean.TRUE);
-        cp.headers().setContentFormat((short) 423);
+        cp.headers().setContentFormat(423);
         cp.headers().setEtag(new Opaque[]{Opaque.variableUInt(98), Opaque.variableUInt(78543)});
         cp.headers().setMaxAge(7118543L);
         cp.headers().setObserve(123);
@@ -506,26 +527,26 @@ public class CoapPacketTest {
 
     @Test
     void toCoapPacket() {
-        SeparateResponse response = ok("<dupa>", ContentFormat.CT_APPLICATION_XML).toSeparate(Opaque.of("100"), LOCAL_1_5683);
+        SeparateResponse response = ok("<dupa>", ContentFormat.APPLICATION_XML).toSeparate(Opaque.of("100"), LOCAL_1_5683);
 
         CoapPacket packet = CoapPacket.from(response);
 
         CoapPacket expected = new CoapPacket(Code.C205_CONTENT, MessageType.Confirmable, LOCAL_1_5683);
         expected.setToken(Opaque.of("100"));
         expected.setPayload("<dupa>");
-        expected.headers().setContentFormat(ContentFormat.CT_APPLICATION_XML);
+        expected.headers().setContentFormat(ContentFormat.APPLICATION_XML);
 
         assertEquals(expected, packet);
     }
 
     @Test
     public void convertToSeparateResponse() {
-        CoapPacket packet = newCoapPacket(LOCAL_5683).mid(13).token(918).ack(Code.C201_CREATED).payload("OK").contFormat(ContentFormat.CT_TEXT_PLAIN).etag(99).build();
+        CoapPacket packet = newCoapPacket(LOCAL_5683).mid(13).token(918).ack(Code.C201_CREATED).payload("OK").contFormat(ContentFormat.TEXT_PLAIN).etag(99).build();
 
         SeparateResponse separateResponse = packet.toSeparateResponse();
 
         assertEquals(
-                coapResponse(Code.C201_CREATED).etag(Opaque.ofBytes(99)).payload("OK", ContentFormat.CT_TEXT_PLAIN).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
+                coapResponse(Code.C201_CREATED).etag(Opaque.ofBytes(99)).payload("OK", ContentFormat.TEXT_PLAIN).toSeparate(Opaque.variableUInt(918), LOCAL_5683),
                 separateResponse
         );
     }

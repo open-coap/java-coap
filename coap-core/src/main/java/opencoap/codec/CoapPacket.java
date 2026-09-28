@@ -428,11 +428,11 @@ public class CoapPacket {
         if (headers().getContentFormat() == null) {
             return false;
         }
-        return headers().getContentFormat() == ContentFormat.CT_TEXT_PLAIN
-                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_JSON
-                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_LINK__FORMAT
-                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_XML
-                || headers().getContentFormat() == ContentFormat.CT_APPLICATION_LWM2M_JSON;
+        return headers().getContentFormat() == ContentFormat.TEXT_PLAIN
+                || headers().getContentFormat() == ContentFormat.APPLICATION_JSON
+                || headers().getContentFormat() == ContentFormat.APPLICATION_LINK_FORMAT
+                || headers().getContentFormat() == ContentFormat.APPLICATION_XML
+                || headers().getContentFormat() == ContentFormat.APPLICATION_LWM2M_JSON;
     }
 
     public boolean isEmptyAck() {

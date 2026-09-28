@@ -30,7 +30,7 @@ public final class CoapConstants {
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     public static final Duration ACK_TIMEOUT = Duration.ofSeconds(2);
     public static final float ACK_RANDOM_FACTOR = 1.5f;
-    public static final Short MAX_RETRANSMIT = 4;
+    public static final int MAX_RETRANSMIT = 4;
 
     private CoapConstants() {
     }

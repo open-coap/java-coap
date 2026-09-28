@@ -22,8 +22,8 @@ import static opencoap.core.Code.C204_CHANGED;
 import static opencoap.core.Code.C205_CONTENT;
 import static opencoap.core.Code.C400_BAD_REQUEST;
 import static opencoap.core.Code.C404_NOT_FOUND;
-import static opencoap.core.ContentFormat.CT_APPLICATION_JSON;
-import static opencoap.core.ContentFormat.CT_TEXT_PLAIN;
+import static opencoap.core.ContentFormat.APPLICATION_JSON;
+import static opencoap.core.ContentFormat.TEXT_PLAIN;
 import static opencoap.core.Opaque.decodeHex;
 import static opencoap.util.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,8 +105,8 @@ class CoapResponseTest {
     void testToString() {
         assertEquals("CoapResponse[205, pl(4):64757061]", CoapResponse.ok("dupa").build().toString());
         assertEquals("CoapResponse[400, ETag:6565]", CoapResponse.badRequest().etag(Opaque.of("ee")).build().toString());
-        assertEquals("CoapResponse[205, ContTp:0, pl(3):616161]", CoapResponse.ok("aaa", CT_TEXT_PLAIN).build().toString());
-        assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", coapResponse(C400_BAD_REQUEST).payload("{\"error\":123}").contentFormat(CT_APPLICATION_JSON).build().toString());
+        assertEquals("CoapResponse[205, ContTp:0, pl(3):616161]", CoapResponse.ok("aaa", TEXT_PLAIN).build().toString());
+        assertEquals("CoapResponse[400, ContTp:50, pl(13):7b226572726f72223a3132337d]", coapResponse(C400_BAD_REQUEST).payload("{\"error\":123}").contentFormat(APPLICATION_JSON).build().toString());
     }
 
     @Test
@@ -129,7 +129,7 @@ class CoapResponseTest {
         public void shouldBuildComplex() {
             CoapResponse response = coapResponse(C201_CREATED)
                     .payload(Opaque.of("{'test:1}"))
-                    .contentFormat(CT_APPLICATION_JSON)
+                    .contentFormat(APPLICATION_JSON)
                     .observe(123)
                     .etag(decodeHex("0102"))
                     .size2Res(9)
@@ -143,7 +143,7 @@ class CoapResponseTest {
                     .build();
 
             CoapResponse expected = CoapResponse.of(C201_CREATED, Opaque.of("{'test:1}"), newOptions(o -> {
-                o.setContentFormat(CT_APPLICATION_JSON);
+                o.setContentFormat(APPLICATION_JSON);
                 o.setObserve(123);
                 o.setEtag(decodeHex("0102"));
                 o.setSize2Res(9);

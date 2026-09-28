@@ -59,10 +59,10 @@ public class SendCommand implements Callable<Integer> {
     private String proxyUri;
 
     @Option(names = {"--content-format", "-c"}, paramLabel = "<content-format>", description = "Content format, for example: 50 (json), 40 (link-format), 0 (text-plain)")
-    private Short contentFormat;
+    private Integer contentFormat;
 
     @Option(names = {"--accept", "-a"}, paramLabel = "<accept>", description = "Content format we want to receive, for example: 60 (cbor), 50 (json), 0 (text-plain)")
-    private Short accept;
+    private Integer accept;
 
     @Option(names = {"--hex-payload", "-x"}, description = "The payload is in HEX")
     private boolean hexPayload;
@@ -97,7 +97,7 @@ public class SendCommand implements Callable<Integer> {
 
             if (resp.getPayload().nonEmpty()) {
                 spec.commandLine().getOut().println();
-                if (resp.options().getContentFormat() != null && (resp.options().getContentFormat() == ContentFormat.CT_APPLICATION_CBOR || resp.options().getContentFormat() == ContentFormat.CT_APPLICATION_OCTET__STREAM)) {
+                if (resp.options().getContentFormat() != null && (resp.options().getContentFormat() == ContentFormat.APPLICATION_CBOR || resp.options().getContentFormat() == ContentFormat.APPLICATION_OCTET_STREAM)) {
                     spec.commandLine().getOut().println(resp.getPayload().toHex());
                 } else {
                     spec.commandLine().getOut().println(resp.getPayloadString());

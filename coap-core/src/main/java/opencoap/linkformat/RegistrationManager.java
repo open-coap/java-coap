@@ -77,7 +77,7 @@ public final class RegistrationManager {
     public CompletableFuture<Void> register() {
         return client.send(post(registrationUri.getPath())
                         .queries(registrationUri.getQuery().split("&"))
-                        .payload(registrationLinks, ContentFormat.CT_APPLICATION_LINK__FORMAT)
+                        .payload(registrationLinks, ContentFormat.APPLICATION_LINK_FORMAT)
                 )
                 .thenAccept(resp -> {
                     if (resp.getCode() == Code.C201_CREATED) {
