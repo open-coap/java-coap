@@ -29,23 +29,23 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import opencoap.codec.CoapPacket;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 
 public final class NettyCoapTransport implements CoapTransport {
 
     private Channel channel;
     private final Bootstrap bootstrap;
-    private final Function<DatagramPacket, TransportContext> contextResolver;
+    private final Function<DatagramPacket, MessageAttributes> attributesResolver;
     private final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter;
     private CompletableFuture<CoapPacket> receivePromise = new CompletableFuture<>();
 
-    public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, TransportContext> contextResolver) {
-        this(bootstrap, contextResolver, CoapCodec.DEFAULT_CONVERTER);
+    public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, MessageAttributes> attributesResolver) {
+        this(bootstrap, attributesResolver, CoapCodec.DEFAULT_CONVERTER);
     }
 
-    public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, TransportContext> contextResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
+    public NettyCoapTransport(Bootstrap bootstrap, Function<DatagramPacket, MessageAttributes> attributesResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
         this.bootstrap = bootstrap;
-        this.contextResolver = requireNonNull(contextResolver);
+        this.attributesResolver = requireNonNull(attributesResolver);
         this.coapToDatagramConverter = requireNonNull(coapToDatagramConverter);
     }
 
@@ -74,7 +74,7 @@ public final class NettyCoapTransport implements CoapTransport {
     void init(Channel channel) {
         this.channel = channel;
         this.channel.pipeline()
-                .addLast("coap-codec", new CoapCodec(contextResolver, coapToDatagramConverter))
+                .addLast("coap-codec", new CoapCodec(attributesResolver, coapToDatagramConverter))
                 .addLast("coap-inbound", new CoapInbound());
     }
 

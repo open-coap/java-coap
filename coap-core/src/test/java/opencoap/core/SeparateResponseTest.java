@@ -27,7 +27,7 @@ import nl.jqno.equalsverifier.Func;
 import org.junit.jupiter.api.Test;
 
 class SeparateResponseTest {
-    private static final TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
+    private static final AttributeKey<String> DUMMY_KEY = AttributeKey.optional("DUMMY_KEY");
 
     @Test
     public void shouldModifyWithBuilder() {
@@ -37,12 +37,12 @@ class SeparateResponseTest {
         SeparateResponse response2 = response.modify()
                 .payload("czesc")
                 .options(o -> o.maxAge(200))
-                .addContext(DUMMY_KEY, "test")
+                .addAttribute(DUMMY_KEY, "test")
                 .build();
 
         // then
         assertEquals(
-                coapResponse(C205_CONTENT).payload("czesc").maxAge(200).addContext(DUMMY_KEY, "test").toSeparate(Opaque.of("token"), LOCAL_5683),
+                coapResponse(C205_CONTENT).payload("czesc").maxAge(200).addAttribute(DUMMY_KEY, "test").toSeparate(Opaque.of("token"), LOCAL_5683),
                 response2
         );
 
@@ -57,7 +57,7 @@ class SeparateResponseTest {
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)
                 .withGenericPrefabValues(CompletableFuture.class, (Func.Func1<CoapResponse, CompletableFuture>) coapResponse -> new CompletableFuture<>())
                 .withPrefabValues(CoapResponse.class, CoapResponse.badRequest().build(), CoapResponse.ok().build())
-                .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
+                .withPrefabValues(MessageAttributes.class, MessageAttributes.EMPTY, MessageAttributes.of(MessageAttributes.NON_CONFIRMABLE, true))
                 .usingGetClass()
                 .verify();
     }

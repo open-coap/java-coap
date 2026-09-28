@@ -22,7 +22,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Handler;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 import org.junit.jupiter.api.Test;
 
 class DtlsSessionSuspensionHandlerTest {
@@ -35,8 +35,8 @@ class DtlsSessionSuspensionHandlerTest {
 
     @Test
     void shouldReturnResponseWithExpirationHint() {
-        CoapResponse resp = handler.apply(CoapRequest.get("/test").context(TransportContext.of(TransportContext.NON_CONFIRMABLE, true)).build()).join();
+        CoapResponse resp = handler.apply(CoapRequest.get("/test").attributes(MessageAttributes.of(MessageAttributes.NON_CONFIRMABLE, true)).build()).join();
         assertEquals(Code.C205_CONTENT, resp.getCode());
-        assertTrue(resp.getTransContext().get(DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT));
+        assertTrue(resp.getAttributes().get(DtlsAttributes.DTLS_SESSION_SUSPENSION_HINT));
     }
 }

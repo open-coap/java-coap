@@ -43,16 +43,16 @@ public final class SeparateResponse {
         return peerAddress;
     }
 
-    public TransportContext getTransContext() {
-        return response.getTransContext();
+    public MessageAttributes getAttributes() {
+        return response.getAttributes();
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key) {
-        return response.getTransContext().get(key);
+    public <T> T getAttribute(AttributeKey<T> key) {
+        return response.getAttribute(key);
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
-        return response.getTransContext().getOrDefault(key, defaultValue);
+    public <T> T getAttribute(AttributeKey<T> key, T defaultValue) {
+        return response.getAttribute(key, defaultValue);
     }
 
     public Code getCode() {
@@ -93,7 +93,7 @@ public final class SeparateResponse {
     }
 
     public SeparateResponse duplicate() {
-        return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()).withContext(response.getTransContext()), token, peerAddress);
+        return new SeparateResponse(CoapResponse.of(response.getCode(), response.getPayload(), response.options().duplicate()).withAttributes(response.getAttributes()), token, peerAddress);
     }
 
     public Builder modify() {
@@ -126,13 +126,18 @@ public final class SeparateResponse {
             return this;
         }
 
-        public Builder context(TransportContext newTransportContext) {
-            response.context(newTransportContext);
+        public Builder attributes(MessageAttributes newAttributes) {
+            response.attributes(newAttributes);
             return this;
         }
 
-        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
-            response.addContext(key, value);
+        public <T> Builder addAttribute(AttributeKey<T> key, T value) {
+            response.addAttribute(key, value);
+            return this;
+        }
+
+        public Builder addAttributes(MessageAttributes other) {
+            response.addAttributes(other);
             return this;
         }
 

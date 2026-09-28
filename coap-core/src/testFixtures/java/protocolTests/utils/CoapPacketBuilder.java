@@ -22,10 +22,10 @@ import opencoap.codec.CoapPacket;
 import opencoap.core.BlockOption;
 import opencoap.core.BlockSize;
 import opencoap.core.Code;
+import opencoap.core.MessageAttributes;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.TransportContext;
 
 public class CoapPacketBuilder {
     public static final InetSocketAddress LOCAL_5683 = new InetSocketAddress("localhost", 5683);
@@ -206,8 +206,8 @@ public class CoapPacketBuilder {
         return mid(messageId).reset().build();
     }
 
-    public CoapPacketBuilder context(TransportContext transportContext) {
-        coapPacket.setTransportContext(transportContext);
+    public CoapPacketBuilder attributes(MessageAttributes attributes) {
+        coapPacket.setAttributes(attributes);
         return this;
     }
 

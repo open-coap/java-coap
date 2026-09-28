@@ -30,25 +30,25 @@ public final class CoapRequest {
     private final CoapOptions options;
     private final Opaque payload;
     private final InetSocketAddress peerAddress;
-    private final TransportContext transContext;
+    private final MessageAttributes attributes;
 
-    public CoapRequest(Method method, Opaque token, CoapOptions options, Opaque payload, InetSocketAddress peerAddress, TransportContext transContext) {
+    public CoapRequest(Method method, Opaque token, CoapOptions options, Opaque payload, InetSocketAddress peerAddress, MessageAttributes attributes) {
         this.method = Objects.requireNonNull(method);
         this.token = Objects.requireNonNull(token);
         this.options = Objects.requireNonNull(options);
         this.payload = Objects.requireNonNull(payload);
         this.peerAddress = peerAddress;
-        this.transContext = Objects.requireNonNull(transContext);
+        this.attributes = Objects.requireNonNull(attributes);
     }
 
-    private CoapRequest(InetSocketAddress peerAddress, TransportContext transContext) {
+    private CoapRequest(InetSocketAddress peerAddress, MessageAttributes attributes) {
         // ping
         this.method = null;
         this.token = Opaque.EMPTY;
         this.options = new CoapOptions();
         this.payload = Opaque.EMPTY;
         this.peerAddress = Objects.requireNonNull(peerAddress);
-        this.transContext = Objects.requireNonNull(transContext);
+        this.attributes = Objects.requireNonNull(attributes);
     }
 
 
@@ -89,8 +89,8 @@ public final class CoapRequest {
         return get(uriPath).observe();
     }
 
-    public static CoapRequest ping(InetSocketAddress peerAddress, TransportContext transContext) {
-        return new CoapRequest(peerAddress, transContext);
+    public static CoapRequest ping(InetSocketAddress peerAddress, MessageAttributes attributes) {
+        return new CoapRequest(peerAddress, attributes);
     }
 
     // --------------------
@@ -116,16 +116,16 @@ public final class CoapRequest {
         return peerAddress;
     }
 
-    public TransportContext getTransContext() {
-        return transContext;
+    public MessageAttributes getAttributes() {
+        return attributes;
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key) {
-        return transContext.get(key);
+    public <T> T getAttribute(AttributeKey<T> key) {
+        return attributes.get(key);
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key, T defaultValue) {
-        return transContext.getOrDefault(key, defaultValue);
+    public <T> T getAttribute(AttributeKey<T> key, T defaultValue) {
+        return attributes.getOrDefault(key, defaultValue);
     }
 
     public boolean isPing() {
@@ -141,12 +141,12 @@ public final class CoapRequest {
             return false;
         }
         CoapRequest that = (CoapRequest) o;
-        return method == that.method && Objects.equals(token, that.token) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload) && Objects.equals(peerAddress, that.peerAddress) && Objects.equals(transContext, that.transContext);
+        return method == that.method && Objects.equals(token, that.token) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload) && Objects.equals(peerAddress, that.peerAddress) && Objects.equals(attributes, that.attributes);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(method, options, peerAddress, transContext);
+        int result = Objects.hash(method, options, peerAddress, attributes);
         result = 31 * result + Objects.hashCode(token);
         result = 31 * result + Objects.hashCode(payload);
         return result;
@@ -170,7 +170,7 @@ public final class CoapRequest {
 
     // ---  MODIFIERS ---
     public Builder modify() {
-        return new Builder(method, token, CoapOptionsBuilder.from(options), payload, peerAddress, transContext);
+        return new Builder(method, token, CoapOptionsBuilder.from(options), payload, peerAddress, attributes);
     }
 
     public static class Builder {
@@ -179,7 +179,7 @@ public final class CoapRequest {
         private final CoapOptionsBuilder options;
         private Opaque payload = Opaque.EMPTY;
         private InetSocketAddress peerAddress;
-        private TransportContext transContext = TransportContext.EMPTY;
+        private MessageAttributes attributes = MessageAttributes.EMPTY;
 
         private Builder(Method method, String uriPath) {
             this.method = method;
@@ -187,17 +187,17 @@ public final class CoapRequest {
             this.options.uriPath(uriPath);
         }
 
-        private Builder(Method method, Opaque token, CoapOptionsBuilder options, Opaque payload, InetSocketAddress peerAddress, TransportContext transContext) {
+        private Builder(Method method, Opaque token, CoapOptionsBuilder options, Opaque payload, InetSocketAddress peerAddress, MessageAttributes attributes) {
             this.method = method;
             this.token = token;
             this.options = options;
             this.payload = payload;
             this.peerAddress = peerAddress;
-            this.transContext = transContext;
+            this.attributes = attributes;
         }
 
         public CoapRequest build() {
-            return new CoapRequest(method, token, options.build(), payload, peerAddress, transContext);
+            return new CoapRequest(method, token, options.build(), payload, peerAddress, attributes);
         }
 
         public CoapRequest to(InetSocketAddress address) {
@@ -255,18 +255,18 @@ public final class CoapRequest {
             return token(Opaque.variableUInt(token));
         }
 
-        public Builder context(TransportContext newTransportContext) {
-            this.transContext = newTransportContext;
+        public Builder attributes(MessageAttributes newAttributes) {
+            this.attributes = newAttributes;
             return this;
         }
 
-        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
-            transContext = transContext.with(key, value);
+        public <T> Builder addAttribute(AttributeKey<T> key, T value) {
+            attributes = attributes.with(key, value);
             return this;
         }
 
-        public <T> Builder addContext(TransportContext context) {
-            transContext = transContext.with(context);
+        public Builder addAttributes(MessageAttributes other) {
+            attributes = attributes.with(other);
             return this;
         }
 

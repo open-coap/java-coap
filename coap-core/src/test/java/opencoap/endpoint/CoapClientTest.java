@@ -31,9 +31,9 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
+import opencoap.core.MessageAttributes;
 import opencoap.core.Opaque;
 import opencoap.core.Handler;
-import opencoap.core.TransportContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +64,7 @@ public class CoapClientTest {
 
     @Test
     public void pingRequest() throws Exception {
-        given(clientService.apply(ping(LOCAL_5683, TransportContext.EMPTY)))
+        given(clientService.apply(ping(LOCAL_5683, MessageAttributes.EMPTY)))
                 .willReturn(completedFuture(CoapResponse.of(null)));
 
         // when

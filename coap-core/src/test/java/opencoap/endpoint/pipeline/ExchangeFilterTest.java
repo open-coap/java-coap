@@ -16,7 +16,7 @@
 package opencoap.endpoint.pipeline;
 
 import static opencoap.core.CoapRequest.get;
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
 import static opencoap.util.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -111,7 +111,7 @@ class ExchangeFilterTest {
     @Test
     void nonConfirmableExchange() {
         // given
-        CoapRequest req = get("/13").token(19).addContext(NON_CONFIRMABLE, true).from(LOCAL_5683);
+        CoapRequest req = get("/13").token(19).addAttribute(NON_CONFIRMABLE, true).from(LOCAL_5683);
         resp = service.apply(req);
         assertEquals(1, exchangeFilter.transactions());
 

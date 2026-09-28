@@ -40,8 +40,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class CoapResponseTest {
-    private static final TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
-    private static final TransportContext.Key<String> DUMMY_KEY2 = new TransportContext.Key<>(null);
+    private static final AttributeKey<String> DUMMY_KEY = AttributeKey.optional("DUMMY_KEY");
+    private static final AttributeKey<String> DUMMY_KEY2 = AttributeKey.optional("DUMMY_KEY2");
 
     @Test
     void staticFactory() {
@@ -73,17 +73,17 @@ class CoapResponseTest {
 
     @Test
     public void shouldModifyWithBuilder() {
-        CoapResponse response = coapResponse(C205_CONTENT).payload("moi").maxAge(100).addContext(DUMMY_KEY, "test").build();
+        CoapResponse response = coapResponse(C205_CONTENT).payload("moi").maxAge(100).addAttribute(DUMMY_KEY, "test").build();
 
         // when
         CoapResponse response2 = response.modify()
                 .payload("czesc")
                 .options(o -> o.maxAge(200))
-                .addContext(DUMMY_KEY2, "test2")
+                .addAttribute(DUMMY_KEY2, "test2")
                 .build();
 
         // then
-        assertEquals(coapResponse(C205_CONTENT).payload("czesc").maxAge(200).addContext(DUMMY_KEY, "test").addContext(DUMMY_KEY2, "test2").build(), response2);
+        assertEquals(coapResponse(C205_CONTENT).payload("czesc").maxAge(200).addAttribute(DUMMY_KEY, "test").addAttribute(DUMMY_KEY2, "test2").build(), response2);
 
         // and original object is not changed
         assertEquals("moi", response.getPayloadString());
@@ -96,7 +96,7 @@ class CoapResponseTest {
                 .withGenericPrefabValues(Supplier.class, (Func.Func1<CompletableFuture<CoapResponse>, Supplier>) o -> () -> o)
                 .withGenericPrefabValues(CompletableFuture.class, (Func.Func1<CoapResponse, CompletableFuture>) coapResponse -> new CompletableFuture<>())
                 .withPrefabValues(CoapResponse.class, CoapResponse.badRequest().build(), CoapResponse.ok().build())
-                .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
+                .withPrefabValues(MessageAttributes.class, MessageAttributes.EMPTY, MessageAttributes.of(MessageAttributes.NON_CONFIRMABLE, true))
                 .usingGetClass()
                 .verify();
     }
@@ -110,16 +110,16 @@ class CoapResponseTest {
     }
 
     @Test
-    void shouldAccessTransportContext() {        // when
+    void shouldAccessAttributes() {        // when
         CoapResponse response = CoapResponse.ok()
-                .context(TransportContext.EMPTY)
-                .addContext(DUMMY_KEY, "test")
-                .addContext(TransportContext.of(DUMMY_KEY2, "test2"))
+                .attributes(MessageAttributes.EMPTY)
+                .addAttribute(DUMMY_KEY, "test")
+                .addAttributes(MessageAttributes.of(DUMMY_KEY2, "test2"))
                 .build();
 
         // then
-        assertEquals("test", response.getTransContext(DUMMY_KEY));
-        assertEquals("test2", response.getTransContext(DUMMY_KEY2));
+        assertEquals("test", response.getAttribute(DUMMY_KEY));
+        assertEquals("test2", response.getAttribute(DUMMY_KEY2));
     }
 
     @Nested

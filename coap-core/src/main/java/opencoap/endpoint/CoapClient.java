@@ -29,7 +29,7 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Handler;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 
 /**
  * CoAP client implementation.
@@ -83,7 +83,7 @@ public class CoapClient implements Closeable {
     }
 
     public CompletableFuture<Boolean> ping() throws CoapException {
-        return clientService.apply(CoapRequest.ping(destination, TransportContext.EMPTY))
+        return clientService.apply(CoapRequest.ping(destination, MessageAttributes.EMPTY))
                 .thenApply(resolvePingResponse);
     }
 

@@ -53,7 +53,7 @@ public class CoapPacketAssertion {
         assertEquals(cp1.getPayloadString(), cp2.getPayloadString());
 
         assertEquals(cp1.getRemoteAddress(), cp2.getRemoteAddress());
-        assertEquals(cp1.getTransportContext(), cp2.getTransportContext());
+        assertEquals(cp1.getAttributes(), cp2.getAttributes());
     }
 
 }

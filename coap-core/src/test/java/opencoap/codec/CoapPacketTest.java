@@ -56,11 +56,11 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapOptions;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
+import opencoap.core.MessageAttributes;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.TransportContext;
 import opencoap.linkformat.LinkFormat;
 import opencoap.linkformat.LinkFormatBuilder;
 import org.junit.jupiter.api.Test;
@@ -461,7 +461,7 @@ public class CoapPacketTest {
     public void equalsAndHashTest() throws Exception {
         EqualsVerifier.forClass(CoapPacket.class).suppress(Warning.NONFINAL_FIELDS)
                 .usingGetClass()
-                .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
+                .withPrefabValues(MessageAttributes.class, MessageAttributes.EMPTY, MessageAttributes.of(MessageAttributes.NON_CONFIRMABLE, true))
                 .verify();
     }
 

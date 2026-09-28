@@ -21,7 +21,7 @@ import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapResponse.coapResponse;
 import static opencoap.core.CoapResponse.ok;
 import static opencoap.core.Opaque.of;
-import static opencoap.transport.DtlsTransportContext.DTLS_AUTHENTICATION;
+import static opencoap.transport.DtlsAttributes.DTLS_AUTHENTICATION;
 import static opencoap.util.Assertions.assertEquals;
 import static opencoap.util.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +35,7 @@ import opencoap.codec.CoapSerializer;
 import opencoap.core.CoapException;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.routing.RoutingHandler;
@@ -74,10 +74,10 @@ class MbedtlsCoapTransportTest {
 
                             HashMap<String, String> authCtx = new HashMap<>();
                             authCtx.put("auth", name);
-                            return CoapResponse.coapResponse(Code.C201_CREATED).addContext(DTLS_AUTHENTICATION, authCtx).toFuture();
+                            return CoapResponse.coapResponse(Code.C201_CREATED).addAttribute(DTLS_AUTHENTICATION, authCtx).toFuture();
                         })
                         .get("/auth", it -> {
-                            String name = it.getTransContext(DTLS_AUTHENTICATION).get("auth");
+                            String name = it.getAttribute(DTLS_AUTHENTICATION).get("auth");
                             if (name != null) {
                                 return CoapResponse.ok(name).toFuture();
                             } else {
@@ -154,7 +154,7 @@ class MbedtlsCoapTransportTest {
     @Test
     void deserialize_coap_from_bytebuffer_packet_with_offset() {
         // given
-        CoapPacket coap = CoapPacketBuilder.newCoapPacket(localhost(5684)).mid(13).get().uriPath("/test").context(TransportContext.EMPTY).build();
+        CoapPacket coap = CoapPacketBuilder.newCoapPacket(localhost(5684)).mid(13).get().uriPath("/test").attributes(MessageAttributes.EMPTY).build();
         // buffer with offset
         ByteBuffer buffer = ByteBuffer.allocate(200);
         buffer.position(10);

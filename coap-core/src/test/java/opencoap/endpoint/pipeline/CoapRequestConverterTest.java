@@ -17,7 +17,7 @@ package opencoap.endpoint.pipeline;
 
 import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapResponse.ok;
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -25,17 +25,18 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
+import opencoap.core.AttributeKey;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Handler;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class CoapRequestConverterTest {
-    private static final TransportContext.Key<Boolean> DUMMY_KEY_IN = new TransportContext.Key<>(false);
-    private static final TransportContext.Key<Boolean> DUMMY_KEY_OUT = new TransportContext.Key<>(false);
+    private static final AttributeKey<Boolean> DUMMY_KEY_IN = AttributeKey.defaulted("DUMMY_KEY_IN", false);
+    private static final AttributeKey<Boolean> DUMMY_KEY_OUT = AttributeKey.defaulted("DUMMY_KEY_OUT", false);
     private CoapRequestConverter conv = new CoapRequestConverter(() -> 20);
     private Handler<CoapRequest, CoapResponse> service = Mockito.mock(Handler.class);
 
@@ -57,7 +58,7 @@ class CoapRequestConverterTest {
     @Test
     void shouldConvertNonRequestAndResponse() {
         given(service.apply(eq(
-                post("/test2").token(13).payload("test").addContext(NON_CONFIRMABLE, true).to(LOCAL_5683))
+                post("/test2").token(13).payload("test").addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683))
         )).willReturn(
                 ok("ok").toFuture()
         );
@@ -70,17 +71,17 @@ class CoapRequestConverterTest {
     }
 
     @Test
-    void shouldUseTransportContextFromResponse() {
+    void shouldUseAttributesFromResponse() {
         given(service.apply(eq(
-                post("/test2").token(13).payload("test").addContext(DUMMY_KEY_IN, true).to(LOCAL_5683))
+                post("/test2").token(13).payload("test").addAttribute(DUMMY_KEY_IN, true).to(LOCAL_5683))
         )).willReturn(
-                ok("ok").addContext(DUMMY_KEY_OUT, true).toFuture()
+                ok("ok").addAttribute(DUMMY_KEY_OUT, true).toFuture()
         );
 
         CompletableFuture<CoapPacket> resp = conv.apply(
-                newCoapPacket(LOCAL_5683).mid(1300).token(13).post().uriPath("/test2").payload("test").context(TransportContext.of(DUMMY_KEY_IN, true)).build(), service
+                newCoapPacket(LOCAL_5683).mid(1300).token(13).post().uriPath("/test2").payload("test").attributes(MessageAttributes.of(DUMMY_KEY_IN, true)).build(), service
         );
 
-        assertEquals(newCoapPacket(LOCAL_5683).ack(Code.C205_CONTENT).mid(1300).token(13).payload("ok").context(TransportContext.of(DUMMY_KEY_OUT, true)).build(), resp.join());
+        assertEquals(newCoapPacket(LOCAL_5683).ack(Code.C205_CONTENT).mid(1300).token(13).payload("ok").attributes(MessageAttributes.of(DUMMY_KEY_OUT, true)).build(), resp.join());
     }
 }

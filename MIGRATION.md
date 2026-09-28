@@ -19,12 +19,16 @@ This document outlines breaking changes and migration steps between versions of 
 - **Option wire framing moved:** `CoapOptions.serialize(OutputStream)` and `deserialize(InputStream, int)` moved to `CoapSerializer.serializeOptions(CoapOptions, OutputStream)` and `CoapSerializer.deserializeOptions(CoapOptions, InputStream, int)`.
 - **Service renamed to Handler:** `Service<REQ, RES>` is now `Handler<REQ, RES>`; `RouterService` is now `RoutingHandler`.
 - **Filter hierarchy inverted:** `Filter<REQ, RES>` is now the type-preserving filter (formerly `Filter.SimpleFilter`). The general 4-type-parameter form is now `MappingFilter<REQ, RES, IN_REQ, IN_RES>`. `Filter.UnaryFilter` is removed.
+- **TransportContext renamed to MessageAttributes:** `TransportContext` is now `MessageAttributes`, its nested `Key<T>` is the top-level `AttributeKey<T>`, and the accessors are `getAttributes()` / `getAttribute(key)` / `withAttributes(...)` / `addAttribute(...)`.
 - **Class renames:**
   - `Service` &rarr; `Handler`
   - `RouterService` &rarr; `RoutingHandler`
   - `DtlsSessionSuspensionService` &rarr; `DtlsSessionSuspensionHandler`
   - `Filter<REQ, RES, IN_REQ, IN_RES>` &rarr; `MappingFilter<REQ, RES, IN_REQ, IN_RES>`
   - `Filter.SimpleFilter<REQ, RES>` &rarr; `Filter<REQ, RES>`
+  - `TransportContext` &rarr; `MessageAttributes`
+  - `TransportContext.Key<T>` &rarr; `AttributeKey<T>`
+  - `DtlsTransportContext` &rarr; `DtlsAttributes`
   - `MediaTypes` &rarr; `ContentFormat`
   - `BasicHeaderOptions` / `HeaderOptions` &rarr; `CoapOptions`
   - `SignallingHeaderOptions` &rarr; `SignalingHeaderOptions`
@@ -92,8 +96,8 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 +import opencoap.core.Filter;
 +import opencoap.core.ContentFormat;
 +import opencoap.core.Handler;
++import opencoap.core.MessageAttributes;
 +import opencoap.core.Opaque;
-+import opencoap.core.TransportContext;
 +import opencoap.endpoint.CoapClient;
 +import opencoap.endpoint.CoapServer;
 +import opencoap.filter.TokenGeneratorFilter;
@@ -123,7 +127,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.server.filter` | `opencoap.filter` | `CongestionControlFilter`, `EchoFilter`, `EtagGeneratorFilter`, `EtagValidatorFilter`, `MaxAllowedPayloadFilter`, `RequestLoggerFilter`, `ResponseTimeoutFilter`, `TokenGeneratorFilter` |
 | `com.mbed.coap.server.observe` | `opencoap.observe` | `HashMapObservationsStore`, `NotificationsReceiver`, `ObservationsStore`, `ObserversManager` |
 | `com.mbed.coap.transmission` | `opencoap.endpoint` | `RetransmissionBackOff` |
-| `com.mbed.coap.transport` | `opencoap.core` | `TransportContext` |
+| `com.mbed.coap.transport` | `opencoap.core` | `MessageAttributes`, `AttributeKey` |
 | `com.mbed.coap.transport` | `opencoap.transport` | `CoapTransport`, `BlockingCoapTransport`, `CoapTcpTransport`, `CoapTcpListener`, `LoggingCoapTransport` |
 | `com.mbed.coap.transport.udp` | `opencoap.transport` | `DatagramSocketTransport` |
 | `com.mbed.coap.transport.javassl` | `opencoap.transport` | `SocketClientTransport`, `SSLSocketClientTransport` |
@@ -132,7 +136,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.utils` | `opencoap.core` | `Handler`, `Filter`, `MappingFilter` |
 | `com.mbed.coap.utils` | `opencoap.util` | `FutureHelpers`, `ExecutorHelpers`, `Timer`, `Validations` |
 | `org.opencoap.coap.netty` | `opencoap.transport` | `NettyCoapTransport`, `CoapCodec`, `NettyUtils` |
-| `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionHandler`, `DtlsTransportContext` |
+| `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionHandler`, `DtlsAttributes` |
 | `org.opencoap.coap.metrics.micrometer` | `opencoap.filter` | `MicrometerMetricsFilter` |
 
 ---
@@ -165,16 +169,16 @@ The `with*` mutation methods on `CoapRequest` have been removed in favor of `mod
 
 #### Separate Responses
 
-The 4-argument `SeparateResponse` constructor and `toSeparate(..., TransportContext)` overloads have been removed. Set transport context on the response prior to converting to separate response, or use `modify()`:
+The 4-argument `SeparateResponse` constructor and `toSeparate(..., TransportContext)` overloads have been removed. Set attributes on the response prior to converting to separate response, or use `modify()`:
 
 ```diff
 -SeparateResponse sep = response.toSeparate(token, peerAddress, transContext);
-+SeparateResponse sep = response.withContext(transContext).toSeparate(token, peerAddress);
++SeparateResponse sep = response.withAttributes(attributes).toSeparate(token, peerAddress);
 ```
 
 ```diff
 -SeparateResponse sep = new SeparateResponse(response, token, peerAddress, transContext);
-+SeparateResponse sep = new SeparateResponse(response.withContext(transContext), token, peerAddress);
++SeparateResponse sep = new SeparateResponse(response.withAttributes(attributes), token, peerAddress);
 ```
 
 You can now also fluently modify existing `CoapResponse` and `SeparateResponse` instances:
@@ -531,3 +535,76 @@ Type-changing filters:
 - `RoutingHandler.RouteBuilder.filter(...)`
 
 Lambdas passed directly need no change. Variables or classes typed as the 4-parameter form must be changed to `Filter<CoapRequest, CoapResponse>`, because a `MappingFilter` is not accepted where a `Filter` is expected.
+
+---
+
+### 9. Message Attributes
+
+#### TransportContext Renamed to MessageAttributes
+
+`TransportContext` carried more than transport facts: besides DTLS session data it holds CoAP-layer hints (`NON_CONFIRMABLE`, `RESPONSE_TIMEOUT`) and arbitrary application data passed through the stack. It is now `MessageAttributes`, which contrasts with `CoapOptions`: options are serialized on the wire, attributes never are. The package is unchanged.
+
+| Old (6.x) | New (7.0) |
+|---|---|
+| `TransportContext` | `MessageAttributes` |
+| `TransportContext.Key<T>` | `AttributeKey<T>` |
+| `DtlsTransportContext` | `DtlsAttributes` |
+| `DtlsTransportContext.toTransportContext(...)` | `DtlsAttributes.toAttributes(...)` |
+
+Accessors on `CoapRequest`, `CoapResponse`, `SeparateResponse` and `CoapPacket` now use the same spelling:
+
+| Old (6.x) | New (7.0) |
+|---|---|
+| `getTransContext()`, `CoapPacket.getTransportContext()` | `getAttributes()` |
+| `getTransContext(key)`, `getTransContext(key, default)` | `getAttribute(key)`, `getAttribute(key, default)` |
+| `CoapPacket.setTransportContext(...)` | `CoapPacket.setAttributes(...)` |
+| `CoapResponse.withContext(...)` | `CoapResponse.withAttributes(...)` |
+| `Builder.context(...)` | `Builder.attributes(...)` |
+| `Builder.addContext(key, value)` | `Builder.addAttribute(key, value)` |
+| `Builder.addContext(context)` | `Builder.addAttributes(attributes)` |
+
+`CoapResponse.getAttribute(key, default)` and `SeparateResponse.Builder.addAttributes(...)` are new, so all three message types offer the same accessors.
+
+```diff
+-import com.mbed.coap.transport.TransportContext;
++import opencoap.core.MessageAttributes;
+
+ CoapRequest.post("/actuator/switch")
+-        .addContext(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3))
++        .addAttribute(MessageAttributes.RESPONSE_TIMEOUT, Duration.ofMinutes(3))
+         .build();
+
+-Duration timeout = request.getTransContext(TransportContext.RESPONSE_TIMEOUT);
++Duration timeout = request.getAttribute(MessageAttributes.RESPONSE_TIMEOUT);
+```
+
+```diff
+-import org.opencoap.transport.mbedtls.DtlsTransportContext;
++import opencoap.transport.DtlsAttributes;
+
+-String subject = request.getTransContext(DtlsTransportContext.DTLS_PEER_CERTIFICATE_SUBJECT);
++String subject = request.getAttribute(DtlsAttributes.DTLS_PEER_CERTIFICATE_SUBJECT);
+```
+
+Transport resolvers passed to `NettyCoapTransport` and `CoapCodec` are now typed `Function<DatagramPacket, MessageAttributes>`.
+
+#### AttributeKey Factories
+
+The public `Key(defaultValue)` constructor is replaced by named factories. The name is a debug label, shown by `toString()` on both `AttributeKey` and `MessageAttributes`. Keys are still compared by identity, so two keys with the same name are different keys.
+
+| Factory | Value returned by `get(key)` when the key is absent |
+|---|---|
+| `AttributeKey.defaulted(name, defaultValue)` | `defaultValue` (must not be null) |
+| `AttributeKey.optional(name)` | `null` |
+| `AttributeKey.required(name)` | throws `IllegalStateException` naming the key |
+
+`getOrDefault(key, default)` never throws, whatever factory created the key.
+
+```diff
+-static final TransportContext.Key<String> TENANT = new TransportContext.Key<>(null);
+-static final TransportContext.Key<Boolean> TRACED = new TransportContext.Key<>(false);
++static final AttributeKey<String> TENANT = AttributeKey.optional("TENANT");
++static final AttributeKey<Boolean> TRACED = AttributeKey.defaulted("TRACED", false);
+```
+
+`MessageAttributes.keys()` no longer includes a `null` element for `MessageAttributes.EMPTY`.

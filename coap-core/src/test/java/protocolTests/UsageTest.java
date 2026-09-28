@@ -28,8 +28,8 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
+import opencoap.core.MessageAttributes;
 import opencoap.core.Opaque;
-import opencoap.core.TransportContext;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.filter.TokenGeneratorFilter;
@@ -153,7 +153,7 @@ public class UsageTest {
                         .maxAge(Duration.ofHours(1))
                 )
                 .payload("{\"power\": \"on\"}", ContentFormat.APPLICATION_JSON)
-                .addContext(TransportContext.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
+                .addAttribute(MessageAttributes.RESPONSE_TIMEOUT, Duration.ofMinutes(3)) // overwrite default response timeout
         );
         futureResponse2.thenAccept(resp ->
                 // .. handle response

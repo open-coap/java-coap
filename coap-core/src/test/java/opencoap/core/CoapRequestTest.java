@@ -26,10 +26,10 @@ import static opencoap.core.CoapRequest.ping;
 import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapResponseTest.newOptions;
 import static opencoap.core.ContentFormat.APPLICATION_JSON;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
+import static opencoap.core.MessageAttributes.RESPONSE_TIMEOUT;
 import static opencoap.core.Opaque.EMPTY;
 import static opencoap.core.Opaque.decodeHex;
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
-import static opencoap.core.TransportContext.RESPONSE_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -44,23 +44,23 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class CoapRequestTest {
-    private static final TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
+    private static final AttributeKey<String> DUMMY_KEY = AttributeKey.optional("DUMMY_KEY");
 
     @Test
     void shouldCreatePing() {
-        CoapRequest ping = ping(LOCAL_5683, TransportContext.EMPTY);
+        CoapRequest ping = ping(LOCAL_5683, MessageAttributes.EMPTY);
 
         assertTrue(ping.isPing());
         assertThrows(NullPointerException.class, () -> ping.modify().payload(Opaque.of("a")).build().isPing());
         assertThrows(NullPointerException.class, () -> ping.modify().token(decodeHex("12")).build().isPing());
 
-        assertFalse(new CoapRequest(Method.GET, EMPTY, new CoapOptions(), EMPTY, LOCAL_5683, TransportContext.EMPTY).isPing());
+        assertFalse(new CoapRequest(Method.GET, EMPTY, new CoapOptions(), EMPTY, LOCAL_5683, MessageAttributes.EMPTY).isPing());
     }
 
     @Test
     public void shouldModifyCoapRequest() {
-        CoapRequest request = new CoapRequest(Method.POST, decodeHex("0102"), newOptions(o -> o.setUriPath("/test")), Opaque.of("test-1"), LOCAL_5683, TransportContext.EMPTY);
-        CoapRequest expected = new CoapRequest(Method.POST, decodeHex("ffff"), newOptions(o -> o.setUriPath("/test2")), Opaque.of("test-2"), LOCAL_1_5683, TransportContext.EMPTY);
+        CoapRequest request = new CoapRequest(Method.POST, decodeHex("0102"), newOptions(o -> o.setUriPath("/test")), Opaque.of("test-1"), LOCAL_5683, MessageAttributes.EMPTY);
+        CoapRequest expected = new CoapRequest(Method.POST, decodeHex("ffff"), newOptions(o -> o.setUriPath("/test2")), Opaque.of("test-2"), LOCAL_1_5683, MessageAttributes.EMPTY);
 
         // when
         CoapRequest request2 = request.modify()
@@ -89,29 +89,29 @@ class CoapRequestTest {
         assertEquals("CoapRequest[PATCH URI:/test, pl(4):64757061]", CoapRequest.patch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[IPATCH URI:/test, pl(4):64757061]", CoapRequest.iPatch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[GET URI:/test obs:0]", CoapRequest.observe("/test").build().toString());
-        assertEquals("CoapRequest[PING]", CoapRequest.ping(LOCAL_5683, TransportContext.EMPTY).toString());
+        assertEquals("CoapRequest[PING]", CoapRequest.ping(LOCAL_5683, MessageAttributes.EMPTY).toString());
     }
 
     @Test
-    void shouldModifyTransportContext() {
+    void shouldModifyAttributes() {
         CoapRequest request = CoapRequest.delete("/test").token(1023).build();
 
         // when
         CoapRequest request2 = request.modify()
-                .addContext(NON_CONFIRMABLE, true)
-                .addContext(TransportContext.of(DUMMY_KEY, "test"))
+                .addAttribute(NON_CONFIRMABLE, true)
+                .addAttributes(MessageAttributes.of(DUMMY_KEY, "test"))
                 .build();
 
         // then
-        assertEquals("test", request2.getTransContext(DUMMY_KEY));
-        assertEquals(true, request2.getTransContext(NON_CONFIRMABLE));
+        assertEquals("test", request2.getAttribute(DUMMY_KEY));
+        assertEquals(true, request2.getAttribute(NON_CONFIRMABLE));
     }
 
     @Test
     public void equalsAndHashTest() {
         EqualsVerifier.forClass(CoapRequest.class).suppress(Warning.NONFINAL_FIELDS)
                 .usingGetClass()
-                .withPrefabValues(TransportContext.class, TransportContext.EMPTY, TransportContext.of(TransportContext.NON_CONFIRMABLE, true))
+                .withPrefabValues(MessageAttributes.class, MessageAttributes.EMPTY, MessageAttributes.of(MessageAttributes.NON_CONFIRMABLE, true))
                 .verify();
     }
 
@@ -135,8 +135,8 @@ class CoapRequestTest {
                     .size1(342)
                     .observe()
                     .payload("perse", ContentFormat.TEXT_PLAIN)
-                    .addContext(RESPONSE_TIMEOUT, ofSeconds(12))
-                    .addContext(DUMMY_KEY, "test")
+                    .addAttribute(RESPONSE_TIMEOUT, ofSeconds(12))
+                    .addAttribute(DUMMY_KEY, "test")
                     .from(LOCAL_5683);
 
             CoapRequest expected = new CoapRequest(
@@ -144,7 +144,7 @@ class CoapRequestTest {
                     Opaque.ofBytes(0xB1, 0x97),
                     new CoapOptions(), Opaque.of("perse"),
                     LOCAL_5683,
-                    TransportContext.of(RESPONSE_TIMEOUT, ofSeconds(12)).with(DUMMY_KEY, "test")
+                    MessageAttributes.of(RESPONSE_TIMEOUT, ofSeconds(12)).with(DUMMY_KEY, "test")
             );
             expected.options().setUriPath("/0/1/2");
             expected.options().setAccept(APPLICATION_JSON);

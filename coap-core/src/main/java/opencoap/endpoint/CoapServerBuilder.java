@@ -18,7 +18,7 @@ package opencoap.endpoint;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static opencoap.core.TransportContext.RESPONSE_TIMEOUT;
+import static opencoap.core.MessageAttributes.RESPONSE_TIMEOUT;
 import static opencoap.util.Timer.toTimer;
 import static opencoap.util.Validations.require;
 import java.io.IOException;
@@ -261,7 +261,7 @@ public final class CoapServerBuilder {
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(new EchoFilter())
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
                 .andThenMap(midSupplier::update)
@@ -273,7 +273,7 @@ public final class CoapServerBuilder {
         // OBSERVATION
         Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::isAck))
                 .andThenMap(midSupplier::update)
                 .andThen(retransmissionFilter)
