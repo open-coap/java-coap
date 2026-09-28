@@ -35,13 +35,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Optional;
-import opencoap.core.BasicHeaderOptions;
 import opencoap.core.CoapException;
+import opencoap.core.CoapOptions;
 import opencoap.core.Code;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.SignalingOptions;
 import opencoap.core.SignalingHeaderOptions;
+import opencoap.core.SignalingOptions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import protocolTests.utils.CoapPacketBuilder;
@@ -282,11 +282,11 @@ public class CoapTcpPacketSerializerTest {
         assertEquals(pkt.getPayload(), Opaque.of("payload8901234"));
 
 
-        BasicHeaderOptions opts = new BasicHeaderOptions();
+        CoapOptions opts = new CoapOptions();
         opts.setUriPath("/aaa/bbb");
 
         ByteArrayOutputStream optSerializedStream = new ByteArrayOutputStream();
-        opts.serialize(optSerializedStream);
+        CoapSerializer.serializeOptions(opts, optSerializedStream);
 
         os = createRawPacketHeader(13, 0, new byte[]{(byte) optSerializedStream.size()}, Code.C205_CONTENT.getCoapCode(), null);
         os.write(optSerializedStream.toByteArray());
@@ -326,11 +326,11 @@ public class CoapTcpPacketSerializerTest {
         ).isExactlyInstanceOf(EOFException.class);
 
 
-        BasicHeaderOptions opts = new BasicHeaderOptions();
+        CoapOptions opts = new CoapOptions();
         opts.setUriPath("/aaa/bbb");
 
         ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
-        opts.serialize(tmpStream);
+        CoapSerializer.serializeOptions(opts, tmpStream);
 
         os = createRawPacketHeader(13, 0, new byte[]{(byte) (tmpStream.size() + 1)}, Code.C205_CONTENT.getCoapCode(), null);
         os.write(tmpStream.toByteArray());

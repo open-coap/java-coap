@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import opencoap.core.BasicHeaderOptions;
+import opencoap.core.CoapOptions;
 import opencoap.core.Opaque;
 
 /**
@@ -91,7 +91,7 @@ public final class DataConvertingUtility {
      * <p>This takes one option, not a whole query string. '&amp;' is a separator that only exists
      * once options are joined into a URI, so it is escaped here: passing <code>"a=1&amp;b=2"</code>
      * yields <code>"a=1%26b=2"</code>, a single option, not two. To encode a complete query use
-     * {@link BasicHeaderOptions#getUriQueryEncoded()}.
+     * {@link CoapOptions#getUriQueryEncoded()}.
      *
      * <p>Notably '+', '=', ';' and ',' are <b>not</b> escaped, which is what makes the result a
      * valid CoAP URI query. This is not <code>application/x-www-form-urlencoded</code>: a consumer

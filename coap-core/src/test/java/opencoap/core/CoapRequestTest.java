@@ -54,7 +54,7 @@ class CoapRequestTest {
         assertThrows(NullPointerException.class, () -> ping.modify().payload(Opaque.of("a")).build().isPing());
         assertThrows(NullPointerException.class, () -> ping.modify().token(decodeHex("12")).build().isPing());
 
-        assertFalse(new CoapRequest(Method.GET, EMPTY, new HeaderOptions(), EMPTY, LOCAL_5683, TransportContext.EMPTY).isPing());
+        assertFalse(new CoapRequest(Method.GET, EMPTY, new CoapOptions(), EMPTY, LOCAL_5683, TransportContext.EMPTY).isPing());
     }
 
     @Test
@@ -142,7 +142,7 @@ class CoapRequestTest {
             CoapRequest expected = new CoapRequest(
                     Method.GET,
                     Opaque.ofBytes(0xB1, 0x97),
-                    new HeaderOptions(), Opaque.of("perse"),
+                    new CoapOptions(), Opaque.of("perse"),
                     LOCAL_5683,
                     TransportContext.of(RESPONSE_TIMEOUT, ofSeconds(12)).with(DUMMY_KEY, "test")
             );

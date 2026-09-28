@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 import opencoap.core.CoapException;
+import opencoap.core.CoapOptions;
 import opencoap.core.Code;
-import opencoap.core.HeaderOptions;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SignalingHeaderOptions;
@@ -75,13 +75,13 @@ public final class CoapTcpPacketSerializer {
         CoapPacketParsingContext pktContext = deserializeHeader(remoteAddress, is);
         CoapPacket pkt = pktContext.getCoapPacket();
 
-        HeaderOptions options;
+        CoapOptions options;
         if (pkt.getCode() != null && pkt.getCode().isSignaling()) {
             options = new SignalingHeaderOptions(pkt.getCode());
         } else {
-            options = new HeaderOptions();
+            options = new CoapOptions();
         }
-        int leftPayloadLen = options.deserialize(is, (int) pktContext.getLength());
+        int leftPayloadLen = CoapSerializer.deserializeOptions(options, is, (int) pktContext.getLength());
         pkt.setHeaderOptions(options);
 
         if (leftPayloadLen > 0) {
@@ -224,7 +224,7 @@ public final class CoapTcpPacketSerializer {
         // because options size included into packet length field together with
         // payload marker and payload size
         ByteArrayOutputStream headerOptionsStream = new ByteArrayOutputStream();
-        coapPacket.headers().serialize(headerOptionsStream);
+        CoapSerializer.serializeOptions(coapPacket.headers(), headerOptionsStream);
 
         // token length
         int tokenLen = coapPacket.getToken().size();

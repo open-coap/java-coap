@@ -20,15 +20,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
-
 class SignalingHeaderOptionsTest {
 
     @Test
     void duplicate() {
         SignalingHeaderOptions signOpts = new SignalingHeaderOptions(Code.C701_CSM);
         signOpts.putSignalingOptions(SignalingOptions.capabilities(100, true));
+        signOpts.setMaxAge(120L);
+        signOpts.setRequestTag(Opaque.of("tag"));
 
-        assertEquals(signOpts, signOpts.duplicate());
+        CoapOptions duplicated = signOpts.duplicate();
+
+        assertEquals(signOpts, duplicated);
+        assertEquals(Long.valueOf(120), duplicated.getMaxAge());
+        assertEquals(Opaque.of("tag"), duplicated.getRequestTag());
     }
 
     @Test

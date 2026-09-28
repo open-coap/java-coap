@@ -21,21 +21,21 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class CoapOptionsBuilder {
-    private final HeaderOptions options;
+    private final CoapOptions options;
 
     public static CoapOptionsBuilder options() {
-        return new CoapOptionsBuilder(new HeaderOptions());
+        return new CoapOptionsBuilder(new CoapOptions());
     }
 
-    public static CoapOptionsBuilder from(HeaderOptions options) {
+    public static CoapOptionsBuilder from(CoapOptions options) {
         return new CoapOptionsBuilder(options.duplicate());
     }
 
-    private CoapOptionsBuilder(HeaderOptions options) {
+    private CoapOptionsBuilder(CoapOptions options) {
         this.options = options;
     }
 
-    public HeaderOptions build() {
+    public CoapOptions build() {
         return options;
     }
 
@@ -114,7 +114,7 @@ public class CoapOptionsBuilder {
         return this;
     }
 
-    public CoapOptionsBuilder ifNull(Function<HeaderOptions, Object> predicate, Consumer<CoapOptionsBuilder> command) {
+    public CoapOptionsBuilder ifNull(Function<CoapOptions, Object> predicate, Consumer<CoapOptionsBuilder> command) {
         if (predicate.apply(options) == null) {
             command.accept(this);
         }

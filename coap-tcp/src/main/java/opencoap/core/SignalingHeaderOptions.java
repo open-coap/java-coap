@@ -25,7 +25,7 @@ import opencoap.codec.RawOption;
  * Implements CoAP additional header options from
  * - RFC 8323
  */
-public class SignalingHeaderOptions extends HeaderOptions {
+public class SignalingHeaderOptions extends CoapOptions {
 
     private static final byte SIGN_OPTION_2 = 2;
     private static final byte SIGN_OPTION_4 = 4;
@@ -104,7 +104,7 @@ public class SignalingHeaderOptions extends HeaderOptions {
     }
 
     @Override
-    public HeaderOptions duplicate() {
+    public CoapOptions duplicate() {
         SignalingHeaderOptions opts = new SignalingHeaderOptions(code);
         super.duplicate(opts);
 

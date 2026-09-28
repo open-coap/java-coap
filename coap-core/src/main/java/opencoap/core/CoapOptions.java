@@ -16,11 +16,7 @@
  */
 package opencoap.core;
 
-import static opencoap.codec.PacketUtils.read16;
-import static opencoap.codec.PacketUtils.read8;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import static opencoap.util.Validations.require;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,16 +28,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import opencoap.codec.CoapMessageFormatException;
-import opencoap.codec.CoapSerializer;
 import opencoap.codec.DataConvertingUtility;
 import opencoap.codec.RawOption;
 
 /**
- * Implements CoAP basic header options.
+ * Implements CoAP header options from
+ * - RFC 7252 (The Constrained Application Protocol)
+ * - RFC 7959 (Block-Wise Transfers)
+ * - draft-ietf-core-observe-09
+ * - RFC 9175 (Echo, Request-Tag, and Token Processing)
+ * <p>
+ * And custom:
+ * <pre>
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    | No. | C | U | N | R | Name           | Format | Length | Default  |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ *    |29644|   |   |   |   | Correlation-tag| opaque | 0-36   | (none)   |
+ *    +-----+---+---+---+---+----------------+--------+--------+----------+
+ * </pre>
  */
-@SuppressWarnings({"PMD.NPathComplexity"})
-public class BasicHeaderOptions {
+public class CoapOptions {
 
     public static final int IF_MATCH = 1; //multiple
     public static final int URI_HOST = 3;
@@ -58,6 +64,13 @@ public class BasicHeaderOptions {
     public static final int PROXY_URI = 35; //not repeatable
     public static final int PROXY_SCHEME = 39; //not repeatable
     public static final int SIZE1 = 60;
+    private static final int OBSERVE = 6;
+    private static final int BLOCK_1_REQ = 27;
+    private static final int BLOCK_2_RES = 23;
+    private static final int SIZE_2_RES = 28;
+    private static final int ECHO = 252;
+    private static final int REQUEST_TAG = 292;
+    public static final int OPEN_COAP_CORRELATION_TAG = 29644; // open-coap specific option for request tracing
     //
     public static final long DEFAULT_MAX_AGE = 60;
     public static final String DEFAULT_URI_HOST = "";
@@ -82,9 +95,18 @@ public class BasicHeaderOptions {
     private String proxyScheme;
     private Integer uriPort;
     private Integer size1;
+    private Integer observe;
+    private BlockOption block1Req;
+    private BlockOption block2Res;
+    private Integer size2Res;
+    private Opaque echo;
+    private Opaque requestTag;
+    private String correlationTag;
     private Map<Integer, RawOption> unrecognizedOptions;
 
-    protected boolean parseOption(int type, Opaque data) {
+    // one case per CoAP option number, a flat switch is the clearest form available
+    @SuppressWarnings("PMD.NcssCount")
+    public boolean parseOption(int type, Opaque data) {
         switch (type) {
             case CONTENT_FORMAT:
                 // assigned directly, a malformed peer may send a value outside the uint16 range
@@ -131,6 +153,27 @@ public class BasicHeaderOptions {
                 break;
             case SIZE1:
                 size1 = data.toInt();
+                break;
+            case OBSERVE:
+                setObserve(data.toInt());
+                break;
+            case BLOCK_2_RES:
+                setBlock2Res(new BlockOption(data));
+                break;
+            case BLOCK_1_REQ:
+                setBlock1Req(new BlockOption(data));
+                break;
+            case SIZE_2_RES:
+                setSize2Res(data.toInt());
+                break;
+            case ECHO:
+                setEcho(data);
+                break;
+            case REQUEST_TAG:
+                setRequestTag(data);
+                break;
+            case OPEN_COAP_CORRELATION_TAG:
+                setCorrelationTag(data.toUtf8String());
                 break;
             default:
                 return false;
@@ -210,6 +253,8 @@ public class BasicHeaderOptions {
      *
      * @return sorted list
      */
+    // one branch per CoAP option number
+    @SuppressWarnings("PMD.NPathComplexity")
     public List<RawOption> getRawOptions() {
         List<RawOption> list = new LinkedList<>();
 
@@ -264,6 +309,31 @@ public class BasicHeaderOptions {
         if (size1 != null) {
             list.add(RawOption.fromUint(SIZE1, size1));
         }
+        if (observe != null) {
+            if (observe == 0) {
+                list.add(RawOption.fromEmpty(OBSERVE));
+            } else {
+                list.add(RawOption.fromUint(OBSERVE, observe));
+            }
+        }
+        if (block1Req != null) {
+            list.add(new RawOption(BLOCK_1_REQ, new Opaque[]{block1Req.toBytes()}));
+        }
+        if (block2Res != null) {
+            list.add(new RawOption(BLOCK_2_RES, new Opaque[]{block2Res.toBytes()}));
+        }
+        if (size2Res != null) {
+            list.add(RawOption.fromUint(SIZE_2_RES, size2Res));
+        }
+        if (echo != null) {
+            list.add(new RawOption(ECHO, echo));
+        }
+        if (requestTag != null) {
+            list.add(new RawOption(REQUEST_TAG, requestTag));
+        }
+        if (correlationTag != null) {
+            list.add(new RawOption(OPEN_COAP_CORRELATION_TAG, Opaque.of(correlationTag)));
+        }
 
         if (unrecognizedOptions != null) {
             for (RawOption rOpt : unrecognizedOptions.values()) {
@@ -280,6 +350,8 @@ public class BasicHeaderOptions {
         return sb.toString();
     }
 
+    // one branch per CoAP option number
+    @SuppressWarnings("PMD.NPathComplexity")
     public void buildToString(StringBuilder sb) {
         if (uriPath != null) {
             sb.append(" URI:").append(uriPath);
@@ -332,6 +404,27 @@ public class BasicHeaderOptions {
         }
         if (size1 != null) {
             sb.append(" sz1:").append(size1);
+        }
+        if (block1Req != null) {
+            sb.append(" block1:").append(block1Req);
+        }
+        if (block2Res != null) {
+            sb.append(" block2:").append(block2Res);
+        }
+        if (observe != null) {
+            sb.append(" obs:").append(observe);
+        }
+        if (size2Res != null) {
+            sb.append(" sz2:").append(size2Res);
+        }
+        if (echo != null) {
+            sb.append(" Echo:").append(echo.toHex());
+        }
+        if (requestTag != null) {
+            sb.append(" Req-tag:").append(requestTag.toHex());
+        }
+        if (correlationTag != null) {
+            sb.append(" Corr-tag:").append(correlationTag);
         }
     }
 
@@ -668,127 +761,85 @@ public class BasicHeaderOptions {
         this.size1 = size;
     }
 
-    public void serialize(OutputStream os) throws IOException {
-        List<RawOption> list = getRawOptions();
-        Collections.sort(list);
-
-        int lastOptNumber = 0;
-        for (RawOption opt : list) {
-            for (Opaque optValue : opt.optValues) {
-                int delta = opt.optNumber - lastOptNumber;
-                lastOptNumber = opt.optNumber;
-                if (delta > 0xFFFF + 269) {
-                    throw new IllegalArgumentException("Delta with size: " + delta + " is not supported [option number: " + opt.optNumber + "]");
-                }
-                int len = optValue.size();
-                if (len > 0xFFFF + 269) {
-                    throw new IllegalArgumentException("Header size: " + len + " is not supported [option number: " + opt.optNumber + "]");
-                }
-                writeOptionHeader(delta, len, os);
-                optValue.writeTo(os);
-            }
-        }
-    }
-
-    public static void writeOptionHeader(int delta, int len, OutputStream os) throws IOException {
-        //first byte
-        int tempByte;
-        if (delta <= 12) {
-            tempByte = delta << 4;
-        } else if (delta < 269) {
-            tempByte = 13 << 4;
-        } else {
-            tempByte = 14 << 4;
-        }
-        if (len <= 12) {
-            tempByte |= len;
-        } else if (len < 269) {
-            tempByte |= 13;
-        } else {
-            tempByte |= 14;
-        }
-        os.write(tempByte);
-
-        //extended option delta
-        if (delta > 12 && delta < 269) {
-            os.write(delta - 13);
-        } else if (delta >= 269) {
-            os.write((0xFF00 & (delta - 269)) >> 8);
-            os.write(0x00FF & (delta - 269));
-        }
-        //extended len
-        if (len > 12 && len < 269) {
-            os.write(len - 13);
-        } else if (len >= 269) {
-            os.write((0xFF00 & (len - 269)) >> 8);
-            os.write(0x00FF & (len - 269));
-        }
-    }
-
-    public boolean deserialize(InputStream inputStream) throws IOException, CoapMessageFormatException {
-        return deserialize(inputStream, inputStream.available()) != 0;
+    /**
+     * @return the subsLifetime
+     */
+    public Integer getObserve() {
+        return observe;
     }
 
     /**
-     * De-serializes CoAP header options. Returns left stream/data length if PayloadMarker was
-     * found or zero if no payload present.
-     * If no payload marker found but still data present - CoapMessageException is thrown.
+     * Sets observer option value. Allowed value range: 3 bytes.
+     *
+     * @param observe the subsLifetime to set
      */
-    public int deserialize(InputStream is, int availableBytes) throws IOException, CoapMessageFormatException {
-
-        int availableInternal = availableBytes;
-        int headerOptNum = 0;
-        // olesmi:
-        // if we have whole packet (UDP, DTLS) we should read till end of stream, expecting whole packet contained in stream
-        // if we have TCP stream - we should try to read withing provided packetLen (optionsAndPayloadLen). If stream ends
-        // here we should throw EOFException (from underlying StrictInputStream) or should throw NotEnoughDataException if we
-        // are waiting for more data. While querying is.available() if stream is closed, unfortunately IOException will be
-        // thrown instead of EOFException (implementation for SocketInputStream)
-        while (availableInternal > 0) {
-            int hdrByte = read8(is);
-            availableInternal--;
-
-            if (hdrByte == CoapSerializer.PAYLOAD_MARKER) {
-                return availableInternal;
-            }
-            int delta = hdrByte >> 4;
-            int len = 0xF & hdrByte;
-
-            if (delta == 15 || len == 15) {
-                throw new CoapMessageFormatException("Unexpected delta or len value in option header after optNum: " + headerOptNum);
-            }
-            if (delta == 13) {
-                delta += read8(is);
-                availableInternal--;
-            } else if (delta == 14) {
-                delta = read16(is) + 269;
-                availableInternal -= 2;
-            }
-            if (len == 13) {
-                len += read8(is);
-                availableInternal--;
-            } else if (len == 14) {
-                len = read16(is) + 269;
-                availableInternal -= 2;
-            }
-            headerOptNum += delta;
-            Opaque headerOptData = Opaque.read(is, len);
-            availableInternal -= len;
-            if (isTextOption(headerOptNum) && headerOptData.hasControlChars()) {
-                // deliberately without the value itself, it lands in a log
-                throw new CoapMessageFormatException("Control character in option: " + headerOptNum);
-            }
-            put(headerOptNum, headerOptData);
+    public void setObserve(Integer observe) {
+        if (observe != null && (observe < 0 || observe > 0xFFFFFF)) {
+            throw new IllegalArgumentException("Illegal observe argument: " + observe);
         }
-        if (availableInternal < 0) {
-            throw new CoapMessageFormatException("No payload marker found and options read more that were available");
-        }
-        return availableInternal;
-
+        this.observe = observe;
     }
 
-    boolean isTextOption(int optionNumber) {
-        return optionNumber == URI_HOST
+    /**
+     * @return the request block
+     */
+    public BlockOption getBlock1Req() {
+        return block1Req;
+    }
+
+    public BlockOption getBlock2Res() {
+        return block2Res;
+    }
+
+    public Integer getSize2Res() {
+        return size2Res;
+    }
+
+    /**
+     * @param block the block to set
+     */
+    public void setBlock1Req(BlockOption block) {
+        this.block1Req = block;
+    }
+
+    public void setBlock2Res(BlockOption block) {
+        this.block2Res = block;
+    }
+
+    public void setSize2Res(Integer size2Res) {
+        this.size2Res = size2Res;
+    }
+
+    public void setEcho(Opaque echo) {
+        require(echo == null || echo.size() <= 40);
+        this.echo = echo;
+    }
+
+    public Opaque getEcho() {
+        return echo;
+    }
+
+    public void setRequestTag(Opaque requestTag) {
+        require(requestTag == null || requestTag.size() <= 8);
+        this.requestTag = requestTag;
+    }
+
+    public Opaque getRequestTag() {
+        return requestTag;
+    }
+
+    void setCorrelationTag(String corrTag) {
+        require(corrTag == null || corrTag.length() <= 36);
+        this.correlationTag = corrTag;
+    }
+
+    public String getCorrelationTag() {
+        return correlationTag;
+    }
+
+    public boolean isTextOption(int optionNumber) {
+        return optionNumber == OPEN_COAP_CORRELATION_TAG
+                || optionNumber == URI_HOST
                 || optionNumber == URI_PATH
                 || optionNumber == URI_QUERY
                 || optionNumber == LOCATION_PATH
@@ -797,7 +848,7 @@ public class BasicHeaderOptions {
                 || optionNumber == PROXY_SCHEME;
     }
 
-    public void duplicate(BasicHeaderOptions opts) {
+    public void duplicate(CoapOptions opts) {
         opts.contentFormat = contentFormat;
         opts.maxAge = maxAge;
         opts.etag = etag;
@@ -813,7 +864,20 @@ public class BasicHeaderOptions {
         opts.proxyScheme = proxyScheme;
         opts.uriPort = uriPort;
         opts.size1 = size1;
+        opts.observe = observe;
+        opts.block1Req = block1Req;
+        opts.block2Res = block2Res;
+        opts.size2Res = size2Res;
+        opts.echo = echo;
+        opts.requestTag = requestTag;
+        opts.correlationTag = correlationTag;
         opts.unrecognizedOptions = unrecognizedOptions;
+    }
+
+    public CoapOptions duplicate() {
+        CoapOptions opts = new CoapOptions();
+        duplicate(opts);
+        return opts;
     }
 
     @Override
@@ -835,18 +899,25 @@ public class BasicHeaderOptions {
         hash = 41 * hash + (this.uriPort != null ? this.uriPort.hashCode() : 0);
         hash = 41 * hash + (this.size1 != null ? this.size1.hashCode() : 0);
         hash = 41 * hash + (this.unrecognizedOptions != null ? this.unrecognizedOptions.hashCode() : 0);
+        hash = 31 * hash + (this.correlationTag != null ? this.correlationTag.hashCode() : 0);
+        hash = 31 * hash + (this.echo != null ? this.echo.hashCode() : 0);
+        hash = 31 * hash + (this.requestTag != null ? this.requestTag.hashCode() : 0);
+        hash = 31 * hash + (this.observe != null ? this.observe.hashCode() : 0);
+        hash = 31 * hash + (this.block1Req != null ? this.block1Req.hashCode() : 0);
+        hash = 31 * hash + (this.block2Res != null ? this.block2Res.hashCode() : 0);
+        hash = 31 * hash + (this.size2Res != null ? this.size2Res.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final BasicHeaderOptions other = (BasicHeaderOptions) obj;
+        final CoapOptions other = (CoapOptions) obj;
         if (!Objects.equals(this.contentFormat, other.contentFormat)) {
             return false;
         }
@@ -890,6 +961,27 @@ public class BasicHeaderOptions {
             return false;
         }
         if (!Objects.equals(this.proxyScheme, other.proxyScheme)) {
+            return false;
+        }
+        if (!Objects.equals(this.correlationTag, other.correlationTag)) {
+            return false;
+        }
+        if (!Objects.equals(this.echo, other.echo)) {
+            return false;
+        }
+        if (!Objects.equals(this.requestTag, other.requestTag)) {
+            return false;
+        }
+        if (!Objects.equals(this.observe, other.observe)) {
+            return false;
+        }
+        if (!Objects.equals(this.block1Req, other.block1Req)) {
+            return false;
+        }
+        if (!Objects.equals(this.block2Res, other.block2Res)) {
+            return false;
+        }
+        if (!Objects.equals(this.size2Res, other.size2Res)) {
             return false;
         }
         return Objects.equals(this.unrecognizedOptions, other.unrecognizedOptions);
