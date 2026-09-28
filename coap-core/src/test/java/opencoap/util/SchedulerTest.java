@@ -23,17 +23,17 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class TimerTest {
+class SchedulerTest {
 
-    private final Timer timer = Timer.toTimer(Executors.newSingleThreadScheduledExecutor());
+    private final Scheduler scheduler = Scheduler.toScheduler(Executors.newSingleThreadScheduledExecutor());
 
     @Test
     void shouldSchedule() {
         Runnable task = Mockito.mock(Runnable.class);
         Runnable task2 = Mockito.mock(Runnable.class);
 
-        timer.schedule(Duration.ofMillis(3), task);
-        timer.schedule(Duration.ofMillis(1), task2);
+        scheduler.schedule(Duration.ofMillis(3), task);
+        scheduler.schedule(Duration.ofMillis(1), task2);
 
         verify(task, timeout(200)).run();
         verify(task2, timeout(200)).run();
@@ -43,7 +43,7 @@ class TimerTest {
     void shouldCancel() throws InterruptedException {
         Runnable task = Mockito.mock(Runnable.class);
 
-        Runnable cancel = timer.schedule(Duration.ofMillis(10), task);
+        Runnable cancel = scheduler.schedule(Duration.ofMillis(10), task);
         cancel.run();
 
         Thread.sleep(11);

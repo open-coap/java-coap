@@ -21,15 +21,15 @@ import java.util.function.Function;
 import opencoap.core.CoapTimeoutException;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
-import opencoap.util.Timer;
+import opencoap.util.Scheduler;
 
 public class ResponseTimeoutFilter<REQ, RES> implements Filter<REQ, RES> {
 
-    private final Timer timer;
+    private final Scheduler scheduler;
     private final Function<REQ, Duration> timeoutResolver;
 
-    public ResponseTimeoutFilter(Timer timer, Function<REQ, Duration> timeoutResolver) {
-        this.timer = timer;
+    public ResponseTimeoutFilter(Scheduler scheduler, Function<REQ, Duration> timeoutResolver) {
+        this.scheduler = scheduler;
         this.timeoutResolver = timeoutResolver;
     }
 
@@ -37,7 +37,7 @@ public class ResponseTimeoutFilter<REQ, RES> implements Filter<REQ, RES> {
     public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> service) {
         CompletableFuture<RES> promise = service.apply(request);
 
-        Runnable cancel = timer.schedule(timeoutResolver.apply(request), () ->
+        Runnable cancel = scheduler.schedule(timeoutResolver.apply(request), () ->
                 promise.completeExceptionally(new CoapTimeoutException())
         );
 

@@ -28,14 +28,14 @@ import opencoap.codec.CoapPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapRequestId, CoapPacket> {
+class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapMessageKey, CoapPacket> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDuplicateDetectorCache.class);
     private static final int DEFAULT_DUPLICATE_DETECTOR_CLEAN_INTERVAL_MILLIS = 10000;
     private static final int DEFAULT_DUPLICATE_DETECTOR_WARNING_INTERVAL_MILLIS = 10000;
     private static final int DEFAULT_DUPLICATE_DETECTOR_DETECTION_TIME_MILLIS = 30000;
 
     private final Lock REDUCE_LOCK = new ReentrantLock();
-    private final ConcurrentMap<CoapRequestId, CoapPacket> underlying;
+    private final ConcurrentMap<CoapMessageKey, CoapPacket> underlying;
     private final long maxSize;
     private final long overSizeMargin;
     private final long warnIntervalMillis;
@@ -77,7 +77,7 @@ class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapRequestId, CoapPac
     }
 
     @Override
-    public CoapPacket putIfAbsent(CoapRequestId key, CoapPacket value) {
+    public CoapPacket putIfAbsent(CoapMessageKey key, CoapPacket value) {
         CoapPacket result = underlying.putIfAbsent(key, value);
         // Cleanup only if new entry was added to map.
         if (result == null) {
@@ -88,13 +88,13 @@ class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapRequestId, CoapPac
     }
 
     @Override
-    public void put(CoapRequestId key, CoapPacket value) {
+    public void put(CoapMessageKey key, CoapPacket value) {
         underlying.put(key, value);
     }
 
     public void clean() {
         int removedItems = 0;
-        Iterator<CoapRequestId> it = underlying.keySet().iterator();
+        Iterator<CoapMessageKey> it = underlying.keySet().iterator();
         final long currentTimeMillis = System.currentTimeMillis();
         while (it.hasNext()) {
             if (currentTimeMillis - it.next().getCreatedTimestampMillis() > duplicateDetectionTimeMillis) {
@@ -111,7 +111,7 @@ class DefaultDuplicateDetectorCache implements PutOnlyMap<CoapRequestId, CoapPac
         if (underlying.size() > maxSize + overSizeMargin && REDUCE_LOCK.tryLock()) {
             try {
                 //reduce map size in bulk
-                Iterator<CoapRequestId> it = underlying.keySet().iterator();
+                Iterator<CoapMessageKey> it = underlying.keySet().iterator();
                 try {
                     for (int i = 0; i <= overSizeMargin && it.hasNext(); i++) {
                         it.next();

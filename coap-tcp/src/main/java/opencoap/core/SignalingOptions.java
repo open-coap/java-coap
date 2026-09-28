@@ -16,7 +16,7 @@
  */
 package opencoap.core;
 
-import static opencoap.util.Validations.assume;
+import static opencoap.util.Validations.check;
 
 /**
  * Implements CoAP signaling options from draft-ietf-core-coap-tcp-tls-09.
@@ -54,7 +54,7 @@ public class SignalingOptions {
         } else if ((code == Code.C702_PING || code == Code.C703_PONG) && type == CUSTODY) {
             setCustody(true);
         } else if (code == Code.C704_RELEASE && type == ALTERNATIVE_ADDRESS) {
-            assume(data.size() >= 1 && data.size() <= 255, "Illegal Alternative-Address size: " + data.size());
+            check(data.size() >= 1 && data.size() <= 255, "Illegal Alternative-Address size: " + data.size());
             alternativeAddress = data.toUtf8String();
 
         } else if (code == Code.C704_RELEASE && type == HOLD_OFF) {

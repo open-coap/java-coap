@@ -21,13 +21,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /*
-Simple timer interface, helps with testing
+Simple scheduler interface, helps with testing
  */
 @FunctionalInterface
-public interface Timer {
+public interface Scheduler {
     Runnable schedule(Duration delay, Runnable task);
 
-    static Timer toTimer(ScheduledExecutorService executorService) {
+    static Scheduler toScheduler(ScheduledExecutorService executorService) {
         return (delay, task) -> {
             ScheduledFuture<?> scheduled = executorService.schedule(task, delay.toMillis(), TimeUnit.MILLISECONDS);
             return () -> scheduled.cancel(true);

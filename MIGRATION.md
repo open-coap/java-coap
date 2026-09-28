@@ -38,6 +38,11 @@ This document outlines breaking changes and migration steps between versions of 
   - `CoapBlockTooLargeEntityException` &rarr; `CoapBlockEntityTooLargeException`
   - `MessageIdSupplierImpl` &rarr; `SequentialMessageIdSupplier`
   - `CapabilitiesStorageImpl` &rarr; `HashMapCapabilitiesStorage`
+  - `CoapRequestId` &rarr; `CoapMessageKey`
+  - `Timer` &rarr; `Scheduler` (`Timer.toTimer` &rarr; `Scheduler.toScheduler`)
+  - `CoapServerBuilderForTcp` &rarr; `TcpCoapServerBuilder`
+  - `PayloadSizeVerifier` &rarr; `MaxMessageSizeFilter`
+  - `Validations.assume` &rarr; `Validations.check`
 - **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
 ---
@@ -118,11 +123,11 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.exception` | `opencoap.filter` | `TooManyRequestsForEndpointException` |
 | `com.mbed.coap.client` | `opencoap.endpoint` | `CoapClient` |
 | `com.mbed.coap.client` | `opencoap.linkformat` | `RegistrationManager` |
-| `com.mbed.coap.server` | `opencoap.endpoint` | `CoapServer`, `CoapServerBuilder`, `CoapServerGroup`, `TcpCoapServer`, `CoapRequestId` |
+| `com.mbed.coap.server` | `opencoap.endpoint` | `CoapServer`, `CoapServerBuilder`, `CoapServerGroup`, `TcpCoapServer`, `CoapMessageKey` |
 | `com.mbed.coap.server` | `opencoap.routing` | `RoutingHandler` |
 | `com.mbed.coap.server` | `opencoap.observe` | `ObservationHandler`, `ObserveRequestFilter`, `NotificationValidator` |
 | `com.mbed.coap.server.messaging` | `opencoap.endpoint` | `CoapDispatcher`, `CoapTcpDispatcher`, `Capabilities`, `MessageIdSupplier`, `RequestTagSupplier` |
-| `com.mbed.coap.server.messaging` | `opencoap.endpoint.pipeline` | `ExchangeFilter`, `PiggybackedExchangeFilter`, `TcpExchangeFilter`, `DuplicateDetector`, `CriticalOptionVerifier`, `RescueFilter`, `RetransmissionFilter`, `PayloadSizeVerifier` |
+| `com.mbed.coap.server.messaging` | `opencoap.endpoint.pipeline` | `ExchangeFilter`, `PiggybackedExchangeFilter`, `TcpExchangeFilter`, `DuplicateDetector`, `CriticalOptionVerifier`, `RescueFilter`, `RetransmissionFilter`, `MaxMessageSizeFilter` |
 | `com.mbed.coap.server.block` | `opencoap.endpoint.pipeline` | `BlockWiseIncomingFilter`, `BlockWiseOutgoingFilter`, `BlockWiseNotificationFilter`, `BlockWiseTransfer` |
 | `com.mbed.coap.server.filter` | `opencoap.filter` | `CongestionControlFilter`, `EchoFilter`, `EtagGeneratorFilter`, `EtagValidatorFilter`, `MaxAllowedPayloadFilter`, `RequestLoggerFilter`, `ResponseTimeoutFilter`, `TokenGeneratorFilter` |
 | `com.mbed.coap.server.observe` | `opencoap.observe` | `HashMapObservationsStore`, `NotificationsReceiver`, `ObservationsStore`, `ObserversManager` |
@@ -134,7 +139,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.transport.stdio` | `opencoap.transport` | `StreamBlockingTransport`, `OpensslProcessTransport` |
 | `com.mbed.coap.linkformat` | `opencoap.linkformat` | `LinkFormat`, `LinkFormatBuilder`, `PToken` |
 | `com.mbed.coap.utils` | `opencoap.core` | `Handler`, `Filter`, `MappingFilter` |
-| `com.mbed.coap.utils` | `opencoap.util` | `FutureHelpers`, `ExecutorHelpers`, `Timer`, `Validations` |
+| `com.mbed.coap.utils` | `opencoap.util` | `FutureHelpers`, `ExecutorHelpers`, `Scheduler`, `Validations` |
 | `org.opencoap.coap.netty` | `opencoap.transport` | `NettyCoapTransport`, `CoapCodec`, `NettyUtils` |
 | `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionHandler`, `DtlsAttributes` |
 | `org.opencoap.coap.metrics.micrometer` | `opencoap.filter` | `MicrometerMetricsFilter` |
@@ -333,6 +338,38 @@ Implementation classes have been renamed to describe their concrete structure ra
 +opencoap.cli.transport.CoapPacketCodec
 ```
 
+#### Misleading Name Renames
+
+Classes whose names described something other than what they do:
+
+| 6.x | 7.0 | Why |
+|---|---|---|
+| `CoapRequestId` | `CoapMessageKey` | It is the duplicate-detection cache key (message id + source address), not a request identifier. |
+| `Timer` | `Scheduler` | Avoids confusion with `java.util.Timer` and Micrometer's `Timer`. |
+| `Timer.toTimer(ScheduledExecutorService)` | `Scheduler.toScheduler(ScheduledExecutorService)` | Follows the type rename. |
+| `CoapServerBuilderForTcp` | `TcpCoapServerBuilder` | Matches `TcpCoapServer`, which creates it. |
+| `PayloadSizeVerifier` | `MaxMessageSizeFilter` | It is a filter that rejects packets larger than the CSM-negotiated max message size. |
+| `Validations.assume(...)` | `Validations.check(...)` | `assume` suggests JUnit's skip-test semantics; the method throws `IllegalStateException`. Pairs with `require(...)`, which throws `IllegalArgumentException`. |
+
+A custom duplicate-detection cache now uses the new key type:
+
+```diff
+-PutOnlyMap<CoapRequestId, CoapPacket> cache = ...;
++PutOnlyMap<CoapMessageKey, CoapPacket> cache = ...;
+ CoapServer.builder().duplicateMessageDetectorCache(cache);
+```
+
+Filters that take a scheduler:
+
+```diff
+-Timer timer = Timer.toTimer(executor);
+-new ResponseTimeoutFilter<>(timer, req -> Duration.ofSeconds(5));
++Scheduler scheduler = Scheduler.toScheduler(executor);
++new ResponseTimeoutFilter<>(scheduler, req -> Duration.ofSeconds(5));
+```
+
+Test fixtures: `MockTimer` &rarr; `MockScheduler`.
+
 ---
 
 ### 6. Content-Format and Option Types (uint16)
@@ -528,10 +565,10 @@ Type-changing filters:
 
 ##### Builder Filter Parameters
 
-`CoapServerBuilder` and `CoapServerBuilderForTcp` now take the same type for their filter hooks. Previously the UDP builder took `Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse>` while the TCP builder took `Filter.SimpleFilter<CoapRequest, CoapResponse>`. Both now take `Filter<CoapRequest, CoapResponse>`:
+`CoapServerBuilder` and `TcpCoapServerBuilder` now take the same type for their filter hooks. Previously the UDP builder took `Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse>` while the TCP builder took `Filter.SimpleFilter<CoapRequest, CoapResponse>`. Both now take `Filter<CoapRequest, CoapResponse>`:
 
 - `CoapServerBuilder.routeFilter(...)`, `inboundRequestFilter(...)`, `outboundFilter(...)`
-- `CoapServerBuilderForTcp.routeFilter(...)`, `outboundFilter(...)`
+- `TcpCoapServerBuilder.routeFilter(...)`, `outboundFilter(...)`
 - `RoutingHandler.RouteBuilder.filter(...)`
 
 Lambdas passed directly need no change. Variables or classes typed as the 4-parameter form must be changed to `Filter<CoapRequest, CoapResponse>`, because a `MappingFilter` is not accepted where a `Filter` is expected.

@@ -21,30 +21,30 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
 
-public class CoapRequestIdTest {
+public class CoapMessageKeyTest {
 
-    CoapRequestId requestId = new CoapRequestId(5000, new InetSocketAddress("127.0.0.1", 20000));
-    CoapRequestId requestId2 = new CoapRequestId(5000, new InetSocketAddress("127.0.0.1", 20000));
-    CoapRequestId requestId3 = new CoapRequestId(5002, new InetSocketAddress("127.0.0.1", 20000));
-    CoapRequestId requestId4 = new CoapRequestId(5000, new InetSocketAddress("192.168.0.1", 20000));
+    CoapMessageKey messageKey = new CoapMessageKey(5000, new InetSocketAddress("127.0.0.1", 20000));
+    CoapMessageKey messageKey2 = new CoapMessageKey(5000, new InetSocketAddress("127.0.0.1", 20000));
+    CoapMessageKey messageKey3 = new CoapMessageKey(5002, new InetSocketAddress("127.0.0.1", 20000));
+    CoapMessageKey messageKey4 = new CoapMessageKey(5000, new InetSocketAddress("192.168.0.1", 20000));
 
     @Test
     public void testGetCreatedTimestampMillis() {
-        assert (Math.abs(System.currentTimeMillis() - requestId.getCreatedTimestampMillis()) < 1000);
+        assert (Math.abs(System.currentTimeMillis() - messageKey.getCreatedTimestampMillis()) < 1000);
     }
 
     @Test
     public void testGetMid() {
-        assert (requestId.getMid() == 5000);
+        assert (messageKey.getMid() == 5000);
     }
 
     @Test
     public void testGetSourceAddress() {
-        assert (requestId.getSourceAddress().equals(new InetSocketAddress("127.0.0.1", 20000)));
+        assert (messageKey.getSourceAddress().equals(new InetSocketAddress("127.0.0.1", 20000)));
     }
 
     @Test
     public void equalsAndHashTest() throws Exception {
-        EqualsVerifier.forClass(CoapRequestId.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(CoapMessageKey.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 }

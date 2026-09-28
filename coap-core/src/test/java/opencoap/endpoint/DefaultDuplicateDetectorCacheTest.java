@@ -45,11 +45,11 @@ public class DefaultDuplicateDetectorCacheTest {
                         Executors.newSingleThreadScheduledExecutor());
 
         try {
-            CoapRequestId requestId = new CoapRequestId(9, InetSocketAddress.createUnresolved("testHost", 8080));
+            CoapMessageKey messageKey = new CoapMessageKey(9, InetSocketAddress.createUnresolved("testHost", 8080));
 
-            CoapPacket firstIsDuplicated = cache.putIfAbsent(requestId, mock(CoapPacket.class));
+            CoapPacket firstIsDuplicated = cache.putIfAbsent(messageKey, mock(CoapPacket.class));
             Thread.sleep(detectionTimeoutMillis + cleanupInterval + 10);
-            CoapPacket secondIsDuplicated = cache.putIfAbsent(requestId, mock(CoapPacket.class));
+            CoapPacket secondIsDuplicated = cache.putIfAbsent(messageKey, mock(CoapPacket.class));
 
             assertNull(firstIsDuplicated, "insertion to empty duplicate check list fails");
             assertNull(secondIsDuplicated, "second insertion after timeout with same id fails");
@@ -72,11 +72,11 @@ public class DefaultDuplicateDetectorCacheTest {
                         Executors.newSingleThreadScheduledExecutor());
 
         try {
-            CoapRequestId requestId = new CoapRequestId(9, InetSocketAddress.createUnresolved("testHost", 8080));
+            CoapMessageKey messageKey = new CoapMessageKey(9, InetSocketAddress.createUnresolved("testHost", 8080));
 
-            CoapPacket firstIsDuplicated = cache.putIfAbsent(requestId, mock(CoapPacket.class));
+            CoapPacket firstIsDuplicated = cache.putIfAbsent(messageKey, mock(CoapPacket.class));
             Thread.sleep(cleanupInterval + 1);
-            CoapPacket secondIsDuplicated = cache.putIfAbsent(requestId, mock(CoapPacket.class));
+            CoapPacket secondIsDuplicated = cache.putIfAbsent(messageKey, mock(CoapPacket.class));
 
             assertNull(firstIsDuplicated, "insertion to empty duplicate check list fails");
             assertNotNull(secondIsDuplicated, "second insertion within timeout with same id succeeds");
@@ -100,16 +100,16 @@ public class DefaultDuplicateDetectorCacheTest {
                         mock(ScheduledExecutorService.class));
 
         for (int i = 0; i < 110; i++) {
-            CoapRequestId requestId = new CoapRequestId(i, LOCAL_5683);
-            assertNull(cache.putIfAbsent(requestId, mock(CoapPacket.class)));
-            cache.put(requestId, newCoapPacket(LOCAL_5683).mid(i).ack(Code.C205_CONTENT).build());
+            CoapMessageKey messageKey = new CoapMessageKey(i, LOCAL_5683);
+            assertNull(cache.putIfAbsent(messageKey, mock(CoapPacket.class)));
+            cache.put(messageKey, newCoapPacket(LOCAL_5683).mid(i).ack(Code.C205_CONTENT).build());
         }
 
 
         int counter = 0;
         for (int i = 0; i < 110; i++) {
-            CoapRequestId requestId = new CoapRequestId(i, LOCAL_5683);
-            if (cache.putIfAbsent(requestId, mock(CoapPacket.class)) != null) {
+            CoapMessageKey messageKey = new CoapMessageKey(i, LOCAL_5683);
+            if (cache.putIfAbsent(messageKey, mock(CoapPacket.class)) != null) {
                 counter++;
             }
         }

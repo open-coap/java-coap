@@ -25,16 +25,16 @@ import opencoap.core.CoapTimeoutException;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.RetransmissionBackOff;
-import opencoap.util.Timer;
+import opencoap.util.Scheduler;
 
 public final class RetransmissionFilter<REQ, RES> implements Filter<REQ, RES> {
 
-    private final Timer timer;
+    private final Scheduler scheduler;
     private final RetransmissionBackOff backoff;
     private final Predicate<REQ> doRetransmit;
 
-    public RetransmissionFilter(Timer timer, RetransmissionBackOff backoff, Predicate<REQ> doRetransmit) {
-        this.timer = requireNonNull(timer);
+    public RetransmissionFilter(Scheduler scheduler, RetransmissionBackOff backoff, Predicate<REQ> doRetransmit) {
+        this.scheduler = requireNonNull(scheduler);
         this.backoff = requireNonNull(backoff);
         this.doRetransmit = requireNonNull(doRetransmit);
     }
@@ -47,7 +47,7 @@ public final class RetransmissionFilter<REQ, RES> implements Filter<REQ, RES> {
             return promise;
         }
 
-        Runnable cancel = timer.schedule(backoff.next(1), () -> next(promise, 2, () -> service.apply(request)));
+        Runnable cancel = scheduler.schedule(backoff.next(1), () -> next(promise, 2, () -> service.apply(request)));
         promise.whenComplete((__, ex) -> cancel.run());
 
         return promise;
@@ -57,7 +57,7 @@ public final class RetransmissionFilter<REQ, RES> implements Filter<REQ, RES> {
         Duration delay = backoff.next(attempt);
         if (!delay.isZero()) {
             become(promise, retryFunc.get());
-            Runnable cancel = timer.schedule(delay, () -> next(promise, attempt + 1, retryFunc));
+            Runnable cancel = scheduler.schedule(delay, () -> next(promise, attempt + 1, retryFunc));
 
             promise.whenComplete((__, err) -> cancel.run());
         } else {

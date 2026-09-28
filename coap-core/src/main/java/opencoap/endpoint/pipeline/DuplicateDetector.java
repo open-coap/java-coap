@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
-import opencoap.endpoint.CoapRequestId;
+import opencoap.endpoint.CoapMessageKey;
 import opencoap.endpoint.DuplicatedCoapMessageCallback;
 import opencoap.endpoint.PutOnlyMap;
 import org.slf4j.Logger;
@@ -33,10 +33,10 @@ public class DuplicateDetector implements Filter<CoapPacket, CoapPacket> {
     private static final CoapPacket EMPTY_COAP_PACKET = new CoapPacket(null);
     private static final CoapPacket NULL_COAP_PACKET = new CoapPacket(null);
 
-    private final PutOnlyMap<CoapRequestId, CoapPacket> requestMap;
+    private final PutOnlyMap<CoapMessageKey, CoapPacket> requestMap;
     private final DuplicatedCoapMessageCallback duplicatedCoapMessageCallback;
 
-    public DuplicateDetector(PutOnlyMap<CoapRequestId, CoapPacket> cache, DuplicatedCoapMessageCallback duplicatedCoapMessageCallback) {
+    public DuplicateDetector(PutOnlyMap<CoapMessageKey, CoapPacket> cache, DuplicatedCoapMessageCallback duplicatedCoapMessageCallback) {
         this.requestMap = cache;
         this.duplicatedCoapMessageCallback = duplicatedCoapMessageCallback;
     }
@@ -70,14 +70,14 @@ public class DuplicateDetector implements Filter<CoapPacket, CoapPacket> {
     }
 
     private CoapPacket getResponseForRepeatedRequest(CoapPacket request) {
-        CoapRequestId requestId = new CoapRequestId(request.getMessageId(), request.getRemoteAddress());
+        CoapMessageKey messageKey = new CoapMessageKey(request.getMessageId(), request.getRemoteAddress());
 
-        return requestMap.putIfAbsent(requestId, EMPTY_COAP_PACKET);
+        return requestMap.putIfAbsent(messageKey, EMPTY_COAP_PACKET);
     }
 
     private void putResponse(CoapPacket request, CoapPacket response) {
-        CoapRequestId requestId = new CoapRequestId(request.getMessageId(), request.getRemoteAddress());
-        requestMap.put(requestId, response);
+        CoapMessageKey messageKey = new CoapMessageKey(request.getMessageId(), request.getRemoteAddress());
+        requestMap.put(messageKey, response);
     }
 
 }
