@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,6 +134,31 @@ public class DuplicateTest {
         // then
         client.verifyReceived(coap(11).ack(Code.C205_CONTENT).payload("dupa3"));
         assertEquals(1, duplicated.get());
+    }
+
+    @Test
+    public void shouldNotDetectDuplicates_whenDuplicateCheckIsDisabled() throws Exception {
+        AtomicInteger requests = new AtomicInteger(0);
+        MockCoapTransport noDuplicateCheckTransport = new MockCoapTransport();
+        CoapServer noDuplicateCheckServer = CoapServer.builder()
+                .transport(noDuplicateCheckTransport)
+                .noDuplicateCheck()
+                .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
+                .route(req -> CoapResponse.ok("#" + requests.incrementAndGet()).toFuture())
+                .build();
+        noDuplicateCheckServer.start();
+        MockCoapTransport.MockClient noDuplicateCheckClient = noDuplicateCheckTransport.client();
+
+        // when
+        noDuplicateCheckClient.send(coap(12).con().put().uriPath("/test"));
+        noDuplicateCheckClient.send(coap(12).con().put().uriPath("/test"));
+
+        // then
+        noDuplicateCheckClient.verifyReceived(coap(12).ack(Code.C205_CONTENT).payload("#1"));
+        noDuplicateCheckClient.verifyReceived(coap(12).ack(Code.C205_CONTENT).payload("#2"));
+        assertEquals(0, duplicated.get());
+
+        noDuplicateCheckServer.stop();
     }
 
     @Test
