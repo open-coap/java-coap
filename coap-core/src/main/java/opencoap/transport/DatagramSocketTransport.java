@@ -113,7 +113,7 @@ public class DatagramSocketTransport extends BlockingCoapTransport {
     }
 
     @Override
-    public void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
+    protected void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
         if (!socketCreated()) {
             throw new IllegalStateException();
         }

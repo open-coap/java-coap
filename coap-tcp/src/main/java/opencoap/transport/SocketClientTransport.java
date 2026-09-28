@@ -135,7 +135,7 @@ public class SocketClientTransport extends BlockingCoapTransport implements Coap
     }
 
     @Override
-    public void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
+    protected void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
         InetSocketAddress adr = coapPacket.getRemoteAddress();
         if (!adr.equals(this.destination)) {
             throw new IllegalStateException("No connection with: " + adr);

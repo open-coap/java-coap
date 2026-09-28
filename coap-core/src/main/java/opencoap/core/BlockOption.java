@@ -42,7 +42,7 @@ public final class BlockOption implements Serializable {
         blockSize = BlockSize.fromRawSzx(szx);
     }
 
-    public Opaque toBytes() {
+    Opaque toBytes() {
         int block = blockNr << 4;
         if (more) {
             block |= 1 << 3;

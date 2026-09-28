@@ -22,15 +22,15 @@ import java.io.InputStream;
 /**
  * Minor CoapPacket binary read/write utility methods with specific optional checks.
  */
-public class PacketUtils {
+class PacketUtils {
 
-    public static int read16(InputStream is) throws IOException {
+    static int read16(InputStream is) throws IOException {
         int ret = is.read() << 8;
         ret |= is.read();
         return ret;
     }
 
-    public static int read8(InputStream is) throws IOException {
+    static int read8(InputStream is) throws IOException {
         return is.read();
     }
 

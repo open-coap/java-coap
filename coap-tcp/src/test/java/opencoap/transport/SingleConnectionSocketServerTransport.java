@@ -134,7 +134,7 @@ public class SingleConnectionSocketServerTransport extends BlockingCoapTransport
     }
 
     @Override
-    public synchronized void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
+    protected synchronized void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
         CoapTcpPacketSerializer.writeTo(outputStream, coapPacket);
         outputStream.flush();
     }

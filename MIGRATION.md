@@ -43,6 +43,7 @@ This document outlines breaking changes and migration steps between versions of 
   - `CoapServerBuilderForTcp` &rarr; `TcpCoapServerBuilder`
   - `PayloadSizeVerifier` &rarr; `MaxMessageSizeFilter`
   - `Validations.assume` &rarr; `Validations.check`
+- **Reduced visibility:** a few internal helpers that were public in 6.x are now package-private, and `BlockingCoapTransport.sendPacket0` is now `protected`. See [section 10](#10-reduced-visibility).
 - **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
 ---
@@ -645,3 +646,26 @@ The public `Key(defaultValue)` constructor is replaced by named factories. The n
 ```
 
 `MessageAttributes.keys()` no longer includes a `null` element for `MessageAttributes.EMPTY`.
+
+### 10. Reduced Visibility
+
+These were public in 6.x but are internal implementation details, not meant to be called by applications. They are now package-private:
+
+| 6.x | 6.x visibility | 7.0 |
+|---|---|---|
+| `HeaderOptions.parseOption(int, Opaque)` | public (`protected` in `BasicHeaderOptions`) | `CoapOptions.parseOption(int, Opaque)`, package-private. Add custom options with `put(int, Opaque)` and read them with `getCustomOption(Integer)` instead of overriding it |
+| `BlockOption.toBytes()` | public | package-private |
+| `CoapSerializer.writeCode(OutputStream, CoapPacket)` | public | package-private |
+| `org.opencoap.coap.netty.NettyUtils` | public class | `opencoap.transport.NettyUtils`, package-private class |
+
+`BlockingCoapTransport.sendPacket0(CoapPacket)` is now `protected`. It is the template method that subclasses implement, and callers should use `sendPacket(CoapPacket)`. Subclasses can keep declaring their override `public`, but `protected` is recommended:
+
+```diff
+ class MyTransport extends BlockingCoapTransport {
+     @Override
+-    public void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
++    protected void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException {
+         // ...
+     }
+ }
+```

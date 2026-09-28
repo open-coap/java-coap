@@ -107,7 +107,7 @@ public class InMemoryCoapTransport extends BlockingCoapTransport {
     }
 
     @Override
-    public void sendPacket0(CoapPacket coapPacket) {
+    protected void sendPacket0(CoapPacket coapPacket) {
         InMemoryCoapTransport transport = BINDING_MANAGER.getQueueByAddress(coapPacket.getRemoteAddress());
 
         if (transport != null) {

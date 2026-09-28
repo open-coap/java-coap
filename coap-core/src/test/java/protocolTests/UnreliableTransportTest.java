@@ -75,7 +75,7 @@ public class UnreliableTransportTest {
                     private boolean hasDropped = false;
 
                     @Override
-                    public void sendPacket0(CoapPacket coapPacket) {
+                    protected void sendPacket0(CoapPacket coapPacket) {
                         //will drop only first packet
                         if (!hasDropped) {
                             hasDropped = true;
