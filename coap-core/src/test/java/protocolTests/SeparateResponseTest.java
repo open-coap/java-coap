@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,21 +16,21 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.BlockSize.S_32;
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.packet.CoapRequest.post;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static java.time.Duration.ofMillis;
+import static opencoap.core.BlockSize.S_32;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.core.CoapRequest.post;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
-import com.mbed.coap.server.messaging.RequestTagSupplier;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import opencoap.core.CoapResponse;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ public class SeparateResponseTest {
 
         client = CoapServer.builder()
                 .transport(serverTransport)
-                .midSupplier(new MessageIdSupplierImpl(0))
+                .midSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(S_32)
                 .retransmission(ofFixed(ofMillis(500)))
                 .requestTagSupplier(RequestTagSupplier.createSequential(100))

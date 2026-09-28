@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,23 +18,22 @@ package protocolTests;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.RouterService;
-import com.mbed.coap.server.TcpCoapServer;
-import com.mbed.coap.transport.javassl.SingleConnectionSocketServerTransport;
-import com.mbed.coap.transport.javassl.SocketClientTransport;
-import com.mbed.coap.utils.Filter;
-import com.mbed.coap.utils.Service;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import javax.net.SocketFactory;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
+import opencoap.core.Service;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.TcpCoapServer;
+import opencoap.routing.RouterService;
+import opencoap.transport.SingleConnectionSocketServerTransport;
+import opencoap.transport.SocketClientTransport;
 import org.junit.jupiter.api.Test;
-
 
 public class TcpIntegrationTest extends IntegrationTestBase {
 

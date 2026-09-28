@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,21 +16,21 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.get;
-import static com.mbed.coap.transmission.RetransmissionBackOff.ofFixed;
 import static java.time.Duration.ofMillis;
+import static opencoap.core.CoapRequest.get;
+import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.exception.CoapBlockException;
-import com.mbed.coap.exception.CoapBlockTooLargeEntityException;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapBlockException;
+import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ public class Block2TransferMaxSizeTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0)).blockSize(BlockSize.S_32)
+        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0)).blockSize(BlockSize.S_32)
                 .retransmission(ofFixed(ofMillis(500)))
                 .maxIncomingBlockTransferSize(MAX_TRANSFER_SIZE)
                 .buildClient(SERVER_ADDRESS);

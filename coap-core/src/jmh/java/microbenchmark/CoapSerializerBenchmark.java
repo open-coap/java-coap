@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,19 +17,19 @@
 package microbenchmark;
 
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.exception.CoapException;
-import com.mbed.coap.packet.BlockOption;
-import com.mbed.coap.packet.BlockSize;
-import com.mbed.coap.packet.CoapPacket;
-import com.mbed.coap.packet.CoapSerializer;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.packet.MediaTypes;
-import com.mbed.coap.packet.MessageType;
-import com.mbed.coap.packet.Method;
-import com.mbed.coap.packet.Opaque;
-import com.mbed.coap.utils.Bytes;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import opencoap.codec.CoapPacket;
+import opencoap.codec.CoapSerializer;
+import opencoap.core.BlockOption;
+import opencoap.core.BlockSize;
+import opencoap.core.CoapException;
+import opencoap.core.Code;
+import opencoap.core.MediaTypes;
+import opencoap.core.MessageType;
+import opencoap.core.Method;
+import opencoap.core.Opaque;
+import opencoap.util.Bytes;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;

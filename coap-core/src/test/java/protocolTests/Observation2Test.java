@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,19 @@
  */
 package protocolTests;
 
-import static com.mbed.coap.packet.CoapRequest.observe;
+import static opencoap.core.CoapRequest.observe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.packet.Code;
-import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.messaging.MessageIdSupplierImpl;
 import java.net.InetSocketAddress;
+import opencoap.core.Code;
+import opencoap.endpoint.CoapClient;
+import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.MessageIdSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import protocolTests.utils.StubNotificationsReceiver;
 import protocolTests.utils.TransportConnectorMock;
-
 
 public class Observation2Test {
 
@@ -45,7 +44,7 @@ public class Observation2Test {
 
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(new MessageIdSupplierImpl(0))
+        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0))
                 .notificationsReceiver(notifReceiver)
                 .buildClient(SERVER_ADDRESS);
 
