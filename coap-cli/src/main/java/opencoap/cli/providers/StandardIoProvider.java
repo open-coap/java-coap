@@ -28,16 +28,16 @@ public class StandardIoProvider implements TransportProvider {
 
     @Override
     public CoapTcpTransport createTCP(InetSocketAddress destAdr, KeyStore ks) {
-        return create(CoapSerializer.TCP, destAdr);
+        return create(CoapPacketCodec.TCP, destAdr);
     }
 
     @Override
     public CoapTransport createUDP(InetSocketAddress destAdr, KeyStore ks, Pair<String, Opaque> psk) {
-        return create(CoapSerializer.UDP, destAdr);
+        return create(CoapPacketCodec.UDP, destAdr);
     }
 
-    private CoapTcpTransport create(CoapSerializer coapSerializer, InetSocketAddress destAdr) {
-        return StreamBlockingTransport.forStandardIO(destAdr, coapSerializer);
+    private CoapTcpTransport create(CoapPacketCodec codec, InetSocketAddress destAdr) {
+        return StreamBlockingTransport.forStandardIO(destAdr, codec);
     }
 
 }

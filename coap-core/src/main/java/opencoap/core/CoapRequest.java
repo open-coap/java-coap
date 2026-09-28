@@ -82,7 +82,7 @@ public final class CoapRequest {
     }
 
     public static Builder iPatch(String uriPath) {
-        return request(Method.iPATCH, uriPath);
+        return request(Method.IPATCH, uriPath);
     }
 
     public static Builder observe(String uriPath) {
@@ -303,7 +303,7 @@ public final class CoapRequest {
             if (method == Method.GET) {
                 options.block2Res(0, size, false);
             }
-            if (method == Method.PUT || method == Method.POST || method == Method.FETCH || method == Method.PATCH || method == Method.iPATCH) {
+            if (method == Method.PUT || method == Method.POST || method == Method.FETCH || method == Method.PATCH || method == Method.IPATCH) {
                 options.block1Req(0, size, true);
             }
             return this;

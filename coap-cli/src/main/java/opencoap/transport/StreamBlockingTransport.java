@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
-import opencoap.cli.providers.CoapSerializer;
+import opencoap.cli.providers.CoapPacketCodec;
 import opencoap.codec.CoapPacket;
 import opencoap.core.CoapException;
 import opencoap.util.ExecutorHelpers;
@@ -37,27 +37,27 @@ public class StreamBlockingTransport extends BlockingCoapTransport implements Co
     protected final InetSocketAddress destination;
     private final ExecutorService readingWorker = ExecutorHelpers.newSingleThreadExecutor("stream-reader");
     private volatile Boolean isRunning = false;
-    private final CoapSerializer serializer;
+    private final CoapPacketCodec codec;
 
     /**
      * Transport that writes and reads from standard IO.
      *
      * Important! Logs must be written to std-err.
      */
-    public static StreamBlockingTransport forStandardIO(InetSocketAddress destination, CoapSerializer serializer) {
-        return new StreamBlockingTransport(System.out, System.in, destination, serializer);
+    public static StreamBlockingTransport forStandardIO(InetSocketAddress destination, CoapPacketCodec codec) {
+        return new StreamBlockingTransport(System.out, System.in, destination, codec);
     }
 
-    public StreamBlockingTransport(OutputStream outputStream, InputStream inputStream, InetSocketAddress destination, CoapSerializer serializer) {
+    public StreamBlockingTransport(OutputStream outputStream, InputStream inputStream, InetSocketAddress destination, CoapPacketCodec codec) {
         this.outputStream = new BufferedOutputStream(outputStream);
         this.inputStream = inputStream;
         this.destination = destination;
-        this.serializer = serializer;
+        this.codec = codec;
     }
 
     @Override
     public void sendPacket0(CoapPacket coapPacket) throws IOException, CoapException {
-        serializer.serialize(outputStream, coapPacket);
+        codec.serialize(outputStream, coapPacket);
         outputStream.flush();
     }
 
@@ -86,7 +86,7 @@ public class StreamBlockingTransport extends BlockingCoapTransport implements Co
 
     private CoapPacket read() {
         try {
-            return serializer.deserialize(inputStream, destination);
+            return codec.deserialize(inputStream, destination);
         } catch (CoapException | IOException e) {
             isRunning = false;
             throw new CompletionException(e);

@@ -25,7 +25,7 @@ import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.ping;
 import static opencoap.core.CoapRequest.post;
 import static opencoap.core.CoapResponseTest.newOptions;
-import static opencoap.core.MediaTypes.CT_APPLICATION_JSON;
+import static opencoap.core.ContentFormat.CT_APPLICATION_JSON;
 import static opencoap.core.Opaque.EMPTY;
 import static opencoap.core.Opaque.decodeHex;
 import static opencoap.core.TransportContext.NON_CONFIRMABLE;
@@ -87,7 +87,7 @@ class CoapRequestTest {
         assertEquals("CoapRequest[GET URI:/test]", get("/test").build().toString());
         assertEquals("CoapRequest[FETCH URI:/test, pl(4):64757061]", fetch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[PATCH URI:/test, pl(4):64757061]", CoapRequest.patch("/test").payload("dupa").build().toString());
-        assertEquals("CoapRequest[iPATCH URI:/test, pl(4):64757061]", CoapRequest.iPatch("/test").payload("dupa").build().toString());
+        assertEquals("CoapRequest[IPATCH URI:/test, pl(4):64757061]", CoapRequest.iPatch("/test").payload("dupa").build().toString());
         assertEquals("CoapRequest[GET URI:/test obs:0]", CoapRequest.observe("/test").build().toString());
         assertEquals("CoapRequest[PING]", CoapRequest.ping(LOCAL_5683, TransportContext.EMPTY).toString());
     }
@@ -134,7 +134,7 @@ class CoapRequestTest {
                     .query("b", "2")
                     .size1(342)
                     .observe()
-                    .payload("perse", MediaTypes.CT_TEXT_PLAIN)
+                    .payload("perse", ContentFormat.CT_TEXT_PLAIN)
                     .addContext(RESPONSE_TIMEOUT, ofSeconds(12))
                     .addContext(DUMMY_KEY, "test")
                     .from(LOCAL_5683);
@@ -154,7 +154,7 @@ class CoapRequestTest {
             expected.options().setIfMatch(new Opaque[]{Opaque.ofBytes(9, 7, 5)});
             expected.options().setMaxAge(3600L);
             expected.options().setUriQueryList("p=1", "b=2");
-            expected.options().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+            expected.options().setContentFormat(ContentFormat.CT_TEXT_PLAIN);
             expected.options().setBlock1Req(new BlockOption(0, S_32, true));
             expected.options().setBlock2Res(new BlockOption(0, S_64, true));
             expected.options().setSize1(342);

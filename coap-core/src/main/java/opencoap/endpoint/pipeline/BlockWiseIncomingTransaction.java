@@ -63,7 +63,7 @@ class BlockWiseIncomingTransaction {
         }
         if (size1 > maxIncomingBlockTransferSize) {
             LOGGER.warn("Received request with too large size1 option: {}", request);
-            throw new CoapRequestEntityTooLarge(maxIncomingBlockTransferSize, "Entity too large");
+            throw new CoapRequestEntityTooLargeException(maxIncomingBlockTransferSize, "Entity too large");
         }
     }
 
@@ -75,7 +75,7 @@ class BlockWiseIncomingTransaction {
 
         int assumedCollectedPayloadSize = reqBlock.getNr() * reqBlock.getSize();
         if (payload.size() < assumedCollectedPayloadSize) {
-            throw new CoapRequestEntityIncomplete();
+            throw new CoapRequestEntityIncompleteException();
         }
 
         try {
@@ -97,12 +97,12 @@ class BlockWiseIncomingTransaction {
         return Opaque.of(payload.toByteArray());
     }
 
-    private void validateAlreadyReceivedPayloadSize(CoapRequest request) throws CoapRequestEntityTooLarge {
+    private void validateAlreadyReceivedPayloadSize(CoapRequest request) throws CoapRequestEntityTooLargeException {
         int requestPayloadLength = request.getPayload().size();
 
         if (isTooBigPayloadSize(requestPayloadLength + payload.size())) {
             LOGGER.warn("Assembled block-transfer payload is too large: " + request);
-            throw new CoapRequestEntityTooLarge(maxIncomingBlockTransferSize, "");
+            throw new CoapRequestEntityTooLargeException(maxIncomingBlockTransferSize, "");
         }
     }
 
@@ -124,7 +124,7 @@ class BlockWiseIncomingTransaction {
         if (!BlockWiseTransfer.isBlockPacketValid(request.getPayload(), reqBlock)) {
             LOGGER.warn("Intermediate block size does not match payload size {}", request);
             if (request.getPayload().size() > 0 && request.getPayload().size() < reqBlock.getSize() && !reqBlock.isBert()) {
-                throw new CoapRequestEntityTooLarge(new BlockOption(0, agreedBlockSize, true), "");
+                throw new CoapRequestEntityTooLargeException(new BlockOption(0, agreedBlockSize, true), "");
             }
             throw new CoapCodeException(Code.C400_BAD_REQUEST, "block size mismatch");
         }

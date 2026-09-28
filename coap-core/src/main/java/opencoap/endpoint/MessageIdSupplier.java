@@ -38,10 +38,10 @@ public interface MessageIdSupplier {
     }
 
     static MessageIdSupplier sequential() {
-        return new MessageIdSupplierImpl();
+        return new SequentialMessageIdSupplier();
     }
 
     static MessageIdSupplier sequential(int initMid) {
-        return new MessageIdSupplierImpl(initMid);
+        return new SequentialMessageIdSupplier(initMid);
     }
 }

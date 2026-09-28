@@ -23,16 +23,16 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Per-connection CSM storage
  */
-public class CapabilitiesStorageImpl implements CapabilitiesStorage {
+public class HashMapCapabilitiesStorage implements CapabilitiesStorage {
     //package local for tests
     final ConcurrentMap<InetSocketAddress, Capabilities> capabilitiesMap = new ConcurrentHashMap<>();
     private final Capabilities defaultCapability;
 
-    public CapabilitiesStorageImpl(Capabilities defaultCapability) {
+    public HashMapCapabilitiesStorage(Capabilities defaultCapability) {
         this.defaultCapability = defaultCapability;
     }
 
-    public CapabilitiesStorageImpl() {
+    public HashMapCapabilitiesStorage() {
         this(Capabilities.BASE);
     }
 

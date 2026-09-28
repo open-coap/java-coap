@@ -25,7 +25,7 @@ import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
 import opencoap.core.BlockSize;
 import opencoap.core.Code;
-import opencoap.core.MediaTypes;
+import opencoap.core.ContentFormat;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
@@ -90,13 +90,13 @@ public class BlockTest {
     public void block1() throws Exception {
         String payload = "123456789012345|123456789012345|dupa";
 
-        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
+        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
                 .then(newCoapPacket(1).ack(Code.C231_CONTINUE).block1Req(0, BlockSize.S_32, true).build());
 
-        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
+        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).block1Req(1, BlockSize.S_32, false).build());
 
-        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());
+        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, ContentFormat.CT_TEXT_PLAIN)).getCode());
 
     }
 
@@ -105,17 +105,17 @@ public class BlockTest {
 
         String payload = "123456789012345|123456789012345|dupa";
 
-        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
+        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).reqTag("65").payload("123456789012345|123456789012345|").build())
                 .then(newCoapPacket(1).ack(null).build(),
                         newCoapPacket(2).con(Code.C231_CONTINUE).block1Req(0, BlockSize.S_32, true).build());
 
         //important that this comes first
         transport.when(newCoapPacket(2).ack(null).build()).thenNothing();
 
-        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
+        transport.when(newCoapPacket(2).put().block1Req(1, BlockSize.S_32, false).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).reqTag("65").payload("dupa").build())
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).block1Req(1, BlockSize.S_16, false).build());
 
-        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());
+        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, ContentFormat.CT_TEXT_PLAIN)).getCode());
     }
 
     @Test
@@ -124,14 +124,14 @@ public class BlockTest {
 
         String payload = "123456789012345|123456789012345|dupa";
 
-        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("123456789012345|123456789012345|").build())
+        transport.when(newCoapPacket(1).put().block1Req(0, BlockSize.S_32, true).size1(payload.length()).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).payload("123456789012345|123456789012345|").build())
                 .then(newCoapPacket(1).ack(Code.C231_CONTINUE).block1Req(0, BlockSize.S_16, true).build());
 
         // see: https://tools.ietf.org/html/rfc7959#section-2.5
-        transport.when(newCoapPacket(2).put().block1Req(2, BlockSize.S_16, false).uriPath("/path1").contFormat(MediaTypes.CT_TEXT_PLAIN).payload("dupa").build())
+        transport.when(newCoapPacket(2).put().block1Req(2, BlockSize.S_16, false).uriPath("/path1").contFormat(ContentFormat.CT_TEXT_PLAIN).payload("dupa").build())
                 .then(newCoapPacket(2).ack(Code.C204_CHANGED).block1Req(2, BlockSize.S_16, false).build());
 
-        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, MediaTypes.CT_TEXT_PLAIN)).getCode());
+        assertEquals(Code.C204_CHANGED, client.sendSync(put("/path1").payload(payload, ContentFormat.CT_TEXT_PLAIN)).getCode());
 
     }
 }

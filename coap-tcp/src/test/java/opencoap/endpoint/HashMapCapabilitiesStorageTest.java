@@ -22,11 +22,11 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import org.junit.jupiter.api.Test;
 
-public class CapabilitiesStorageImplTest {
+public class HashMapCapabilitiesStorageTest {
 
     @Test
     public void test() {
-        CapabilitiesStorageImpl capabilities = new CapabilitiesStorageImpl();
+        HashMapCapabilitiesStorage capabilities = new HashMapCapabilitiesStorage();
 
         assertEquals(Capabilities.BASE, capabilities.getOrDefault(LOCAL_5683));
 

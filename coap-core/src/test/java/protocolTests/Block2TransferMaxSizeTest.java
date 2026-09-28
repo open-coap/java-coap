@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 import opencoap.core.BlockSize;
 import opencoap.core.CoapBlockException;
-import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.CoapBlockEntityTooLargeException;
 import opencoap.core.Code;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
@@ -81,7 +81,7 @@ public class Block2TransferMaxSizeTest {
                 .then(newCoapPacket(3).ack(Code.C205_CONTENT).block2Res(2, BlockSize.S_16, false).payload("2_3456789012345|").build());
 
         assertThatThrownBy(() -> client.send(get("/path1")).join())
-                .hasCause(new CoapBlockTooLargeEntityException("Received too large entity for request, max allowed 32, received 48"));
+                .hasCause(new CoapBlockEntityTooLargeException("Received too large entity for request, max allowed 32, received 48"));
     }
 
     @Test

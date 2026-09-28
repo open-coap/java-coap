@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.BlockOption;
 import opencoap.core.BlockSize;
 import opencoap.core.CoapBlockException;
-import opencoap.core.CoapBlockTooLargeEntityException;
+import opencoap.core.CoapBlockEntityTooLargeException;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
@@ -158,7 +158,7 @@ final class BlockWiseCallback {
         }
 
         if (response.getPayload().size() > maxIncomingBlockTransferSize) {
-            return failedFuture(new CoapBlockTooLargeEntityException("Received too large entity for request, max allowed " + maxIncomingBlockTransferSize + ", received " + response.getPayload().size()));
+            return failedFuture(new CoapBlockEntityTooLargeException("Received too large entity for request, max allowed " + maxIncomingBlockTransferSize + ", received " + response.getPayload().size()));
         }
 
         BlockOption respBlockOption = blResponse.options().getBlock2Res();
