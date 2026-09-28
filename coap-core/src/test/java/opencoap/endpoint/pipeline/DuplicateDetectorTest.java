@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Code;
 import opencoap.core.Handler;
-import opencoap.endpoint.CoapRequestId;
+import opencoap.endpoint.CoapMessageKey;
 import opencoap.endpoint.DuplicatedCoapMessageCallback;
 import opencoap.endpoint.PutOnlyMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,16 +42,16 @@ import org.junit.jupiter.api.Test;
 
 class DuplicateDetectorTest {
 
-    private final PutOnlyMap<CoapRequestId, CoapPacket> cache = new PutOnlyMap<>() {
-        private final Map<CoapRequestId, CoapPacket> map = new ConcurrentHashMap<>();
+    private final PutOnlyMap<CoapMessageKey, CoapPacket> cache = new PutOnlyMap<>() {
+        private final Map<CoapMessageKey, CoapPacket> map = new ConcurrentHashMap<>();
 
         @Override
-        public CoapPacket putIfAbsent(CoapRequestId key, CoapPacket value) {
+        public CoapPacket putIfAbsent(CoapMessageKey key, CoapPacket value) {
             return map.putIfAbsent(key, value);
         }
 
         @Override
-        public void put(CoapRequestId key, CoapPacket value) {
+        public void put(CoapMessageKey key, CoapPacket value) {
             map.put(key, value);
         }
 

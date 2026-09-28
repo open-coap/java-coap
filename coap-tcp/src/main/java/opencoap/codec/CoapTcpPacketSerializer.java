@@ -18,7 +18,7 @@ package opencoap.codec;
 
 import static opencoap.codec.PacketUtils.read16;
 import static opencoap.codec.PacketUtils.read8;
-import static opencoap.util.Validations.assume;
+import static opencoap.util.Validations.check;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -136,7 +136,7 @@ public final class CoapTcpPacketSerializer {
     }
 
     private static Opaque readToken(EofInputStream is, int tokenLength) throws IOException {
-        assume(tokenLength <= 8, "Token length invalid, should be in range 0..8");
+        check(tokenLength <= 8, "Token length invalid, should be in range 0..8");
         return Opaque.read(is, tokenLength);
     }
 
@@ -229,7 +229,7 @@ public final class CoapTcpPacketSerializer {
         // token length
         int tokenLen = coapPacket.getToken().size();
 
-        assume(tokenLen <= 8, "Token length should not exceed 8 bytes");
+        check(tokenLen <= 8, "Token length should not exceed 8 bytes");
 
         // packet length or extended length code
         int optionsLength = headerOptionsStream.size();

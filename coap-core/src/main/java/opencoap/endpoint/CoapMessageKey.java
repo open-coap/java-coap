@@ -19,13 +19,13 @@ package opencoap.endpoint;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-public class CoapRequestId {
+public class CoapMessageKey {
 
     private final int mid;
     private final InetSocketAddress sourceAddress;
     private final transient long createdTimestampMillis;
 
-    public CoapRequestId(int mid, InetSocketAddress sourceAddress) {
+    public CoapMessageKey(int mid, InetSocketAddress sourceAddress) {
         this.mid = mid;
         this.sourceAddress = sourceAddress;
         this.createdTimestampMillis = System.currentTimeMillis();
@@ -52,12 +52,12 @@ public class CoapRequestId {
             return false;
         }
 
-        CoapRequestId objRequestId = (CoapRequestId) obj;
+        CoapMessageKey other = (CoapMessageKey) obj;
 
-        if (mid != objRequestId.mid) {
+        if (mid != other.mid) {
             return false;
         }
-        return Objects.equals(sourceAddress, objRequestId.sourceAddress);
+        return Objects.equals(sourceAddress, other.sourceAddress);
     }
 
     @Override

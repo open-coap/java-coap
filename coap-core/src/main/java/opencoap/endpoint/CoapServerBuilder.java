@@ -19,7 +19,7 @@ package opencoap.endpoint;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static opencoap.core.MessageAttributes.RESPONSE_TIMEOUT;
-import static opencoap.util.Timer.toTimer;
+import static opencoap.util.Scheduler.toScheduler;
 import static opencoap.util.Validations.require;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -61,7 +61,7 @@ import opencoap.observe.ObserveRequestFilter;
 import opencoap.routing.RoutingHandler;
 import opencoap.transport.CoapTransport;
 import opencoap.transport.LoggingCoapTransport;
-import opencoap.util.Timer;
+import opencoap.util.Scheduler;
 
 @SuppressWarnings("PMD.CouplingBetweenObjects") // it's a nature for a builder class to have many dependencies
 public final class CoapServerBuilder {
@@ -69,7 +69,7 @@ public final class CoapServerBuilder {
 
     private Supplier<CoapTransport> coapTransport;
     private int duplicationMaxSize = 10000;
-    private PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectionCache;
+    private PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectionCache;
     private ScheduledExecutorService scheduledExecutorService;
     private MessageIdSupplier midSupplier = new SequentialMessageIdSupplier();
     private Duration responseTimeout = Duration.ofMillis(DELAYED_TRANSACTION_TIMEOUT_MS);
@@ -156,7 +156,7 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    private PutOnlyMap<CoapRequestId, CoapPacket> getOrCreateDuplicateDetectorCache(ScheduledExecutorService scheduledExecutorService) {
+    private PutOnlyMap<CoapMessageKey, CoapPacket> getOrCreateDuplicateDetectorCache(ScheduledExecutorService scheduledExecutorService) {
         if (duplicateDetectionCache != null) {
             return duplicateDetectionCache;
         }
@@ -211,7 +211,7 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder duplicateMessageDetectorCache(PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectionCache) {
+    public CoapServerBuilder duplicateMessageDetectorCache(PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectionCache) {
         this.duplicateDetectionCache = duplicateDetectionCache;
         return this;
     }
@@ -247,13 +247,13 @@ public final class CoapServerBuilder {
         CoapTransport coapTransport = isTransportLoggingEnabled ? LoggingCoapTransport.wrap(realTransport) : realTransport;
         final boolean stopExecutor = scheduledExecutorService == null;
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
-        Timer timer = toTimer(effectiveExecutorService);
+        Scheduler scheduler = toScheduler(effectiveExecutorService);
 
         Handler<CoapPacket, Boolean> sender = coapTransport::sendPacket;
 
         // OUTBOUND
         ExchangeFilter exchangeFilter = new ExchangeFilter();
-        RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(timer, retransmissionBackOff, CoapPacket::isConfirmable);
+        RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(scheduler, retransmissionBackOff, CoapPacket::isConfirmable);
         PiggybackedExchangeFilter piggybackedExchangeFilter = new PiggybackedExchangeFilter();
 
         Handler<CoapRequest, CoapResponse> outboundService = outboundFilter
@@ -261,7 +261,7 @@ public final class CoapServerBuilder {
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
                 .andThen(new EchoFilter())
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
                 .andThenMap(midSupplier::update)
@@ -273,7 +273,7 @@ public final class CoapServerBuilder {
         // OBSERVATION
         Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
-                .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
+                .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::isAck))
                 .andThenMap(midSupplier::update)
                 .andThen(retransmissionFilter)
@@ -281,7 +281,7 @@ public final class CoapServerBuilder {
                 .then(sender);
 
         // INBOUND
-        PutOnlyMap<CoapRequestId, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
+        PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
         DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
         Handler<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))

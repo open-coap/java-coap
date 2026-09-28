@@ -17,8 +17,8 @@ package opencoap.endpoint;
 
 public class TcpCoapServer {
 
-    public static CoapServerBuilderForTcp builder() {
-        return new CoapServerBuilderForTcp();
+    public static TcpCoapServerBuilder builder() {
+        return new TcpCoapServerBuilder();
     }
 
 }

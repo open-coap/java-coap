@@ -20,14 +20,14 @@ package opencoap.util;
  * Minor utilities for Protocol CoAP servers
  */
 public class Validations {
-    public static void assume(boolean assumeCondition, String errorMessage) {
-        if (!assumeCondition) {
+    public static void check(boolean condition, String errorMessage) {
+        if (!condition) {
             throw new IllegalStateException(errorMessage);
         }
     }
 
-    public static void assume(boolean assumeCondition) {
-        if (!assumeCondition) {
+    public static void check(boolean condition) {
+        if (!condition) {
             throw new IllegalStateException();
         }
     }

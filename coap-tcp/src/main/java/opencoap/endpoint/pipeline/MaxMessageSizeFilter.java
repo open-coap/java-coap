@@ -23,10 +23,10 @@ import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 
-public class PayloadSizeVerifier<T> implements Filter<CoapPacket, T> {
+public class MaxMessageSizeFilter<T> implements Filter<CoapPacket, T> {
     private final CapabilitiesResolver capabilitiesResolver;
 
-    public PayloadSizeVerifier(CapabilitiesResolver capabilitiesResolver) {
+    public MaxMessageSizeFilter(CapabilitiesResolver capabilitiesResolver) {
         this.capabilitiesResolver = capabilitiesResolver;
     }
 

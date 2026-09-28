@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapTimeoutException;
-import opencoap.util.MockTimer;
+import opencoap.util.MockScheduler;
 import org.junit.jupiter.api.Test;
 
 class ResponseTimeoutFilterTest {
 
-    private MockTimer timer = new MockTimer();
-    private ResponseTimeoutFilter<String, String> filter = new ResponseTimeoutFilter<>(timer, req -> {
+    private MockScheduler scheduler = new MockScheduler();
+    private ResponseTimeoutFilter<String, String> filter = new ResponseTimeoutFilter<>(scheduler, req -> {
         if (req.startsWith("req-timeout-")) {
             return ofMinutes(Integer.parseInt(req.substring(12)));
         }
@@ -40,8 +40,8 @@ class ResponseTimeoutFilterTest {
         CompletableFuture<String> resp = filter.apply("req", s -> servicePromise);
 
         // when, timeout hits
-        assertEquals(ofMinutes(2), timer.getLastScheduledDelay());
-        timer.runAll();
+        assertEquals(ofMinutes(2), scheduler.getLastScheduledDelay());
+        scheduler.runAll();
 
         // then
         assertTrue(resp.isCompletedExceptionally());
@@ -55,8 +55,8 @@ class ResponseTimeoutFilterTest {
         CompletableFuture<String> resp = filter.apply("req-timeout-13", s -> servicePromise);
 
         // when, timeout hits
-        assertEquals(ofMinutes(13), timer.getLastScheduledDelay());
-        timer.runAll();
+        assertEquals(ofMinutes(13), scheduler.getLastScheduledDelay());
+        scheduler.runAll();
 
         // then
         assertTrue(resp.isCompletedExceptionally());
@@ -74,6 +74,6 @@ class ResponseTimeoutFilterTest {
         // then
         assertTrue(resp.isDone());
         assertEquals("OK", resp.join());
-        timer.isEmpty();
+        scheduler.isEmpty();
     }
 }

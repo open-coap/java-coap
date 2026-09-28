@@ -33,8 +33,8 @@ import opencoap.cli.providers.StandardIoProvider;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.CoapServerBuilder;
-import opencoap.endpoint.CoapServerBuilderForTcp;
 import opencoap.endpoint.TcpCoapServer;
+import opencoap.endpoint.TcpCoapServerBuilder;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,7 @@ class TransportOptions {
         psk = Pair.split(pskPair, ':').mapValue(Opaque::decodeHex);
     }
 
-    public final CoapServer create(URI uri, Function<CoapServerBuilder, CoapServer> configureUdp, Function<CoapServerBuilderForTcp, CoapServer> configureTcp) {
+    public final CoapServer create(URI uri, Function<CoapServerBuilder, CoapServer> configureUdp, Function<TcpCoapServerBuilder, CoapServer> configureTcp) {
         try {
             CoapTransport transport = createTransport(uri);
 

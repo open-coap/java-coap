@@ -29,10 +29,10 @@ import opencoap.endpoint.Capabilities;
 import opencoap.endpoint.HashMapCapabilitiesStorage;
 import org.junit.jupiter.api.Test;
 
-class PayloadSizeVerifierTest {
+class MaxMessageSizeFilterTest {
 
     private final HashMapCapabilitiesStorage csmStorage = new HashMapCapabilitiesStorage();
-    private PayloadSizeVerifier<Boolean> verifier = new PayloadSizeVerifier<>(csmStorage);
+    private MaxMessageSizeFilter<Boolean> verifier = new MaxMessageSizeFilter<>(csmStorage);
     private final Handler<CoapPacket, Boolean> service = __ -> completedFuture(true);
 
     @Test

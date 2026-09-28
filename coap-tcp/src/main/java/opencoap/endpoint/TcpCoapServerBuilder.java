@@ -36,7 +36,7 @@ import opencoap.endpoint.pipeline.BlockWiseIncomingFilter;
 import opencoap.endpoint.pipeline.BlockWiseNotificationFilter;
 import opencoap.endpoint.pipeline.BlockWiseOutgoingFilter;
 import opencoap.endpoint.pipeline.CriticalOptionVerifier;
-import opencoap.endpoint.pipeline.PayloadSizeVerifier;
+import opencoap.endpoint.pipeline.MaxMessageSizeFilter;
 import opencoap.endpoint.pipeline.RescueFilter;
 import opencoap.endpoint.pipeline.TcpExchangeFilter;
 import opencoap.filter.CongestionControlFilter;
@@ -49,7 +49,7 @@ import opencoap.routing.RoutingHandler;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.LoggingCoapTransport;
 
-public class CoapServerBuilderForTcp {
+public class TcpCoapServerBuilder {
     private CoapTcpTransport coapTransport;
     private Handler<CoapRequest, CoapResponse> route = RoutingHandler.NOT_FOUND;
     private int maxMessageSize = 1152; //default
@@ -64,7 +64,7 @@ public class CoapServerBuilderForTcp {
     private Boolean isTransportLoggingEnabled = true;
     private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
-    CoapServerBuilderForTcp() {
+    TcpCoapServerBuilder() {
         csmStorage = new HashMapCapabilitiesStorage();
     }
 
@@ -72,56 +72,56 @@ public class CoapServerBuilderForTcp {
         return csmStorage;
     }
 
-    public final CoapServerBuilderForTcp blockSize(BlockSize blockSize) {
+    public final TcpCoapServerBuilder blockSize(BlockSize blockSize) {
         this.blockSize = blockSize;
         return this;
     }
 
-    public CoapServerBuilderForTcp transport(CoapTcpTransport coapTransport) {
+    public TcpCoapServerBuilder transport(CoapTcpTransport coapTransport) {
         this.coapTransport = requireNonNull(coapTransport);
         return this;
     }
 
-    public CoapServerBuilderForTcp route(Handler<CoapRequest, CoapResponse> route) {
+    public TcpCoapServerBuilder route(Handler<CoapRequest, CoapResponse> route) {
         this.route = route;
         return this;
     }
 
-    public CoapServerBuilderForTcp route(RoutingHandler.RouteBuilder routeBuilder) {
+    public TcpCoapServerBuilder route(RoutingHandler.RouteBuilder routeBuilder) {
         return route(routeBuilder.build());
     }
 
-    public CoapServerBuilderForTcp routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
+    public TcpCoapServerBuilder routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
         this.routeFilter = requireNonNull(routeFilter);
         return this;
     }
 
-    public CoapServerBuilderForTcp csmStorage(CapabilitiesStorage csmStorage) {
+    public TcpCoapServerBuilder csmStorage(CapabilitiesStorage csmStorage) {
         this.csmStorage = csmStorage;
         return this;
     }
 
-    public CoapServerBuilderForTcp maxMessageSize(int maxMessageSize) {
+    public TcpCoapServerBuilder maxMessageSize(int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
         return this;
     }
 
-    public CoapServerBuilderForTcp maxIncomingBlockTransferSize(int size) {
+    public TcpCoapServerBuilder maxIncomingBlockTransferSize(int size) {
         this.maxIncomingBlockTransferSize = size;
         return this;
     }
 
-    public CoapServerBuilderForTcp queueMaxSize(int maxQueueSize) {
+    public TcpCoapServerBuilder queueMaxSize(int maxQueueSize) {
         this.maxQueueSize = maxQueueSize;
         return this;
     }
 
-    public CoapServerBuilderForTcp outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
+    public TcpCoapServerBuilder outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
         this.outboundFilter = outboundFilter;
         return this;
     }
 
-    public CoapServerBuilderForTcp notificationsReceiver(NotificationsReceiver notificationsReceiver) {
+    public TcpCoapServerBuilder notificationsReceiver(NotificationsReceiver notificationsReceiver) {
         this.notificationsReceiver = requireNonNull(notificationsReceiver);
         if (observationsStore.equals(ObservationsStore.ALWAYS_EMPTY)) {
             return observationsStore(ObservationsStore.inMemory());
@@ -129,12 +129,12 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
-    public CoapServerBuilderForTcp observationsStore(ObservationsStore observationsStore) {
+    public TcpCoapServerBuilder observationsStore(ObservationsStore observationsStore) {
         this.observationsStore = requireNonNull(observationsStore);
         return this;
     }
 
-    public CoapServerBuilderForTcp transportLogging(Boolean transportLogging) {
+    public TcpCoapServerBuilder transportLogging(Boolean transportLogging) {
         this.isTransportLoggingEnabled = requireNonNull(transportLogging);
         return this;
     }
@@ -145,7 +145,7 @@ public class CoapServerBuilderForTcp {
      * @param recognizedCustomOptions a collection of integer option numbers to be recognized as custom options
      * @return this builder instance for method chaining
      */
-    public CoapServerBuilderForTcp recognizedCustomOptions(Collection<Integer> recognizedCustomOptions) {
+    public TcpCoapServerBuilder recognizedCustomOptions(Collection<Integer> recognizedCustomOptions) {
         this.recognizedCustomOptions = requireNonNull(recognizedCustomOptions);
         return this;
     }
@@ -161,7 +161,7 @@ public class CoapServerBuilderForTcp {
         Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThenMap(CoapTcpPacketConverter::toCoapPacket)
-                .andThen(new PayloadSizeVerifier<>(csmStorage))
+                .andThen(new MaxMessageSizeFilter<>(csmStorage))
                 .then(sender);
 
         // INBOUND

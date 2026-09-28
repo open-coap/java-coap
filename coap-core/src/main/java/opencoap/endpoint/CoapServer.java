@@ -16,7 +16,7 @@
  */
 package opencoap.endpoint;
 
-import static opencoap.util.Validations.assume;
+import static opencoap.util.Validations.check;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,7 +61,7 @@ public class CoapServer {
      * @throws IllegalStateException if server is already running
      */
     public CoapServer start() throws IOException, IllegalStateException {
-        assume(!isRunning.getAndSet(true), "CoapServer is running");
+        check(!isRunning.getAndSet(true), "CoapServer is running");
         transport.start();
 
         transport.receive().whenComplete(this::handle);

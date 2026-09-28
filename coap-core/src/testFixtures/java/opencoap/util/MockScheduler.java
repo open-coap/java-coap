@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MockTimer implements Timer {
+public class MockScheduler implements Scheduler {
 
     private final List<Runnable> tasks = new ArrayList<>();
     private Duration lastScheduledDelay = null;

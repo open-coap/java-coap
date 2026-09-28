@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapTimeoutException;
 import opencoap.core.Handler;
 import opencoap.endpoint.RetransmissionBackOff;
-import opencoap.util.MockTimer;
+import opencoap.util.MockScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,10 +41,10 @@ import org.mockito.Mockito;
 
 class RetransmissionFilterTest {
 
-    private final MockTimer timer = new MockTimer();
+    private final MockScheduler scheduler = new MockScheduler();
     private final RetransmissionBackOff backoff = new DoubleRetransmissionBackOff();
 
-    private final RetransmissionFilter<String, String> filter = new RetransmissionFilter<>(timer, backoff, r -> !r.startsWith("NON"));
+    private final RetransmissionFilter<String, String> filter = new RetransmissionFilter<>(scheduler, backoff, r -> !r.startsWith("NON"));
     private final Handler<String, String> service = Mockito.mock(Handler.class);
     private final Handler<String, String> filteredSrv = filter.then(service);
     private CompletableFuture<String> promise;
@@ -62,7 +62,7 @@ class RetransmissionFilterTest {
 
     @AfterEach
     void tearDown() {
-        assertTrue(timer.isEmpty());
+        assertTrue(scheduler.isEmpty());
         verifyNoMoreInteractions(service);
     }
 
@@ -83,7 +83,7 @@ class RetransmissionFilterTest {
     void shouldForward_nonRetransmittedMessage() {
         resp = filteredSrv.apply("NON1");
         assertFalse(resp.isDone());
-        assertEquals(0, timer.size());
+        assertEquals(0, scheduler.size());
 
         // when
         promise.complete("resp1");
@@ -99,9 +99,9 @@ class RetransmissionFilterTest {
         CompletableFuture<String> firstPromise = promise;
 
         // when
-        timer.runAll();
-        timer.runAll();
-        timer.runAll();
+        scheduler.runAll();
+        scheduler.runAll();
+        scheduler.runAll();
 
         // then
         assertThatThrownBy(resp::join).hasCauseExactlyInstanceOf(CoapTimeoutException.class);
@@ -114,7 +114,7 @@ class RetransmissionFilterTest {
         resp = filteredSrv.apply("REQ1");
 
         // when
-        timer.runAll();
+        scheduler.runAll();
         promise.complete("resp1");
 
         // then
@@ -127,7 +127,7 @@ class RetransmissionFilterTest {
         resp = filteredSrv.apply("REQ1");
 
         // when
-        timer.runAll();
+        scheduler.runAll();
         promise.completeExceptionally(new IOException());
 
         // then
