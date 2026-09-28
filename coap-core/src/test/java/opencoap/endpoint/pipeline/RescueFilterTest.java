@@ -24,12 +24,12 @@ import opencoap.core.CoapCodeException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import org.junit.jupiter.api.Test;
 
 class RescueFilterTest {
 
-    private final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new RescueFilter());
+    private final MappingFilter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new RescueFilter());
 
     @Test
     void shouldConvertCoapCodeExceptionToResponse() {

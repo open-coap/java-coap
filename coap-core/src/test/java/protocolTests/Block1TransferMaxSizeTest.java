@@ -32,11 +32,11 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.util.ObservableResource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ public class Block1TransferMaxSizeTest {
         observableResource = new ObservableResource(CHANGEABLE_RESOURCE_PATH, CoapResponse.ok(OBS_RESOURCE_INIT_VALUE), observersManager);
 
         server = CoapServer.builder()
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get(CHANGEABLE_RESOURCE_PATH, changeableResource)
                         .put(CHANGEABLE_RESOURCE_PATH, changeableResource)
                         .get(OBSERVABLE_RESOURCE_PATH, observableResource)
@@ -139,7 +139,7 @@ public class Block1TransferMaxSizeTest {
     }
 
 
-    private static class ChangeableResource implements Service<CoapRequest, CoapResponse> {
+    private static class ChangeableResource implements Handler<CoapRequest, CoapResponse> {
 
         private static final Opaque INIT_DATA = of("init data");
         private Opaque data = INIT_DATA;

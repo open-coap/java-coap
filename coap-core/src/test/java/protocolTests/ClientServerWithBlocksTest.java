@@ -40,10 +40,10 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.CoapTransport;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
@@ -66,7 +66,7 @@ public class ClientServerWithBlocksTest {
 
         changeableBigResource = new ChangeableBigResource();
         server = CoapServer.builder().transport(InMemoryCoapTransport.create(5683)).blockSize(BlockSize.S_32).maxMessageSize(64)
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/bigResource", __ -> CoapResponse.ok(BIG_RESOURCE).toFuture())
                         .get("/", __ -> CoapResponse.ok(BIG_RESOURCE).toFuture())
                         .get("/small", __ -> CoapResponse.ok(BODY).toFuture())
@@ -264,7 +264,7 @@ public class ClientServerWithBlocksTest {
         client.close();
     }
 
-    private class DynamicBigResource implements Service<CoapRequest, CoapResponse> {
+    private class DynamicBigResource implements Handler<CoapRequest, CoapResponse> {
 
         private boolean changed = false;
 
@@ -281,7 +281,7 @@ public class ClientServerWithBlocksTest {
 
     }
 
-    private static class UltraDynamicBigResource implements Service<CoapRequest, CoapResponse> {
+    private static class UltraDynamicBigResource implements Handler<CoapRequest, CoapResponse> {
 
         private Opaque dynRes = BIG_RESOURCE;
 
@@ -295,7 +295,7 @@ public class ClientServerWithBlocksTest {
         }
     }
 
-    private static class ChangeableBigResource implements Service<CoapRequest, CoapResponse> {
+    private static class ChangeableBigResource implements Handler<CoapRequest, CoapResponse> {
 
         Opaque body = EMPTY;
         CoapRequest lastRequest = null;

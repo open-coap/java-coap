@@ -40,7 +40,7 @@ import opencoap.core.CoapOptionsBuilder;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import org.junit.jupiter.api.Test;
 
@@ -48,11 +48,11 @@ class BlockWiseIncomingFilterTest {
     private Capabilities capability = Capabilities.BASE;
     private final BlockWiseIncomingFilter blockingFilter = new BlockWiseIncomingFilter(__ -> capability, 10000000);
     private CoapRequest lastRequest = null;
-    private Service<CoapRequest, CoapResponse> service;
+    private Handler<CoapRequest, CoapResponse> service;
 
     @Test
     void shouldForwardWhenNonBlockRequestAndResponse() {
-        Service<CoapRequest, CoapResponse> service = blockingFilter
+        Handler<CoapRequest, CoapResponse> service = blockingFilter
                 .then(__ -> ok("OK").toFuture());
 
         CompletableFuture<CoapResponse> resp = service.apply(get("/").from(LOCAL_5683));

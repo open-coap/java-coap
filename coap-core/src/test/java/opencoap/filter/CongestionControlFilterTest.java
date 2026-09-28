@@ -27,14 +27,14 @@ import static org.mockito.BDDMockito.reset;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
 import java.util.concurrent.CompletableFuture;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CongestionControlFilterTest {
 
     private CongestionControlFilter<String, String, String> filter = new CongestionControlFilter<>(2, r -> r.substring(0, 2));
-    private Service<String, String> service = mock(Service.class);
+    private Handler<String, String> service = mock(Handler.class);
 
     @BeforeEach
     void setUp() {

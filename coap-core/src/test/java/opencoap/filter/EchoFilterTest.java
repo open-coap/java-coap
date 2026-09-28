@@ -27,14 +27,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.Opaque;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class EchoFilterTest {
 
-    private final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new EchoFilter());
+    private final MappingFilter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(new EchoFilter());
 
     @Test
     void shouldRetryWithEcho() throws ExecutionException, InterruptedException {

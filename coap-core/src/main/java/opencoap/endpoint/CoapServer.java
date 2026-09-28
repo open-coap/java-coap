@@ -25,7 +25,7 @@ import opencoap.codec.CoapPacket;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.transport.CoapTransport;
 import opencoap.transport.LoggingCoapTransport;
 import org.slf4j.Logger;
@@ -36,12 +36,12 @@ public class CoapServer {
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final CoapTransport transport;
     private final Consumer<CoapPacket> dispatcher;
-    private final Service<CoapRequest, CoapResponse> outboundService;
-    private final Service<SeparateResponse, Boolean> outboundResponseService;
+    private final Handler<CoapRequest, CoapResponse> outboundService;
+    private final Handler<SeparateResponse, Boolean> outboundResponseService;
     private final Runnable stopAll;
 
-    public CoapServer(CoapTransport transport, Consumer<CoapPacket> dispatcher, Service<CoapRequest, CoapResponse> outboundService,
-            Service<SeparateResponse, Boolean> outboundResponseService, Runnable stopAll) {
+    public CoapServer(CoapTransport transport, Consumer<CoapPacket> dispatcher, Handler<CoapRequest, CoapResponse> outboundService,
+            Handler<SeparateResponse, Boolean> outboundResponseService, Runnable stopAll) {
         this.transport = transport;
         this.dispatcher = dispatcher;
         this.outboundService = outboundService;
@@ -123,11 +123,11 @@ public class CoapServer {
     }
 
 
-    public final Service<CoapRequest, CoapResponse> clientService() {
+    public final Handler<CoapRequest, CoapResponse> clientService() {
         return outboundService;
     }
 
-    public Service<SeparateResponse, Boolean> outboundResponseService() {
+    public Handler<SeparateResponse, Boolean> outboundResponseService() {
         return outboundResponseService;
     }
 

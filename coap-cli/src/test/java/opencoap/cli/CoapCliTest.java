@@ -34,7 +34,7 @@ import opencoap.core.Code;
 import opencoap.core.ContentFormat;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,7 @@ class CoapCliTest {
     void beforeAll() throws IOException {
         stubServer = CoapServer.builder()
                 .transport(udp(0))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .post("/rd", req -> {
                             String epName = req.options().getUriQueryMap().get("ep");
                             return coapResponse(Code.C201_CREATED).locationPath("/rd/" + epName).toFuture();

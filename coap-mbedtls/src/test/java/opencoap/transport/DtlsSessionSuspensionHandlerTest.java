@@ -21,21 +21,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 import org.junit.jupiter.api.Test;
 
-class DtlsSessionSuspensionServiceTest {
-    private final Service<CoapRequest, CoapResponse> service = new DtlsSessionSuspensionService();
+class DtlsSessionSuspensionHandlerTest {
+    private final Handler<CoapRequest, CoapResponse> handler = new DtlsSessionSuspensionHandler();
 
     @Test
     void shouldReturnBadRequestWhenRequestIsConfirmable() {
-        assertEquals(of(Code.C400_BAD_REQUEST), service.apply(CoapRequest.get("/test").build()).join());
+        assertEquals(of(Code.C400_BAD_REQUEST), handler.apply(CoapRequest.get("/test").build()).join());
     }
 
     @Test
     void shouldReturnResponseWithExpirationHint() {
-        CoapResponse resp = service.apply(CoapRequest.get("/test").context(TransportContext.of(TransportContext.NON_CONFIRMABLE, true)).build()).join();
+        CoapResponse resp = handler.apply(CoapRequest.get("/test").context(TransportContext.of(TransportContext.NON_CONFIRMABLE, true)).build()).join();
         assertEquals(Code.C205_CONTENT, resp.getCode());
         assertTrue(resp.getTransContext().get(DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT));
     }

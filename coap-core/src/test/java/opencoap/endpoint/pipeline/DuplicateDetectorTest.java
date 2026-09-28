@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapRequestId;
 import opencoap.endpoint.DuplicatedCoapMessageCallback;
 import opencoap.endpoint.PutOnlyMap;
@@ -60,7 +60,7 @@ class DuplicateDetectorTest {
         }
     };
     private DuplicateDetector duplicateDetector = new DuplicateDetector(cache, DuplicatedCoapMessageCallback.NULL);
-    private Service<CoapPacket, CoapPacket> service = mock(Service.class);
+    private Handler<CoapPacket, CoapPacket> service = mock(Handler.class);
 
     @BeforeEach
     void setUp() {

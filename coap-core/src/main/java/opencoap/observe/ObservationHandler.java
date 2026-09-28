@@ -20,11 +20,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Code;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObservationHandler implements Service<SeparateResponse, Boolean> {
+public class ObservationHandler implements Handler<SeparateResponse, Boolean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservationHandler.class.getName());
     private final NotificationsReceiver notificationsReceiver;
     private final ObservationsStore obsRelations;

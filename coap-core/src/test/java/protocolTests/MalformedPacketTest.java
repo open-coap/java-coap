@@ -27,7 +27,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.DatagramSocketTransport;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +43,7 @@ public class MalformedPacketTest {
     public void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(udp())
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test/1", __ -> CoapResponse.ok("Dziala").toFuture())
                 )
                 .build();

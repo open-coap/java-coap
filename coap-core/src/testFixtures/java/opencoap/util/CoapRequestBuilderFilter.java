@@ -17,11 +17,11 @@ package opencoap.util;
 
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 
 public class CoapRequestBuilderFilter {
 
-    public static final Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> REQUEST_BUILDER_FILTER = (request, service) -> {
+    public static final MappingFilter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> REQUEST_BUILDER_FILTER = (request, service) -> {
         return service.apply(request.build());
     };
 

@@ -19,6 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface Service<REQ, RES> extends Function<REQ, CompletableFuture<RES>> {
+public interface Handler<REQ, RES> extends Function<REQ, CompletableFuture<RES>> {
 
 }

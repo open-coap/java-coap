@@ -45,7 +45,7 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ public class BlockWiseCallbackTest {
 
     private CompletableFuture<CoapResponse> promise;
     private CoapRequest lastReq;
-    private final Service<CoapRequest, CoapResponse> makeRequestFunc = req -> {
+    private final Handler<CoapRequest, CoapResponse> makeRequestFunc = req -> {
         lastReq = req;
         promise = new CompletableFuture<>();
         return promise;

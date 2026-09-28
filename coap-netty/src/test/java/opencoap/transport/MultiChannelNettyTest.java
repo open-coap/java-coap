@@ -39,7 +39,7 @@ import java.util.List;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.CoapServerGroup;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -90,7 +90,7 @@ public class MultiChannelNettyTest {
 
     private CoapServerGroup createServer() throws IOException {
         return CoapServer.builder()
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK").toFuture())
                 )
                 .transport(() -> new NettyCoapTransport(bootstrap, EMPTY_RESOLVER))

@@ -28,10 +28,10 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ public class BlockTransferOnDemandTest {
 
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/man", new ManualBlockTransferCoapResource())
                         .get("/missing-second-block", new MissingSecondBlock())
                         .build()
@@ -88,7 +88,7 @@ public class BlockTransferOnDemandTest {
         assertEquals(coapResponse(Code.C404_NOT_FOUND).payload("This is exactly a 35 characters!!!!").build(), resp);
     }
 
-    private class ManualBlockTransferCoapResource implements Service<CoapRequest, CoapResponse> {
+    private class ManualBlockTransferCoapResource implements Handler<CoapRequest, CoapResponse> {
 
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {
@@ -104,7 +104,7 @@ public class BlockTransferOnDemandTest {
         }
     }
 
-    private class MissingSecondBlock implements Service<CoapRequest, CoapResponse> {
+    private class MissingSecondBlock implements Handler<CoapRequest, CoapResponse> {
 
         @Override
         public CompletableFuture<CoapResponse> apply(CoapRequest req) {

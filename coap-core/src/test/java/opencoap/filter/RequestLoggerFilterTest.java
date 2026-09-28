@@ -28,7 +28,7 @@ import ch.qos.logback.core.read.ListAppender;
 import java.net.InetSocketAddress;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ class RequestLoggerFilterTest {
     @Test
     void shouldLogRequestAndResponseWithDefaultMessage() {
         // given
-        Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(logFilterBuilder.build());
+        MappingFilter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(logFilterBuilder.build());
         filter.apply(
                 get("/"), __ -> CoapResponse.ok().toFuture()
         ).join();
@@ -72,7 +72,7 @@ class RequestLoggerFilterTest {
     @Test
     void shouldLogRequestAndResponseWithCustomParameters() {
         // given
-        Filter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(
+        MappingFilter<CoapRequest.Builder, CoapResponse, CoapRequest, CoapResponse> filter = REQUEST_BUILDER_FILTER.andThen(
                 logFilterBuilder
                         .msgFormatter((req, resp, __) -> String.format("%s %s -> %s", req.getMethod(), req.options().getUriPath(), resp.getCode().codeToString()))
                         .logLevel(DEBUG)

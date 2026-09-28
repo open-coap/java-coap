@@ -27,14 +27,14 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class ObserveRequestFilterTest {
 
     private HashMapObservationsStore obsMap = new HashMapObservationsStore();
     private ObserveRequestFilter filter = new ObserveRequestFilter(obsMap::add);
-    private Service<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(req -> ok(req.getToken()).toFuture());
+    private Handler<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(req -> ok(req.getToken()).toFuture());
 
     @Test
     void shouldAddTokenForObservationRequest() {

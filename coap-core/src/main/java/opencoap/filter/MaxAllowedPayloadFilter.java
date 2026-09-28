@@ -21,9 +21,9 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class MaxAllowedPayloadFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class MaxAllowedPayloadFilter implements Filter<CoapRequest, CoapResponse> {
     private final int max;
     private final String msg;
 
@@ -33,7 +33,7 @@ public class MaxAllowedPayloadFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
 
         if (request.getPayload().size() > max) {
             return coapResponse(Code.C413_REQUEST_ENTITY_TOO_LARGE)

@@ -27,7 +27,7 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class BlockWiseNotificationFilterTest {
 
     private Capabilities capability = Capabilities.BASE;
     private final BlockWiseNotificationFilter filter = new BlockWiseNotificationFilter(__ -> capability);
-    private final Service<SeparateResponse, Boolean> service = Mockito.mock(Service.class);
+    private final Handler<SeparateResponse, Boolean> service = Mockito.mock(Handler.class);
     private final Opaque token = Opaque.of("1");
 
     @BeforeEach

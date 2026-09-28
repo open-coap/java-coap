@@ -35,11 +35,11 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.CoapTimeoutException;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.RetransmissionBackOff;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 public class UnreliableTransportTest {
 
     private CoapServer server = null;
-    private final Service<CoapRequest, CoapResponse> route = RouterService.builder()
+    private final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
             .get("/test/1", __ -> CoapResponse.ok("Dziala").toFuture())
             .get("/dropping", __ -> ok("OK").toFuture())
             .build();
@@ -117,7 +117,7 @@ public class UnreliableTransportTest {
         server.stop();
         server = CoapServer.builder()
                 .transport(new DroppingPacketsTransportWrapper(CoapConstants.DEFAULT_PORT, (byte) 100))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", __ -> ok("TEST").toFuture())
                         .build())
                 .build()

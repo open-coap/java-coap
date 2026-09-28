@@ -17,7 +17,14 @@ This document outlines breaking changes and migration steps between versions of 
 - **Query options:** `query(String)` that split on `&` is removed. Use `queries(String...)`, `queries(List<String>)`, or `query(name, value)`.
 - **Header options unified:** `BasicHeaderOptions` and `HeaderOptions` are merged into a single `CoapOptions` class.
 - **Option wire framing moved:** `CoapOptions.serialize(OutputStream)` and `deserialize(InputStream, int)` moved to `CoapSerializer.serializeOptions(CoapOptions, OutputStream)` and `CoapSerializer.deserializeOptions(CoapOptions, InputStream, int)`.
+- **Service renamed to Handler:** `Service<REQ, RES>` is now `Handler<REQ, RES>`; `RouterService` is now `RoutingHandler`.
+- **Filter hierarchy inverted:** `Filter<REQ, RES>` is now the type-preserving filter (formerly `Filter.SimpleFilter`). The general 4-type-parameter form is now `MappingFilter<REQ, RES, IN_REQ, IN_RES>`. `Filter.UnaryFilter` is removed.
 - **Class renames:**
+  - `Service` &rarr; `Handler`
+  - `RouterService` &rarr; `RoutingHandler`
+  - `DtlsSessionSuspensionService` &rarr; `DtlsSessionSuspensionHandler`
+  - `Filter<REQ, RES, IN_REQ, IN_RES>` &rarr; `MappingFilter<REQ, RES, IN_REQ, IN_RES>`
+  - `Filter.SimpleFilter<REQ, RES>` &rarr; `Filter<REQ, RES>`
   - `MediaTypes` &rarr; `ContentFormat`
   - `BasicHeaderOptions` / `HeaderOptions` &rarr; `CoapOptions`
   - `SignallingHeaderOptions` &rarr; `SignalingHeaderOptions`
@@ -84,14 +91,14 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 +import opencoap.core.CoapResponse;
 +import opencoap.core.Filter;
 +import opencoap.core.ContentFormat;
++import opencoap.core.Handler;
 +import opencoap.core.Opaque;
-+import opencoap.core.Service;
 +import opencoap.core.TransportContext;
 +import opencoap.endpoint.CoapClient;
 +import opencoap.endpoint.CoapServer;
 +import opencoap.filter.TokenGeneratorFilter;
 +import opencoap.observe.HashMapObservationsStore;
-+import opencoap.routing.RouterService;
++import opencoap.routing.RoutingHandler;
 +import opencoap.transport.DatagramSocketTransport;
 ```
 
@@ -108,7 +115,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.client` | `opencoap.endpoint` | `CoapClient` |
 | `com.mbed.coap.client` | `opencoap.linkformat` | `RegistrationManager` |
 | `com.mbed.coap.server` | `opencoap.endpoint` | `CoapServer`, `CoapServerBuilder`, `CoapServerGroup`, `TcpCoapServer`, `CoapRequestId` |
-| `com.mbed.coap.server` | `opencoap.routing` | `RouterService` |
+| `com.mbed.coap.server` | `opencoap.routing` | `RoutingHandler` |
 | `com.mbed.coap.server` | `opencoap.observe` | `ObservationHandler`, `ObserveRequestFilter`, `NotificationValidator` |
 | `com.mbed.coap.server.messaging` | `opencoap.endpoint` | `CoapDispatcher`, `CoapTcpDispatcher`, `Capabilities`, `MessageIdSupplier`, `RequestTagSupplier` |
 | `com.mbed.coap.server.messaging` | `opencoap.endpoint.pipeline` | `ExchangeFilter`, `PiggybackedExchangeFilter`, `TcpExchangeFilter`, `DuplicateDetector`, `CriticalOptionVerifier`, `RescueFilter`, `RetransmissionFilter`, `PayloadSizeVerifier` |
@@ -122,10 +129,10 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.transport.javassl` | `opencoap.transport` | `SocketClientTransport`, `SSLSocketClientTransport` |
 | `com.mbed.coap.transport.stdio` | `opencoap.transport` | `StreamBlockingTransport`, `OpensslProcessTransport` |
 | `com.mbed.coap.linkformat` | `opencoap.linkformat` | `LinkFormat`, `LinkFormatBuilder`, `PToken` |
-| `com.mbed.coap.utils` | `opencoap.core` | `Service`, `Filter` |
+| `com.mbed.coap.utils` | `opencoap.core` | `Handler`, `Filter`, `MappingFilter` |
 | `com.mbed.coap.utils` | `opencoap.util` | `FutureHelpers`, `ExecutorHelpers`, `Timer`, `Validations` |
 | `org.opencoap.coap.netty` | `opencoap.transport` | `NettyCoapTransport`, `CoapCodec`, `NettyUtils` |
-| `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionService`, `DtlsTransportContext` |
+| `org.opencoap.transport.mbedtls` | `opencoap.transport` | `MbedtlsCoapTransport`, `DtlsSessionSuspensionHandler`, `DtlsTransportContext` |
 | `org.opencoap.coap.metrics.micrometer` | `opencoap.filter` | `MicrometerMetricsFilter` |
 
 ---
@@ -260,6 +267,10 @@ Spelling corrected from `Signalling` to `Signaling` to match RFC 8323 and the ex
 +options.putSignalingOptions(signalingOptions);
 +SignalingOptions sig = options.toSignalingOptions(Code.C701_CSM);
 ```
+
+#### Handler and Filter Renames
+
+`Service` is renamed to `Handler`, and `Filter` / `SimpleFilter` are inverted into `MappingFilter` / `Filter`. See [Handler and Filter Types](#8-handler-and-filter-types).
 
 #### Header Options Unification
 
@@ -416,3 +427,107 @@ Byte-level wire serialization and deserialization of options have moved from the
 -options.deserialize(inputStream, availableBytes);
 +CoapSerializer.deserializeOptions(options, inputStream, availableBytes);
 ```
+
+---
+
+### 8. Handler and Filter Types
+
+#### Service Renamed to Handler
+
+`Service` is a heavily overloaded term in Java backends (Spring, microservices). The request-to-response function is now called `Handler`, in line with conventions such as http4k and Netty. The interface shape is unchanged: `(REQ) -> CompletableFuture<RES>`.
+
+```diff
+-import com.mbed.coap.utils.Service;
++import opencoap.core.Handler;
+
+-Service<CoapRequest, CoapResponse> resource = req -> CoapResponse.ok("hello").toFuture();
++Handler<CoapRequest, CoapResponse> resource = req -> CoapResponse.ok("hello").toFuture();
+```
+
+Implementors whose names repeated the interface name were renamed as well:
+
+| Old (6.x) | New (7.0) |
+|---|---|
+| `RouterService` | `RoutingHandler` |
+| `RouterService.NOT_FOUND_SERVICE` | `RoutingHandler.NOT_FOUND` |
+| `DtlsSessionSuspensionService` | `DtlsSessionSuspensionHandler` |
+
+```diff
+-import com.mbed.coap.server.RouterService;
++import opencoap.routing.RoutingHandler;
+
+ CoapServer.builder()
+-        .route(RouterService.builder()
++        .route(RoutingHandler.builder()
+                 .get("/sensors/temperature", req -> CoapResponse.ok("21C").toFuture())
+         )
+```
+
+```diff
+-import org.opencoap.transport.mbedtls.DtlsSessionSuspensionService;
++import opencoap.transport.DtlsSessionSuspensionHandler;
+
+-Service<CoapRequest, CoapResponse> suspend = new DtlsSessionSuspensionService();
++Handler<CoapRequest, CoapResponse> suspend = new DtlsSessionSuspensionHandler();
+```
+
+Method names that return handlers, such as `CoapServer.clientService()` and `CoapServer.outboundResponseService()`, are unchanged; only their return type is now `Handler`.
+
+#### Filter and MappingFilter
+
+Most filters keep the request and response types unchanged, so the short name now belongs to that case. The general form, which can change types across a layer boundary (e.g. `CoapRequest` &rarr; `CoapPacket`), is now `MappingFilter`.
+
+| Old (6.x) | New (7.0) |
+|---|---|
+| `Filter<REQ, RES, IN_REQ, IN_RES>` | `MappingFilter<REQ, RES, IN_REQ, IN_RES>` |
+| `Filter.SimpleFilter<REQ, RES>` | `Filter<REQ, RES>` |
+| `Filter.UnaryFilter<T>` | `Filter<T, T>` |
+| `Filter.of(requestMapper, responseMapper)` | `MappingFilter.of(requestMapper, responseMapper)` |
+
+`Filter<REQ, RES>` extends `MappingFilter<REQ, RES, REQ, RES>`, so every filter can still be composed with mapping filters. `andThenMap(...)` and `then(...)` are defined on `MappingFilter` and remain available on `Filter`. `Filter.identity()` returns a `Filter<REQ, RES>`, and `Filter.andThen(Filter)` returns a `Filter`.
+
+Type-preserving filters:
+
+```diff
+-import com.mbed.coap.utils.Filter;
++import opencoap.core.Filter;
+
+-public class MyFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
++public class MyFilter implements Filter<CoapRequest, CoapResponse> {
+
+     @Override
+-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
++    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> handler) {
+```
+
+Filters declared with four identical-pair type parameters collapse to two:
+
+```diff
+-Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> filter = ...;
++Filter<CoapRequest, CoapResponse> filter = ...;
+```
+
+Type-changing filters:
+
+```diff
+-import com.mbed.coap.utils.Filter;
++import opencoap.core.MappingFilter;
+
+-public class MyMapper implements Filter<CoapRequest, CoapResponse, CoapPacket, CoapPacket> {
++public class MyMapper implements MappingFilter<CoapRequest, CoapResponse, CoapPacket, CoapPacket> {
+```
+
+```diff
+-Filter.of(CoapPacket::from, CoapPacket::toCoapResponse)
++MappingFilter.of(CoapPacket::from, CoapPacket::toCoapResponse)
+```
+
+##### Builder Filter Parameters
+
+`CoapServerBuilder` and `CoapServerBuilderForTcp` now take the same type for their filter hooks. Previously the UDP builder took `Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse>` while the TCP builder took `Filter.SimpleFilter<CoapRequest, CoapResponse>`. Both now take `Filter<CoapRequest, CoapResponse>`:
+
+- `CoapServerBuilder.routeFilter(...)`, `inboundRequestFilter(...)`, `outboundFilter(...)`
+- `CoapServerBuilderForTcp.routeFilter(...)`, `outboundFilter(...)`
+- `RoutingHandler.RouteBuilder.filter(...)`
+
+Lambdas passed directly need no change. Variables or classes typed as the 4-parameter form must be changed to `Filter<CoapRequest, CoapResponse>`, because a `MappingFilter` is not accepted where a `Filter` is expected.

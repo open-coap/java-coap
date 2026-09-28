@@ -27,7 +27,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
 @FunctionalInterface
 public interface NotificationsReceiver {
@@ -44,7 +44,7 @@ public interface NotificationsReceiver {
     boolean onObservation(String resourceUriPath, SeparateResponse observation);
 
     static CompletableFuture<Opaque> retrieveRemainingBlocks(String uriPath, SeparateResponse observation,
-            Service<CoapRequest, CoapResponse> outboundService) {
+            Handler<CoapRequest, CoapResponse> outboundService) {
 
         BlockOption requestBlock2Res = observation.asResponse().options().getBlock2Res();
         if (requestBlock2Res == null || requestBlock2Res.getNr() != 0 || !requestBlock2Res.hasMore()) {

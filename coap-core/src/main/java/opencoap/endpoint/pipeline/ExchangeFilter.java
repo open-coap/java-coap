@@ -22,14 +22,14 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class ExchangeFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class ExchangeFilter implements Filter<CoapRequest, CoapResponse> {
 
     private final ConcurrentMap<TransactionId, CompletableFuture<CoapResponse>> transactions = new ConcurrentHashMap<>();
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         if (request.isPing()) {
             return service.apply(request);
         }

@@ -33,7 +33,7 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,8 +41,8 @@ import org.mockito.Mockito;
 class ExchangeFilterTest {
 
     private final ExchangeFilter exchangeFilter = new ExchangeFilter();
-    private final Service<CoapRequest, CoapResponse> outbound = Mockito.mock(Service.class);
-    private final Service<CoapRequest, CoapResponse> service = exchangeFilter
+    private final Handler<CoapRequest, CoapResponse> outbound = Mockito.mock(Handler.class);
+    private final Handler<CoapRequest, CoapResponse> service = exchangeFilter
             .then(outbound);
 
     private CompletableFuture<CoapResponse> promise;

@@ -32,14 +32,14 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CoapClientTest {
     private CoapClient client;
-    private final Service<CoapRequest, CoapResponse> clientService = mock(Service.class);
+    private final Handler<CoapRequest, CoapResponse> clientService = mock(Handler.class);
     private final Opaque token1001 = Opaque.ofBytes(0x03, 0xE9);
 
 

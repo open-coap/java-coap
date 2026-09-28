@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import opencoap.core.CoapResponse;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ class CoapServerGroupTest {
     private int port = 10_000;
     private final CoapServerBuilder builder = CoapServer.builder()
             .transport(() -> InMemoryCoapTransport.create(port++))
-            .route(RouterService.builder()
+            .route(RoutingHandler.builder()
                     .get("/test", (req) -> CoapResponse.ok("test").toFuture())
             );
 

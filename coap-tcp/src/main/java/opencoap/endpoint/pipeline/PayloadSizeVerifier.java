@@ -20,10 +20,10 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
 import opencoap.core.CoapException;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 
-public class PayloadSizeVerifier<T> implements Filter.SimpleFilter<CoapPacket, T> {
+public class PayloadSizeVerifier<T> implements Filter<CoapPacket, T> {
     private final CapabilitiesResolver capabilitiesResolver;
 
     public PayloadSizeVerifier(CapabilitiesResolver capabilitiesResolver) {
@@ -31,7 +31,7 @@ public class PayloadSizeVerifier<T> implements Filter.SimpleFilter<CoapPacket, T
     }
 
     @Override
-    public CompletableFuture<T> apply(CoapPacket packet, Service<CoapPacket, T> service) {
+    public CompletableFuture<T> apply(CoapPacket packet, Handler<CoapPacket, T> service) {
         if (verifyPayloadSize(packet)) {
             return failedFuture(new CoapException("Request payload size is too big and no block transfer support is enabled for " + packet.getRemoteAddress() + ": " + packet.getPayload().size()));
         }

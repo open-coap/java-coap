@@ -27,22 +27,22 @@ import java.util.stream.Collectors;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
+import opencoap.core.Handler;
 import opencoap.core.Method;
-import opencoap.core.Service;
 
-public class RouterService implements Service<CoapRequest, CoapResponse> {
+public class RoutingHandler implements Handler<CoapRequest, CoapResponse> {
 
-    private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers;
-    private final List<Entry<RequestMatcher, Service<CoapRequest, CoapResponse>>> prefixedHandlers;
-    public final Service<CoapRequest, CoapResponse> defaultHandler;
+    private final Map<RequestMatcher, Handler<CoapRequest, CoapResponse>> handlers;
+    private final List<Entry<RequestMatcher, Handler<CoapRequest, CoapResponse>>> prefixedHandlers;
+    public final Handler<CoapRequest, CoapResponse> defaultHandler;
 
-    public static final Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> CoapResponse.notFound().toFuture();
+    public static final Handler<CoapRequest, CoapResponse> NOT_FOUND = request -> CoapResponse.notFound().toFuture();
 
     public static RouteBuilder builder() {
         return new RouteBuilder();
     }
 
-    private RouterService(Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers, Service<CoapRequest, CoapResponse> defaultHandler) {
+    private RoutingHandler(Map<RequestMatcher, Handler<CoapRequest, CoapResponse>> handlers, Handler<CoapRequest, CoapResponse> defaultHandler) {
 
         this.handlers = unmodifiableMap(
                 handlers.entrySet().stream()
@@ -68,15 +68,15 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
                 .apply(request);
     }
 
-    private Service<CoapRequest, CoapResponse> findHandler(RequestMatcher requestMatcher) {
-        Service<CoapRequest, CoapResponse> nextService;
+    private Handler<CoapRequest, CoapResponse> findHandler(RequestMatcher requestMatcher) {
+        Handler<CoapRequest, CoapResponse> nextHandler;
 
-        nextService = handlers.get(requestMatcher.withAnyMethod());
-        if (nextService != null) {
-            return nextService;
+        nextHandler = handlers.get(requestMatcher.withAnyMethod());
+        if (nextHandler != null) {
+            return nextHandler;
         }
 
-        for (Entry<RequestMatcher, Service<CoapRequest, CoapResponse>> e : prefixedHandlers) {
+        for (Entry<RequestMatcher, Handler<CoapRequest, CoapResponse>> e : prefixedHandlers) {
             if (e.getKey().matches(requestMatcher)) {
                 return e.getValue();
             }
@@ -85,48 +85,48 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     }
 
     public static class RouteBuilder {
-        private final Map<RequestMatcher, Service<CoapRequest, CoapResponse>> handlers = new HashMap<>();
-        public Service<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND_SERVICE;
-        private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> filter = Filter.identity();
+        private final Map<RequestMatcher, Handler<CoapRequest, CoapResponse>> handlers = new HashMap<>();
+        public Handler<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND;
+        private Filter<CoapRequest, CoapResponse> filter = Filter.identity();
 
-        public RouteBuilder get(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.GET, uriPath, service);
+        public RouteBuilder get(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.GET, uriPath, handler);
         }
 
-        public RouteBuilder post(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.POST, uriPath, service);
+        public RouteBuilder post(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.POST, uriPath, handler);
         }
 
-        public RouteBuilder put(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.PUT, uriPath, service);
+        public RouteBuilder put(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.PUT, uriPath, handler);
         }
 
-        public RouteBuilder delete(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.DELETE, uriPath, service);
+        public RouteBuilder delete(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.DELETE, uriPath, handler);
         }
 
-        public RouteBuilder fetch(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.FETCH, uriPath, service);
+        public RouteBuilder fetch(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.FETCH, uriPath, handler);
         }
 
-        public RouteBuilder patch(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.PATCH, uriPath, service);
+        public RouteBuilder patch(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.PATCH, uriPath, handler);
         }
 
-        public RouteBuilder iPatch(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(Method.IPATCH, uriPath, service);
+        public RouteBuilder iPatch(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(Method.IPATCH, uriPath, handler);
         }
 
-        public RouteBuilder any(String uriPath, Service<CoapRequest, CoapResponse> service) {
-            return add(null, uriPath, service);
+        public RouteBuilder any(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            return add(null, uriPath, handler);
         }
 
-        private RouteBuilder add(Method method, String uriPath, Service<CoapRequest, CoapResponse> service) {
-            handlers.put(new RequestMatcher(method, uriPath), filter.then(service));
+        private RouteBuilder add(Method method, String uriPath, Handler<CoapRequest, CoapResponse> handler) {
+            handlers.put(new RequestMatcher(method, uriPath), filter.then(handler));
             return this;
         }
 
-        public RouteBuilder defaultHandler(Service<CoapRequest, CoapResponse> defaultHandler) {
+        public RouteBuilder defaultHandler(Handler<CoapRequest, CoapResponse> defaultHandler) {
             this.defaultHandler = defaultHandler;
             return this;
         }
@@ -137,14 +137,14 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
             return this;
         }
 
-        public RouteBuilder filter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilterProducer) {
+        public RouteBuilder filter(Filter<CoapRequest, CoapResponse> wrapperFilterProducer) {
             this.filter = this.filter.andThen(wrapperFilterProducer);
 
             return this;
         }
 
-        public Service<CoapRequest, CoapResponse> build() {
-            return new RouterService(handlers, defaultHandler);
+        public Handler<CoapRequest, CoapResponse> build() {
+            return new RoutingHandler(handlers, defaultHandler);
         }
     }
 

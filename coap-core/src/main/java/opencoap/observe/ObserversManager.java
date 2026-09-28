@@ -33,19 +33,19 @@ import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Method;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class ObserversManager implements Filter<CoapRequest, CoapResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObserversManager.class);
-    private volatile Service<SeparateResponse, Boolean> outboundObservation;
+    private volatile Handler<SeparateResponse, Boolean> outboundObservation;
     //               uri-path,    address,           subscribing request
     private final Map<String, Map<InetSocketAddress, CoapRequest>> obsRelations = new ConcurrentHashMap<>();
     private final AtomicInteger observeSeq = new AtomicInteger(0);
 
-    public void init(Service<SeparateResponse, Boolean> outboundObservation) {
+    public void init(Handler<SeparateResponse, Boolean> outboundObservation) {
         obsRelations.clear();
         this.outboundObservation = requireNonNull(outboundObservation);
     }
@@ -56,7 +56,7 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         return service.apply(request)
                 .thenApply(resp -> subscribe(request, resp));
     }
@@ -87,7 +87,7 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
         return resp.withOptions(o -> o.observe(observeSeq.get()));
     }
 
-    public void sendObservation(String uriPath, Service<CoapRequest, CoapResponse> service) {
+    public void sendObservation(String uriPath, Handler<CoapRequest, CoapResponse> service) {
         Map<InetSocketAddress, CoapRequest> subscriptions = obsRelations.getOrDefault(uriPath, Collections.emptyMap());
         if (subscriptions.isEmpty()) {
             return;
@@ -108,7 +108,7 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
         }
     }
 
-    public void sendObservation(Predicate<String> uriPathFilter, Service<CoapRequest, CoapResponse> service) {
+    public void sendObservation(Predicate<String> uriPathFilter, Handler<CoapRequest, CoapResponse> service) {
         obsRelations.keySet().stream()
                 .filter(uriPathFilter)
                 .forEach(uriPath -> sendObservation(uriPath, service));

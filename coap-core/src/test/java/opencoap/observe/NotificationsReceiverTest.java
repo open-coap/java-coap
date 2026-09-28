@@ -32,12 +32,12 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NotificationsReceiverTest {
-    private final Service<CoapRequest, CoapResponse> service = mock(Service.class);
+    private final Handler<CoapRequest, CoapResponse> service = mock(Handler.class);
 
     @BeforeEach
     void setUp() {

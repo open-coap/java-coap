@@ -34,7 +34,7 @@ import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.observe.ObserversManager;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import opencoap.util.ObservableResource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ public class ObservationTest {
     public void setUpClass() throws Exception {
         obsResource = new ObservableResource(RES_OBS_PATH1, CoapResponse.ok(EMPTY), observersManager);
         server = CoapServer.builder().transport(udp())
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/path1", __ -> CoapResponse.ok("content1").toFuture())
                         .get(RES_OBS_PATH1, obsResource)
                 )

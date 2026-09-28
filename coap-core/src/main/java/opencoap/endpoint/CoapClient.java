@@ -28,7 +28,7 @@ import java.util.function.Function;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 
 /**
@@ -37,7 +37,7 @@ import opencoap.core.TransportContext;
 public class CoapClient implements Closeable {
 
     private final InetSocketAddress destination;
-    protected final Service<CoapRequest, CoapResponse> clientService;
+    protected final Handler<CoapRequest, CoapResponse> clientService;
     private final Closeable closeable;
     private final Function<CoapResponse, Boolean> resolvePingResponse;
     static final Function<CoapResponse, Boolean> defaultResolvePingResponse = resp -> resp.getCode() == null;
@@ -51,7 +51,7 @@ public class CoapClient implements Closeable {
         return new CoapClient(target, server.clientService(), server::stop, resolvePingResponse);
     }
 
-    CoapClient(InetSocketAddress destination, Service<CoapRequest, CoapResponse> clientService, Closeable closeable, Function<CoapResponse, Boolean> resolvePingResponse) {
+    CoapClient(InetSocketAddress destination, Handler<CoapRequest, CoapResponse> clientService, Closeable closeable, Function<CoapResponse, Boolean> resolvePingResponse) {
         this.destination = destination;
         this.clientService = clientService;
         this.closeable = closeable;

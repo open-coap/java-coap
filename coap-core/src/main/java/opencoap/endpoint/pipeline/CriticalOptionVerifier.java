@@ -24,9 +24,9 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class CriticalOptionVerifier implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class CriticalOptionVerifier implements Filter<CoapRequest, CoapResponse> {
 
     private final Collection<Integer> recognizedCustomOptions;
 
@@ -39,7 +39,7 @@ public class CriticalOptionVerifier implements Filter.SimpleFilter<CoapRequest, 
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         if (request.options().containsUnrecognisedCriticalOption(recognizedCustomOptions)) {
             return coapResponse(Code.C402_BAD_OPTION).toFuture();
         }

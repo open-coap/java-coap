@@ -28,7 +28,7 @@ import opencoap.codec.CoapPacket;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.core.TransportContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,7 +37,7 @@ class CoapRequestConverterTest {
     private static final TransportContext.Key<Boolean> DUMMY_KEY_IN = new TransportContext.Key<>(false);
     private static final TransportContext.Key<Boolean> DUMMY_KEY_OUT = new TransportContext.Key<>(false);
     private CoapRequestConverter conv = new CoapRequestConverter(() -> 20);
-    private Service<CoapRequest, CoapResponse> service = Mockito.mock(Service.class);
+    private Handler<CoapRequest, CoapResponse> service = Mockito.mock(Handler.class);
 
     @Test
     void shouldConvertConRequestAndResponse() {

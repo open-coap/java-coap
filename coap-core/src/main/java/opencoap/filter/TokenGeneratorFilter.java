@@ -24,9 +24,9 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.Opaque;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public final class TokenGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public final class TokenGeneratorFilter implements Filter<CoapRequest, CoapResponse> {
 
     final Supplier<Opaque> tokenGenerator;
 
@@ -46,7 +46,7 @@ public final class TokenGeneratorFilter implements Filter.SimpleFilter<CoapReque
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
         if (!request.isPing() && request.getToken().isEmpty()) {
             return service.apply(request.modify().token(tokenGenerator.get()).build());
         }

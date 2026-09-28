@@ -84,7 +84,7 @@ frame "Inbound" {
 }
 
 send --> [ObserveRequest]: CoapRequest
-[BlockWiseIncoming] --> [RouterService]
+[BlockWiseIncoming] --> [RoutingHandler]
 disp <-- trans
 
 @enduml

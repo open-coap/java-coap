@@ -22,22 +22,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class EtagGeneratorFilterTest {
-    private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagGeneratorFilter(__ -> ofBytes(1, 2));
+    private final Filter<CoapRequest, CoapResponse> filter = new EtagGeneratorFilter(__ -> ofBytes(1, 2));
 
     @Test
     void shouldAddEtagToResponse() {
-        Service<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").toFuture());
+        Handler<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").toFuture());
 
         assertEquals(ofBytes(1, 2), service.apply(get("/test").build()).join().options().getEtag());
     }
 
     @Test
     void shouldNotChangeEtagToResponseWhenExists() {
-        Service<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").etag(ofBytes(99)).toFuture());
+        Handler<CoapRequest, CoapResponse> service = filter.then(req -> ok("ok").etag(ofBytes(99)).toFuture());
 
         assertEquals(ofBytes(99), service.apply(get("/test").build()).join().options().getEtag());
     }

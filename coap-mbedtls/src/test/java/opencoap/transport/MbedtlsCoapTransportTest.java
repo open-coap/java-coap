@@ -38,7 +38,7 @@ import opencoap.core.Code;
 import opencoap.core.TransportContext;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.routing.RouterService;
+import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ class MbedtlsCoapTransportTest {
         dtlsServer = DtlsServerTransport.create(serverConf);
         coapServer = CoapServer.builder()
                 .transport(new MbedtlsCoapTransport(dtlsServer))
-                .route(RouterService.builder()
+                .route(RoutingHandler.builder()
                         .get("/test", it -> ok("OK!").toFuture())
                         .post("/send-malformed", it -> {
                             dtlsServer.send(new Packet<>("acghfh", it.getPeerAddress()).map(MbedtlsCoapTransportTest::toByteBuffer));

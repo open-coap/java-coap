@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapTimeoutException;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.util.MockTimer;
 import org.junit.jupiter.api.AfterEach;
@@ -45,8 +45,8 @@ class RetransmissionFilterTest {
     private final RetransmissionBackOff backoff = new DoubleRetransmissionBackOff();
 
     private final RetransmissionFilter<String, String> filter = new RetransmissionFilter<>(timer, backoff, r -> !r.startsWith("NON"));
-    private final Service<String, String> service = Mockito.mock(Service.class);
-    private final Service<String, String> filteredSrv = filter.then(service);
+    private final Handler<String, String> service = Mockito.mock(Handler.class);
+    private final Handler<String, String> filteredSrv = filter.then(service);
     private CompletableFuture<String> promise;
     private CompletableFuture<String> resp;
 

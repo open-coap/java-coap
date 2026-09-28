@@ -22,7 +22,7 @@ import opencoap.core.BlockSize;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.filter.TokenGeneratorFilter;
@@ -40,7 +40,7 @@ public class UdpIntegrationTest extends IntegrationTestBase {
     }
 
     @Override
-    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Service<CoapRequest, CoapResponse> route) {
+    protected CoapServer buildServer(int port, Filter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) {
         return CoapServer.builder()
                 .blockSize(BlockSize.S_1024)
                 .transport(udp(port))

@@ -19,14 +19,14 @@ import static opencoap.core.MessageType.Acknowledgement;
 import static opencoap.core.MessageType.Reset;
 import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class ObservationMapper implements Filter<CoapPacket, CoapPacket, SeparateResponse, Boolean> {
+public class ObservationMapper implements MappingFilter<CoapPacket, CoapPacket, SeparateResponse, Boolean> {
 
     @Override
-    public CompletableFuture<CoapPacket> apply(CoapPacket obsPacket, Service<SeparateResponse, Boolean> service) {
+    public CompletableFuture<CoapPacket> apply(CoapPacket obsPacket, Handler<SeparateResponse, Boolean> service) {
         SeparateResponse obs = obsPacket.toSeparateResponse();
 
         return service.apply(obs).thenApply(ack -> {

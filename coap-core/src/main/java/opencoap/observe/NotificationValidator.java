@@ -19,12 +19,12 @@ package opencoap.observe;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class NotificationValidator implements Filter.SimpleFilter<SeparateResponse, Boolean> {
+public class NotificationValidator implements Filter<SeparateResponse, Boolean> {
 
     @Override
-    public CompletableFuture<Boolean> apply(SeparateResponse obs, Service<SeparateResponse, Boolean> service) {
+    public CompletableFuture<Boolean> apply(SeparateResponse obs, Handler<SeparateResponse, Boolean> service) {
         if (obs.options().getObserve() == null) {
             throw new IllegalArgumentException("Notification packet should have observation header set");
         }

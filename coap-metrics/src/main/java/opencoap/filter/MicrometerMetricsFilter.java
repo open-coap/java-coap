@@ -29,9 +29,9 @@ import java.util.function.Function;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Service;
+import opencoap.core.Handler;
 
-public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class MicrometerMetricsFilter implements Filter<CoapRequest, CoapResponse> {
     private final MeterRegistry registry;
     private final String metricName;
     private final Function<String, String> resolveRoute;
@@ -58,7 +58,7 @@ public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest,
     }
 
     @Override
-    public CompletableFuture<CoapResponse> apply(CoapRequest req, Service<CoapRequest, CoapResponse> service) {
+    public CompletableFuture<CoapResponse> apply(CoapRequest req, Handler<CoapRequest, CoapResponse> service) {
         Timer.Sample timer = Timer.start();
 
         return service.apply(req).whenComplete((resp, err) -> {
