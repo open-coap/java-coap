@@ -57,8 +57,8 @@ public class CoapServerBuilderForTcp {
     private int maxIncomingBlockTransferSize = 10_000_000; //default to 10 MB
     private int maxQueueSize = 100;
     private BlockSize blockSize;
-    private Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
-    private Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationsStore = ObservationsStore.ALWAYS_EMPTY;
     private Boolean isTransportLoggingEnabled = true;
@@ -91,7 +91,7 @@ public class CoapServerBuilderForTcp {
         return route(routeBuilder.build());
     }
 
-    public CoapServerBuilderForTcp routeFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter) {
+    public CoapServerBuilderForTcp routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
         this.routeFilter = requireNonNull(routeFilter);
         return this;
     }
@@ -116,7 +116,7 @@ public class CoapServerBuilderForTcp {
         return this;
     }
 
-    public CoapServerBuilderForTcp outboundFilter(Filter.SimpleFilter<CoapRequest, CoapResponse> outboundFilter) {
+    public CoapServerBuilderForTcp outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
         this.outboundFilter = outboundFilter;
         return this;
     }

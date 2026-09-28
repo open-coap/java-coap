@@ -23,7 +23,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class ObserveRequestFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class ObserveRequestFilter implements Filter<CoapRequest, CoapResponse> {
     private final AtomicLong nextToken = new AtomicLong(0);
     private final Consumer<CoapRequest> registerRelation;
     private static final Integer INIT_OBSERVE = 0;

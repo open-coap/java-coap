@@ -121,7 +121,7 @@ abstract class IntegrationTestBase {
 
     abstract protected CoapClient buildClient(int port) throws IOException;
 
-    abstract protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException;
+    abstract protected CoapServer buildServer(int port, Filter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException;
 
     @AfterEach
     public void tearDown() throws IOException {

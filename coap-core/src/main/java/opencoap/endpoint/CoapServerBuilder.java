@@ -36,6 +36,7 @@ import opencoap.core.BlockSize;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
 import opencoap.endpoint.pipeline.BlockWiseIncomingFilter;
@@ -79,9 +80,9 @@ public final class CoapServerBuilder {
     private int maxMessageSize = 1152; //default
     private Handler<CoapRequest, CoapResponse> route = RoutingHandler.NOT_FOUND;
     private int maxQueueSize = 100;
-    private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> outboundFilter = Filter.identity();
-    private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> routeFilter = Filter.identity();
-    private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
+    private Filter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
     private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
@@ -117,17 +118,17 @@ public final class CoapServerBuilder {
         return route(routeBuilder.build());
     }
 
-    public CoapServerBuilder routeFilter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> routeFilter) {
+    public CoapServerBuilder routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
         this.routeFilter = requireNonNull(routeFilter);
         return this;
     }
 
-    public CoapServerBuilder inboundRequestFilter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> inboundRequestFilter) {
+    public CoapServerBuilder inboundRequestFilter(Filter<CoapRequest, CoapResponse> inboundRequestFilter) {
         this.inboundRequestFilter = requireNonNull(inboundRequestFilter);
         return this;
     }
 
-    public CoapServerBuilder outboundFilter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> outboundFilter) {
+    public CoapServerBuilder outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
         this.outboundFilter = requireNonNull(outboundFilter);
         return this;
     }
@@ -262,7 +263,7 @@ public final class CoapServerBuilder {
                 .andThen(new EchoFilter())
                 .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
-                .andThen(Filter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
+                .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
                 .andThenMap(midSupplier::update)
                 .andThen(retransmissionFilter)
                 .andThen(piggybackedExchangeFilter)
@@ -273,7 +274,7 @@ public final class CoapServerBuilder {
         Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThen(new ResponseTimeoutFilter<>(timer, req -> req.getTransContext(RESPONSE_TIMEOUT, responseTimeout)))
-                .andThen(Filter.of(CoapPacket::from, CoapPacket::isAck))
+                .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::isAck))
                 .andThenMap(midSupplier::update)
                 .andThen(retransmissionFilter)
                 .andThen(piggybackedExchangeFilter)

@@ -16,26 +16,21 @@
 package opencoap.core;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /*
-Filter is a transformer of a 'handler' that may intercept and transform inputs and outputs
+Filter is a type-preserving transformer of a 'handler' that may intercept and transform inputs and outputs.
  */
 @FunctionalInterface
-public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Handler<IN_REQ, IN_RES>, CompletableFuture<RES>> {
+public interface Filter<REQ, RES> extends MappingFilter<REQ, RES, REQ, RES> {
 
-    @Override
-    CompletableFuture<RES> apply(REQ request, Handler<IN_REQ, IN_RES> handler);
-
-    default <REQ2, RES2> Filter<REQ, RES, REQ2, RES2> andThen(Filter<IN_REQ, IN_RES, REQ2, RES2> next) {
+    default Filter<REQ, RES> andThen(Filter<REQ, RES> next) {
         return (request, handler) -> {
-            Handler<IN_REQ, IN_RES> nextHandler = request2 -> next.apply(request2, handler);
+            Handler<REQ, RES> nextHandler = request2 -> next.apply(request2, handler);
             return apply(request, nextHandler);
         };
     }
 
-    default Filter<REQ, RES, IN_REQ, IN_RES> andThenIf(boolean condition, Filter<IN_REQ, IN_RES, IN_REQ, IN_RES> next) {
+    default Filter<REQ, RES> andThenIf(boolean condition, Filter<REQ, RES> next) {
         if (condition) {
             return andThen(next);
         } else {
@@ -43,37 +38,21 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Handle
         }
     }
 
-    default <REQ2> Filter<REQ, RES, REQ2, IN_RES> andThenMap(Function<IN_REQ, REQ2> nextFunc) {
-        return this.andThen((request, handler) ->
-                handler.apply(nextFunc.apply(request))
-        );
-    }
-
-    default Handler<REQ, RES> then(Handler<IN_REQ, IN_RES> function) {
-        return request -> apply(request, function);
-    }
-
-
-    @FunctionalInterface
-    interface SimpleFilter<REQ, RES> extends Filter<REQ, RES, REQ, RES> {
-
-    }
-
-    @FunctionalInterface
-    interface UnaryFilter<T> extends Filter<T, T, T, T> {
-
-    }
-
     @SuppressWarnings("PMD.UseDiamondOperator") // looks like PMD bug
-    static <REQ, RES> SimpleFilter<REQ, RES> identity() {
-        return new SimpleFilter<REQ, RES>() {
+    static <REQ, RES> Filter<REQ, RES> identity() {
+        return new Filter<REQ, RES>() {
             @Override
             public CompletableFuture<RES> apply(REQ request, Handler<REQ, RES> handler) {
                 return handler.apply(request);
             }
 
             @Override
-            public <REQ2, RES2> Filter<REQ, RES, REQ2, RES2> andThen(Filter<REQ, RES, REQ2, RES2> next) {
+            public <REQ2, RES2> MappingFilter<REQ, RES, REQ2, RES2> andThen(MappingFilter<REQ, RES, REQ2, RES2> next) {
+                return next;
+            }
+
+            @Override
+            public Filter<REQ, RES> andThen(Filter<REQ, RES> next) {
                 return next;
             }
 
@@ -82,12 +61,6 @@ public interface Filter<REQ, RES, IN_REQ, IN_RES> extends BiFunction<REQ, Handle
                 return handler;
             }
         };
-    }
-
-    static <REQ, RES, IN_REQ, IN_RES> Filter<REQ, RES, IN_REQ, IN_RES> of(Function<REQ, IN_REQ> nextFunc, Function<IN_RES, RES> respMapFunc) {
-        return (request, handler) -> handler
-                .apply(nextFunc.apply(request))
-                .thenApply(respMapFunc);
     }
 
 }

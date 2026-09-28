@@ -23,7 +23,7 @@ import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 
-public class PayloadSizeVerifier<T> implements Filter.SimpleFilter<CoapPacket, T> {
+public class PayloadSizeVerifier<T> implements Filter<CoapPacket, T> {
     private final CapabilitiesResolver capabilitiesResolver;
 
     public PayloadSizeVerifier(CapabilitiesResolver capabilitiesResolver) {

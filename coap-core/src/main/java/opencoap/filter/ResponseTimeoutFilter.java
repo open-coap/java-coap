@@ -19,11 +19,11 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import opencoap.core.CoapTimeoutException;
-import opencoap.core.Filter.SimpleFilter;
+import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.util.Timer;
 
-public class ResponseTimeoutFilter<REQ, RES> implements SimpleFilter<REQ, RES> {
+public class ResponseTimeoutFilter<REQ, RES> implements Filter<REQ, RES> {
 
     private final Timer timer;
     private final Function<REQ, Duration> timeoutResolver;

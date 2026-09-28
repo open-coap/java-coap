@@ -27,7 +27,7 @@ import opencoap.core.Handler;
 import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.util.Timer;
 
-public final class RetransmissionFilter<REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
+public final class RetransmissionFilter<REQ, RES> implements Filter<REQ, RES> {
 
     private final Timer timer;
     private final RetransmissionBackOff backoff;

@@ -87,7 +87,7 @@ public class RoutingHandler implements Handler<CoapRequest, CoapResponse> {
     public static class RouteBuilder {
         private final Map<RequestMatcher, Handler<CoapRequest, CoapResponse>> handlers = new HashMap<>();
         public Handler<CoapRequest, CoapResponse> defaultHandler = NOT_FOUND;
-        private Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> filter = Filter.identity();
+        private Filter<CoapRequest, CoapResponse> filter = Filter.identity();
 
         public RouteBuilder get(String uriPath, Handler<CoapRequest, CoapResponse> handler) {
             return add(Method.GET, uriPath, handler);
@@ -137,7 +137,7 @@ public class RoutingHandler implements Handler<CoapRequest, CoapResponse> {
             return this;
         }
 
-        public RouteBuilder filter(Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse> wrapperFilterProducer) {
+        public RouteBuilder filter(Filter<CoapRequest, CoapResponse> wrapperFilterProducer) {
             this.filter = this.filter.andThen(wrapperFilterProducer);
 
             return this;

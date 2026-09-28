@@ -28,7 +28,7 @@ import opencoap.endpoint.PutOnlyMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DuplicateDetector implements Filter.SimpleFilter<CoapPacket, CoapPacket> {
+public class DuplicateDetector implements Filter<CoapPacket, CoapPacket> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DuplicateDetector.class);
     private static final CoapPacket EMPTY_COAP_PACKET = new CoapPacket(null);
     private static final CoapPacket NULL_COAP_PACKET = new CoapPacket(null);

@@ -38,7 +38,7 @@ import opencoap.endpoint.CoapServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class ObserversManager implements Filter<CoapRequest, CoapResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObserversManager.class);
     private volatile Handler<SeparateResponse, Boolean> outboundObservation;
     //               uri-path,    address,           subscribing request

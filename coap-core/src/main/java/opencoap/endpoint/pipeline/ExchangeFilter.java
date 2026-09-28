@@ -24,7 +24,7 @@ import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
 
-public class ExchangeFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class ExchangeFilter implements Filter<CoapRequest, CoapResponse> {
 
     private final ConcurrentMap<TransactionId, CompletableFuture<CoapResponse>> transactions = new ConcurrentHashMap<>();
 

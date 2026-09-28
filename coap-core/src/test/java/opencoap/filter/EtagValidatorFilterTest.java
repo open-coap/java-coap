@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class EtagValidatorFilterTest {
 
-    private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
+    private final Filter<CoapRequest, CoapResponse> filter = new EtagValidatorFilter();
     private final CoapResponse.Builder resource = ok("OK").etag(ofBytes(100)).maxAge(100);
     private final Handler<CoapRequest.Builder, CoapResponse> service = REQUEST_BUILDER_FILTER.andThen(filter).then(__ -> resource.toFuture());
 

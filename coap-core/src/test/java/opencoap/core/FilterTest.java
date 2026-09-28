@@ -20,18 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
-import opencoap.core.Filter.UnaryFilter;
 import org.junit.jupiter.api.Test;
 
 public class FilterTest {
 
     private final Handler<String, String> srv = request -> completedFuture("S:" + request);
-    private final UnaryFilter<String> filter = (request, handler) -> handler
+    private final Filter<String, String> filter = (request, handler) -> handler
             .apply(request)
             .thenApply(resp -> "F(" + resp + ")");
 
-    private final Filter<Integer, String, Integer, String> sumFilter = (request, handler) -> handler.apply(request + 1);
-    private final Filter<Integer, String, Integer, String> multiplyFilter = (request, handler) -> handler.apply(request * 2);
+    private final Filter<Integer, String> sumFilter = (request, handler) -> handler.apply(request + 1);
+    private final Filter<Integer, String> multiplyFilter = (request, handler) -> handler.apply(request * 2);
 
     private final Handler<Integer, String> numToStringSrv = request -> completedFuture(request.toString());
 
@@ -76,7 +75,7 @@ public class FilterTest {
 
     @Test
     public void name() throws ExecutionException, InterruptedException {
-        Filter<String, String, String, Integer> f = (request, handler) -> handler
+        MappingFilter<String, String, String, Integer> f = (request, handler) -> handler
                 .apply(request)
                 .thenCompose(integer -> completedFuture(Integer.toString(integer + 1)));
 
@@ -87,7 +86,7 @@ public class FilterTest {
 
     @Test
     void identityFilter() {
-        Filter.SimpleFilter<String, String> identity = Filter.identity();
+        Filter<String, String> identity = Filter.identity();
 
         assertEquals(srv, identity.then(srv));
         assertEquals(filter, identity.andThen(filter));
@@ -104,7 +103,7 @@ public class FilterTest {
 
     @Test
     void andThenIf() {
-        Filter.SimpleFilter<Integer, Integer> multipleFilter = (request, handler) -> handler.apply(request * 2);
+        Filter<Integer, Integer> multipleFilter = (request, handler) -> handler.apply(request * 2);
 
         Handler<Integer, Integer> handler = Filter.<Integer, Integer>identity()
                 .andThenIf(false, multipleFilter)
@@ -117,7 +116,7 @@ public class FilterTest {
 
     @Test
     void FilterOf() {
-        Filter<Integer, Integer, Integer, Integer> filter = Filter.of(it -> it + 1, it -> it - 2);
+        MappingFilter<Integer, Integer, Integer, Integer> filter = MappingFilter.of(it -> it + 1, it -> it - 2);
 
         assertEquals(0, filter.apply(1, CompletableFuture::completedFuture).join());
         assertEquals(16, filter.apply(17, CompletableFuture::completedFuture).join());

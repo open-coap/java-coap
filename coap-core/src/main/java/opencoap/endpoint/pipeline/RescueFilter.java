@@ -26,7 +26,7 @@ import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RescueFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class RescueFilter implements Filter<CoapRequest, CoapResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RescueFilter.class);
 
     @Override

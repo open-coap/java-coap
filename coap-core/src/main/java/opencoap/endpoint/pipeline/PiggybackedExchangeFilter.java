@@ -21,11 +21,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import opencoap.codec.CoapPacket;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.MessageType;
 import opencoap.core.Handler;
 
-public class PiggybackedExchangeFilter implements Filter<CoapPacket, CoapPacket, CoapPacket, Boolean> {
+public class PiggybackedExchangeFilter implements MappingFilter<CoapPacket, CoapPacket, CoapPacket, Boolean> {
 
     private final ConcurrentMap<PiggybackedCorrelation, CompletableFuture<CoapPacket>> promises = new ConcurrentHashMap<>();
 

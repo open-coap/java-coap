@@ -26,7 +26,7 @@ import opencoap.core.Filter;
 import opencoap.core.Opaque;
 import opencoap.core.Handler;
 
-public final class EtagGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public final class EtagGeneratorFilter implements Filter<CoapRequest, CoapResponse> {
 
     private final Function<Opaque, Opaque> etagGenerator;
 

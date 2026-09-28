@@ -24,7 +24,7 @@ import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import opencoap.endpoint.CapabilitiesResolver;
 
-public class BlockWiseNotificationFilter implements Filter.SimpleFilter<SeparateResponse, Boolean> {
+public class BlockWiseNotificationFilter implements Filter<SeparateResponse, Boolean> {
     private final CapabilitiesResolver capabilities;
 
     public BlockWiseNotificationFilter(CapabilitiesResolver capabilities) {

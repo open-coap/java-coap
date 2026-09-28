@@ -26,7 +26,7 @@ import opencoap.core.Filter;
 import opencoap.core.Opaque;
 import opencoap.core.Handler;
 
-public final class TokenGeneratorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public final class TokenGeneratorFilter implements Filter<CoapRequest, CoapResponse> {
 
     final Supplier<Opaque> tokenGenerator;
 

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.slf4j.spi.LoggingEventBuilder;
 
-public class RequestLoggerFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class RequestLoggerFilter implements Filter<CoapRequest, CoapResponse> {
     private final LoggingEventBuilder loggingEventBuilder;
     private final Formatter msgFormatter;
 

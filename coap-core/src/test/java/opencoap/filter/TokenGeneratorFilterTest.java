@@ -29,7 +29,7 @@ import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class TokenGeneratorFilterTest {
-    private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = TokenGeneratorFilter.RANDOM;
+    private final Filter<CoapRequest, CoapResponse> filter = TokenGeneratorFilter.RANDOM;
 
     @Test
     void shouldSetTokenToRequest() {

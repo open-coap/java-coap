@@ -25,7 +25,7 @@ import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CapabilitiesResolver;
 
-public class BlockWiseOutgoingFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class BlockWiseOutgoingFilter implements Filter<CoapRequest, CoapResponse> {
     private final CapabilitiesResolver capabilities;
     private final int maxIncomingBlockTransferSize;
 

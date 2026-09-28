@@ -23,7 +23,7 @@ import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class MaxAllowedPayloadFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class MaxAllowedPayloadFilter implements Filter<CoapRequest, CoapResponse> {
     private final int max;
     private final String msg;
 

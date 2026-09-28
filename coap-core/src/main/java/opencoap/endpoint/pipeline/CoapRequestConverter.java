@@ -19,12 +19,12 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.MessageType;
 import opencoap.core.Handler;
 import opencoap.endpoint.MessageIdSupplier;
 
-public class CoapRequestConverter implements Filter<CoapPacket, CoapPacket, CoapRequest, CoapResponse> {
+public class CoapRequestConverter implements MappingFilter<CoapPacket, CoapPacket, CoapRequest, CoapResponse> {
 
     private final MessageIdSupplier midSupplier;
 

@@ -24,11 +24,11 @@ import java.util.concurrent.ConcurrentMap;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Filter;
+import opencoap.core.MappingFilter;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
 
-public class TcpExchangeFilter implements Filter<CoapRequest, CoapResponse, CoapRequest, Boolean> {
+public class TcpExchangeFilter implements MappingFilter<CoapRequest, CoapResponse, CoapRequest, Boolean> {
 
     private final ConcurrentMap<TransactionId, CompletableFuture<CoapResponse>> transactions = new ConcurrentHashMap<>();
 

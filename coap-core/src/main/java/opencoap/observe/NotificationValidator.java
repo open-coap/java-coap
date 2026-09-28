@@ -21,7 +21,7 @@ import opencoap.core.Filter;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
 
-public class NotificationValidator implements Filter.SimpleFilter<SeparateResponse, Boolean> {
+public class NotificationValidator implements Filter<SeparateResponse, Boolean> {
 
     @Override
     public CompletableFuture<Boolean> apply(SeparateResponse obs, Handler<SeparateResponse, Boolean> service) {

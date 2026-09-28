@@ -26,7 +26,7 @@ import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class CriticalOptionVerifier implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class CriticalOptionVerifier implements Filter<CoapRequest, CoapResponse> {
 
     private final Collection<Integer> recognizedCustomOptions;
 

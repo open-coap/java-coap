@@ -26,7 +26,7 @@ import opencoap.core.Handler;
 import org.junit.jupiter.api.Test;
 
 class EtagGeneratorFilterTest {
-    private final Filter.SimpleFilter<CoapRequest, CoapResponse> filter = new EtagGeneratorFilter(__ -> ofBytes(1, 2));
+    private final Filter<CoapRequest, CoapResponse> filter = new EtagGeneratorFilter(__ -> ofBytes(1, 2));
 
     @Test
     void shouldAddEtagToResponse() {

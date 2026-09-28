@@ -31,7 +31,7 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class MicrometerMetricsFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class MicrometerMetricsFilter implements Filter<CoapRequest, CoapResponse> {
     private final MeterRegistry registry;
     private final String metricName;
     private final Function<String, String> resolveRoute;

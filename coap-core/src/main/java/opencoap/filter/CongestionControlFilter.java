@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class CongestionControlFilter<DEST, REQ, RES> implements Filter.SimpleFilter<REQ, RES> {
+public class CongestionControlFilter<DEST, REQ, RES> implements Filter<REQ, RES> {
     private final int maxWaitingRequests;
     private final Function<REQ, DEST> destinationFunc;
     private final ConcurrentMap<DEST, SequentialTaskRunner<RES>> interactions = new ConcurrentHashMap<>();

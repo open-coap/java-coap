@@ -24,7 +24,7 @@ import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.Handler;
 
-public class EtagValidatorFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class EtagValidatorFilter implements Filter<CoapRequest, CoapResponse> {
 
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {

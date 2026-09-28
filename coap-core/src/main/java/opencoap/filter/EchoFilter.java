@@ -23,7 +23,7 @@ import opencoap.core.Code;
 import opencoap.core.Filter;
 import opencoap.core.Handler;
 
-public class EchoFilter implements Filter.SimpleFilter<CoapRequest, CoapResponse> {
+public class EchoFilter implements Filter<CoapRequest, CoapResponse> {
 
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {

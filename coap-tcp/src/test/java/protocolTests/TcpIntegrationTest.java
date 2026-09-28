@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 public class TcpIntegrationTest extends IntegrationTestBase {
 
     @Override
-    protected CoapServer buildServer(int port, Filter.SimpleFilter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException {
+    protected CoapServer buildServer(int port, Filter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException {
         return TcpCoapServer.builder()
                 .transport(new SingleConnectionSocketServerTransport(port))
                 .blockSize(BlockSize.S_1024_BERT)
