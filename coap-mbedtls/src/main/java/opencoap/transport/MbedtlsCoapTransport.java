@@ -16,7 +16,7 @@
 package opencoap.transport;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static opencoap.transport.DtlsTransportContext.toTransportContext;
+import static opencoap.transport.DtlsAttributes.toAttributes;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -73,7 +73,7 @@ public class MbedtlsCoapTransport implements CoapTransport {
     @Override
     public CompletableFuture<Boolean> sendPacket(CoapPacket coapPacket) {
         ByteBuffer buf = ByteBuffer.wrap(CoapSerializer.serialize(coapPacket));
-        return dtlsTransport.send(new Packet<>(buf, coapPacket.getRemoteAddress(), DtlsTransportContext.toDtlsSessionContext(coapPacket.getTransportContext())));
+        return dtlsTransport.send(new Packet<>(buf, coapPacket.getRemoteAddress(), DtlsAttributes.toDtlsSessionContext(coapPacket.getAttributes())));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class MbedtlsCoapTransport implements CoapTransport {
             try {
                 ByteArrayInputStream bufInput = toInputStream(packet.getBuffer());
                 CoapPacket coapPacket = CoapSerializer.deserialize(packet.getPeerAddress(), bufInput);
-                coapPacket.setTransportContext(toTransportContext(packet.getSessionContext()));
+                coapPacket.setAttributes(toAttributes(packet.getSessionContext()));
                 return coapPacket;
             } catch (CoapException e) {
                 LOGGER.warn("[{}] Received malformed coap. {}", packet.getPeerAddress(), e.toString());

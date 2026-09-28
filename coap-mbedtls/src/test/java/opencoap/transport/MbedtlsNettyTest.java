@@ -23,9 +23,9 @@ import static opencoap.core.CoapResponse.ok;
 import static opencoap.core.Code.C201_CREATED;
 import static opencoap.core.Opaque.of;
 import static opencoap.transport.CoapCodec.EMPTY_RESOLVER;
-import static opencoap.transport.DtlsTransportContext.DTLS_AUTHENTICATION;
-import static opencoap.transport.DtlsTransportContext.DTLS_COAP_TO_DATAGRAM_CONVERTER;
-import static opencoap.transport.DtlsTransportContext.toTransportContext;
+import static opencoap.transport.DtlsAttributes.DTLS_AUTHENTICATION;
+import static opencoap.transport.DtlsAttributes.DTLS_COAP_TO_DATAGRAM_CONVERTER;
+import static opencoap.transport.DtlsAttributes.toAttributes;
 import static opencoap.util.Assertions.assertEquals;
 import static opencoap.util.Networks.localhost;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,7 +85,7 @@ public class MbedtlsNettyTest {
     void beforeAll() throws IOException {
         serverTransport = new NettyCoapTransport(
                 createBootstrap(0),
-                dgram -> toTransportContext(DatagramPacketWithContext.contextFrom(dgram)),
+                dgram -> toAttributes(DatagramPacketWithContext.contextFrom(dgram)),
                 DTLS_COAP_TO_DATAGRAM_CONVERTER
         );
 
@@ -97,7 +97,7 @@ public class MbedtlsNettyTest {
                         .post("/echo", req -> ok(req.getPayload()).toFuture())
                         .get("/dtls-ctx", req -> {
                             String key = req.options().getUriQueryMap().get("key");
-                            String ctxValue = req.getTransContext(DTLS_AUTHENTICATION).get(key);
+                            String ctxValue = req.getAttribute(DTLS_AUTHENTICATION).get(key);
                             if (ctxValue != null) {
                                 return ok(ctxValue).toFuture();
                             } else {
@@ -111,7 +111,7 @@ public class MbedtlsNettyTest {
                             authCtx.put(key, req.getPayload().toUtf8String());
                             return CoapResponse.coapResponse(C201_CREATED)
                                     .payload(authCtx.get(key))
-                                    .addContext(DTLS_AUTHENTICATION, authCtx)
+                                    .addAttribute(DTLS_AUTHENTICATION, authCtx)
                                     .toFuture();
                         })
                 )

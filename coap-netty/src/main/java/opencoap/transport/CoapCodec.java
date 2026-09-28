@@ -28,34 +28,34 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import opencoap.codec.CoapPacket;
 import opencoap.codec.CoapSerializer;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 
 @Sharable
 public final class CoapCodec extends MessageToMessageCodec<DatagramPacket, CoapPacket> {
 
-    private final Function<DatagramPacket, TransportContext> contextResolver;
+    private final Function<DatagramPacket, MessageAttributes> attributesResolver;
     private final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter;
 
-    public static final Function<DatagramPacket, TransportContext> EMPTY_RESOLVER = __ -> TransportContext.EMPTY;
+    public static final Function<DatagramPacket, MessageAttributes> EMPTY_RESOLVER = __ -> MessageAttributes.EMPTY;
     public static final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> DEFAULT_CONVERTER = (coapPacket, ctx) -> {
         ByteBuf buf = ctx.alloc().buffer(coapPacket.getPayload().size() + 128);
         CoapSerializer.serialize(coapPacket, new ByteBufOutputStream(buf));
         return new DatagramPacket(buf, coapPacket.getRemoteAddress());
     };
 
-    public CoapCodec(Function<DatagramPacket, TransportContext> contextResolver) {
-        this(contextResolver, DEFAULT_CONVERTER);
+    public CoapCodec(Function<DatagramPacket, MessageAttributes> attributesResolver) {
+        this(attributesResolver, DEFAULT_CONVERTER);
     }
 
-    public CoapCodec(Function<DatagramPacket, TransportContext> contextResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
-        this.contextResolver = requireNonNull(contextResolver);
+    public CoapCodec(Function<DatagramPacket, MessageAttributes> attributesResolver, BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> coapToDatagramConverter) {
+        this.attributesResolver = requireNonNull(attributesResolver);
         this.coapToDatagramConverter = requireNonNull(coapToDatagramConverter);
     }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, DatagramPacket msg, List<Object> out) throws Exception {
         CoapPacket coap = CoapSerializer.deserialize(msg.sender(), new ByteBufInputStream(msg.content()));
-        coap.setTransportContext(contextResolver.apply(msg));
+        coap.setAttributes(attributesResolver.apply(msg));
 
         out.add(coap);
     }

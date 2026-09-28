@@ -15,21 +15,21 @@
  */
 package opencoap.transport;
 
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
-import static opencoap.transport.DtlsTransportContext.DTLS_SESSION_SUSPENSION_HINT;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
+import static opencoap.transport.DtlsAttributes.DTLS_SESSION_SUSPENSION_HINT;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Handler;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 
 public class DtlsSessionSuspensionHandler implements Handler<CoapRequest, CoapResponse> {
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request) {
-        if (!request.getTransContext(NON_CONFIRMABLE)) {
+        if (!request.getAttribute(NON_CONFIRMABLE)) {
             return CoapResponse.badRequest().toFuture();
         }
 
-        return CoapResponse.ok().addContext(TransportContext.of(DTLS_SESSION_SUSPENSION_HINT, true)).toFuture();
+        return CoapResponse.ok().addAttributes(MessageAttributes.of(DTLS_SESSION_SUSPENSION_HINT, true)).toFuture();
     }
 }

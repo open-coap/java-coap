@@ -25,27 +25,27 @@ public final class CoapResponse {
     private final Code code;
     private final CoapOptions options;
     private final Opaque payload;
-    private final TransportContext transContext;
+    private final MessageAttributes attributes;
 
-    private CoapResponse(Code code, Opaque payload, CoapOptions options, TransportContext transContext) {
+    private CoapResponse(Code code, Opaque payload, CoapOptions options, MessageAttributes attributes) {
         this.code = code;
         this.payload = Objects.requireNonNull(payload);
         this.options = Objects.requireNonNull(options);
-        this.transContext = Objects.requireNonNull(transContext);
+        this.attributes = Objects.requireNonNull(attributes);
     }
 
     // --- STATIC CONSTRUCTORS ---
 
     public static CoapResponse of(Code code) {
-        return new CoapResponse(code, Opaque.EMPTY, new CoapOptions(), TransportContext.EMPTY);
+        return new CoapResponse(code, Opaque.EMPTY, new CoapOptions(), MessageAttributes.EMPTY);
     }
 
     public static CoapResponse of(Code code, Opaque payload) {
-        return new CoapResponse(code, payload, new CoapOptions(), TransportContext.EMPTY);
+        return new CoapResponse(code, payload, new CoapOptions(), MessageAttributes.EMPTY);
     }
 
     public static CoapResponse of(Code code, Opaque payload, CoapOptions options) {
-        return new CoapResponse(code, payload, options, TransportContext.EMPTY);
+        return new CoapResponse(code, payload, options, MessageAttributes.EMPTY);
     }
 
     public static CoapResponse of(Code code, String description) {
@@ -104,12 +104,16 @@ public final class CoapResponse {
         return new SeparateResponse(this, token, peerAddress);
     }
 
-    public TransportContext getTransContext() {
-        return transContext;
+    public MessageAttributes getAttributes() {
+        return attributes;
     }
 
-    public <T> T getTransContext(TransportContext.Key<T> key) {
-        return transContext.get(key);
+    public <T> T getAttribute(AttributeKey<T> key) {
+        return attributes.get(key);
+    }
+
+    public <T> T getAttribute(AttributeKey<T> key, T defaultValue) {
+        return attributes.getOrDefault(key, defaultValue);
     }
 
     @Override
@@ -121,12 +125,12 @@ public final class CoapResponse {
             return false;
         }
         CoapResponse that = (CoapResponse) o;
-        return Objects.equals(code, that.code) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload) && Objects.equals(transContext, that.transContext);
+        return Objects.equals(code, that.code) && Objects.equals(options, that.options) && Objects.equals(payload, that.payload) && Objects.equals(attributes, that.attributes);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(code, options, transContext);
+        int result = Objects.hash(code, options, attributes);
         result = 31 * result + Objects.hashCode(payload);
         return result;
     }
@@ -147,43 +151,43 @@ public final class CoapResponse {
     // ---  IMMUTABLE MODIFIERS ---
 
     public CoapResponse withPayload(Opaque newPayload) {
-        return new CoapResponse(code, newPayload, options, transContext);
+        return new CoapResponse(code, newPayload, options, attributes);
     }
 
     public CoapResponse withOptions(Consumer<CoapOptionsBuilder> optionsFunc) {
         CoapOptionsBuilder optionsBuilder = CoapOptionsBuilder.from(options);
         optionsFunc.accept(optionsBuilder);
-        return new CoapResponse(code, payload, optionsBuilder.build(), transContext);
+        return new CoapResponse(code, payload, optionsBuilder.build(), attributes);
     }
 
-    public CoapResponse withContext(TransportContext otherTransContext) {
-        return new CoapResponse(code, payload, options, transContext.with(otherTransContext));
+    public CoapResponse withAttributes(MessageAttributes other) {
+        return new CoapResponse(code, payload, options, attributes.with(other));
     }
 
     public Builder modify() {
-        return new Builder(code, CoapOptionsBuilder.from(options), payload, transContext);
+        return new Builder(code, CoapOptionsBuilder.from(options), payload, attributes);
     }
 
     public static class Builder {
         private final Code code;
         private final CoapOptionsBuilder options;
         private Opaque payload = Opaque.EMPTY;
-        private TransportContext transContext = TransportContext.EMPTY;
+        private MessageAttributes attributes = MessageAttributes.EMPTY;
 
         private Builder(Code code) {
             this.code = code;
             this.options = CoapOptionsBuilder.options();
         }
 
-        private Builder(Code code, CoapOptionsBuilder options, Opaque payload, TransportContext transContext) {
+        private Builder(Code code, CoapOptionsBuilder options, Opaque payload, MessageAttributes attributes) {
             this.code = code;
             this.options = options;
             this.payload = payload;
-            this.transContext = transContext;
+            this.attributes = attributes;
         }
 
         public CoapResponse build() {
-            return new CoapResponse(code, payload, options.build(), transContext);
+            return new CoapResponse(code, payload, options.build(), attributes);
         }
 
         public SeparateResponse toSeparate(Opaque token, InetSocketAddress peerAddress) {
@@ -208,18 +212,18 @@ public final class CoapResponse {
             return payload(Opaque.of(payload));
         }
 
-        public Builder context(TransportContext newTransportContext) {
-            this.transContext = newTransportContext;
+        public Builder attributes(MessageAttributes newAttributes) {
+            this.attributes = newAttributes;
             return this;
         }
 
-        public <T> Builder addContext(TransportContext.Key<T> key, T value) {
-            transContext = transContext.with(key, value);
+        public <T> Builder addAttribute(AttributeKey<T> key, T value) {
+            attributes = attributes.with(key, value);
             return this;
         }
 
-        public <T> Builder addContext(TransportContext context) {
-            transContext = transContext.with(context);
+        public Builder addAttributes(MessageAttributes other) {
+            attributes = attributes.with(other);
             return this;
         }
 

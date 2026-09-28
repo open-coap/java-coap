@@ -19,7 +19,7 @@ import static opencoap.core.BlockSize.S_16;
 import static opencoap.core.CoapRequest.put;
 import static opencoap.core.CoapResponse.coapResponse;
 import static opencoap.core.CoapResponse.ok;
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
 import static opencoap.util.Assertions.assertEquals;
 import static opencoap.util.Validations.require;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,12 +54,12 @@ public class NonConfirmableTransactionsTest {
 
     private final Handler<CoapRequest, CoapResponse> route = RoutingHandler.builder()
             .get("/test", req -> {
-                        require(req.getTransContext(NON_CONFIRMABLE));
+                        require(req.getAttribute(NON_CONFIRMABLE));
                         return ok("OK").toFuture();
                     }
             )
             .get("/large", req -> {
-                        require(req.getTransContext(NON_CONFIRMABLE));
+                        require(req.getAttribute(NON_CONFIRMABLE));
                         return ok("aaaaaaaaaaaaaaa|bbbbbb").toFuture();
                     }
             )
@@ -95,7 +95,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundSimpleRequest() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).addContext(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(120).uriPath("/test2"));
 
         // when
@@ -117,7 +117,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundRequestWithBlocks() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).addContext(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(32).uriPath("/large2"));
 
         // when

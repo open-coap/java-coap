@@ -28,7 +28,8 @@ import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.DecoderException;
 import opencoap.codec.CoapPacket;
 import opencoap.codec.CoapSerializer;
-import opencoap.core.TransportContext;
+import opencoap.core.AttributeKey;
+import opencoap.core.MessageAttributes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,11 +41,11 @@ class CoapCodecTest {
         return wrappedBuffer(CoapSerializer.serialize(coap));
     }
 
-    private final static TransportContext.Key<String> DUMMY_KEY = new TransportContext.Key<>(null);
+    private final static AttributeKey<String> DUMMY_KEY = AttributeKey.optional("DUMMY_KEY");
 
     @BeforeEach
     void setUp() {
-        channel.pipeline().addLast("coap-codec", new CoapCodec(dgram -> TransportContext.of(DUMMY_KEY, "recipient.port:" + dgram.recipient().getPort())));
+        channel.pipeline().addLast("coap-codec", new CoapCodec(dgram -> MessageAttributes.of(DUMMY_KEY, "recipient.port:" + dgram.recipient().getPort())));
     }
 
     @AfterEach
@@ -54,7 +55,7 @@ class CoapCodecTest {
 
     @Test
     void shouldDecodeCoap() {
-        CoapPacket coap = newCoapPacket(123).get().uriPath("/test").context(TransportContext.of(DUMMY_KEY, "recipient.port:5684")).build();
+        CoapPacket coap = newCoapPacket(123).get().uriPath("/test").attributes(MessageAttributes.of(DUMMY_KEY, "recipient.port:5684")).build();
         ByteBuf buf = encodeToBuf(coap);
         channel.writeInbound(new DatagramPacket(buf, localhost(5684)));
 

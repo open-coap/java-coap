@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import opencoap.codec.CoapPacket;
 import opencoap.codec.CoapSerializer;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 import opencoap.util.AsyncQueue;
 import opencoap.util.IpPortAddress;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class InMemoryCoapTransport extends BlockingCoapTransport {
     private final static BindingManager BINDING_MANAGER = new BindingManager();
     private final IpPortAddress bindingAddress;
     private final Executor executor;
-    private TransportContext transportContext = TransportContext.EMPTY;
+    private MessageAttributes attributes = MessageAttributes.EMPTY;
 
 
     public static InetSocketAddress createAddress(int port) {
@@ -124,7 +124,7 @@ public class InMemoryCoapTransport extends BlockingCoapTransport {
         return receiveQueue.poll()
                 .thenApplyAsync(msg -> wrapExceptions(() -> {
                     CoapPacket packet = CoapSerializer.deserialize(msg.source.toInetSocketAddress(), msg.packetData, msg.packetData.length);
-                    packet.setTransportContext(transportContext);
+                    packet.setAttributes(attributes);
                     return packet;
                 }), executor);
     }
@@ -134,8 +134,8 @@ public class InMemoryCoapTransport extends BlockingCoapTransport {
         return bindingAddress.toInetSocketAddress();
     }
 
-    public void setTransportContext(TransportContext transportContext) {
-        this.transportContext = transportContext;
+    public void setAttributes(MessageAttributes attributes) {
+        this.attributes = attributes;
     }
 
     public static class DatagramMessage {

@@ -16,7 +16,7 @@
  */
 package opencoap.codec;
 
-import static opencoap.core.TransportContext.NON_CONFIRMABLE;
+import static opencoap.core.MessageAttributes.NON_CONFIRMABLE;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 import opencoap.core.CoapRequest;
@@ -24,11 +24,11 @@ import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.CoapOptions;
 import opencoap.core.ContentFormat;
+import opencoap.core.MessageAttributes;
 import opencoap.core.MessageType;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.TransportContext;
 
 /**
  * This class encode and decode CoAP messages based on RFC 7252 document
@@ -43,7 +43,7 @@ public class CoapPacket {
     private final InetSocketAddress remoteAddress;
     private CoapOptions options = new CoapOptions();
     private Opaque token = Opaque.EMPTY;
-    private TransportContext transportContext = TransportContext.EMPTY;
+    private MessageAttributes attributes = MessageAttributes.EMPTY;
 
     /**
      * CoAP packet constructor.
@@ -84,9 +84,9 @@ public class CoapPacket {
 
     public static CoapPacket from(CoapRequest req) {
         CoapPacket packet = new CoapPacket(Objects.requireNonNull(req.getPeerAddress()));
-        packet.setMessageType(req.getTransContext(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable);
+        packet.setMessageType(req.getAttribute(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable);
         packet.setMethod(req.getMethod());
-        packet.setTransportContext(req.getTransContext());
+        packet.setAttributes(req.getAttributes());
         packet.setToken(req.getToken());
         packet.setHeaderOptions(req.options());
         packet.setPayload(req.getPayload());
@@ -95,9 +95,9 @@ public class CoapPacket {
     }
 
     public static CoapPacket from(SeparateResponse resp) {
-        MessageType messageType = resp.getTransContext(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable;
+        MessageType messageType = resp.getAttribute(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable;
         CoapPacket packet = new CoapPacket(resp.getCode(), messageType, resp.getPeerAddress());
-        packet.setTransportContext(resp.getTransContext());
+        packet.setAttributes(resp.getAttributes());
         packet.setToken(resp.getToken());
         packet.setHeaderOptions(resp.options().duplicate());
         packet.setPayload(resp.getPayload());
@@ -106,7 +106,7 @@ public class CoapPacket {
     }
 
     public CoapResponse toCoapResponse() {
-        return CoapResponse.of(code, payload, options).withContext(this.transportContext);
+        return CoapResponse.of(code, payload, options).withAttributes(this.attributes);
     }
 
     public SeparateResponse toSeparateResponse() {
@@ -190,7 +190,7 @@ public class CoapPacket {
 
     public CoapPacket createResponseFrom(CoapResponse coapResponse) {
         CoapPacket response = new CoapPacket(this.getRemoteAddress());
-        response.setTransportContext(coapResponse.getTransContext());
+        response.setAttributes(coapResponse.getAttributes());
         response.setCode(coapResponse.getCode());
         response.setToken(getToken());
         response.setPayload(coapResponse.getPayload());
@@ -208,9 +208,9 @@ public class CoapPacket {
     }
 
     public CoapRequest toCoapRequest() {
-        TransportContext transCtx = (messageType == MessageType.NonConfirmable) ? transportContext.with(NON_CONFIRMABLE, true) : transportContext;
+        MessageAttributes requestAttributes = (messageType == MessageType.NonConfirmable) ? attributes.with(NON_CONFIRMABLE, true) : attributes;
 
-        return new CoapRequest(method, token, options, payload, remoteAddress, transCtx);
+        return new CoapRequest(method, token, options, payload, remoteAddress, requestAttributes);
     }
 
     /**
@@ -455,12 +455,12 @@ public class CoapPacket {
         return isResponse() && (messageType == null || messageType == MessageType.Confirmable || messageType == MessageType.NonConfirmable);
     }
 
-    public void setTransportContext(TransportContext transportContext) {
-        this.transportContext = Objects.requireNonNull(transportContext);
+    public void setAttributes(MessageAttributes attributes) {
+        this.attributes = Objects.requireNonNull(attributes);
     }
 
-    public TransportContext getTransportContext() {
-        return transportContext;
+    public MessageAttributes getAttributes() {
+        return attributes;
     }
 
     @Override
@@ -474,7 +474,7 @@ public class CoapPacket {
         hash = 41 * hash + Objects.hashCode(this.remoteAddress);
         hash = 41 * hash + Objects.hashCode(this.options);
         hash = 41 * hash + Objects.hashCode(this.token);
-        hash = 41 * hash + Objects.hashCode(this.transportContext);
+        hash = 41 * hash + Objects.hashCode(this.attributes);
         return hash;
     }
 
@@ -511,7 +511,7 @@ public class CoapPacket {
         if (!Objects.equals(this.token, other.token)) {
             return false;
         }
-        return Objects.equals(this.transportContext, other.transportContext);
+        return Objects.equals(this.attributes, other.attributes);
     }
 
 }

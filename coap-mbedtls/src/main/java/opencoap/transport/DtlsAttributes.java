@@ -25,51 +25,52 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import opencoap.codec.CoapPacket;
 import opencoap.codec.CoapSerializer;
-import opencoap.core.TransportContext;
+import opencoap.core.AttributeKey;
+import opencoap.core.MessageAttributes;
 import org.opencoap.ssl.netty.DatagramPacketWithContext;
 import org.opencoap.ssl.transport.DtlsSessionContext;
 
-public class DtlsTransportContext {
-    public static final TransportContext.Key<Map<String, String>> DTLS_AUTHENTICATION = new TransportContext.Key<>(Collections.emptyMap());
-    public static final TransportContext.Key<String> DTLS_PEER_CERTIFICATE_SUBJECT = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<byte[]> DTLS_CID = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<Instant> DTLS_SESSION_START_TIMESTAMP = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<Boolean> DTLS_SESSION_SUSPENSION_HINT = new TransportContext.Key<>(false);
+public class DtlsAttributes {
+    public static final AttributeKey<Map<String, String>> DTLS_AUTHENTICATION = AttributeKey.defaulted("DTLS_AUTHENTICATION", Collections.emptyMap());
+    public static final AttributeKey<String> DTLS_PEER_CERTIFICATE_SUBJECT = AttributeKey.optional("DTLS_PEER_CERTIFICATE_SUBJECT");
+    public static final AttributeKey<byte[]> DTLS_CID = AttributeKey.optional("DTLS_CID");
+    public static final AttributeKey<Instant> DTLS_SESSION_START_TIMESTAMP = AttributeKey.optional("DTLS_SESSION_START_TIMESTAMP");
+    public static final AttributeKey<Boolean> DTLS_SESSION_SUSPENSION_HINT = AttributeKey.defaulted("DTLS_SESSION_SUSPENSION_HINT", false);
 
     public static final BiFunction<CoapPacket, ChannelHandlerContext, DatagramPacket> DTLS_COAP_TO_DATAGRAM_CONVERTER = (coapPacket, ctx) -> {
         ByteBuf buf = ctx.alloc().buffer(coapPacket.getPayload().size() + 128);
         CoapSerializer.serialize(coapPacket, new ByteBufOutputStream(buf));
-        return new DatagramPacketWithContext(buf, coapPacket.getRemoteAddress(), null, toDtlsSessionContext(coapPacket.getTransportContext()));
+        return new DatagramPacketWithContext(buf, coapPacket.getRemoteAddress(), null, toDtlsSessionContext(coapPacket.getAttributes()));
     };
 
-    public static TransportContext toTransportContext(DtlsSessionContext dtlsSessionContext) {
+    public static MessageAttributes toAttributes(DtlsSessionContext dtlsSessionContext) {
         if (dtlsSessionContext.equals(DtlsSessionContext.EMPTY)) {
-            return TransportContext.EMPTY;
+            return MessageAttributes.EMPTY;
         }
 
-        TransportContext dtlsContext = TransportContext
+        MessageAttributes dtlsAttributes = MessageAttributes
                 .of(DTLS_AUTHENTICATION, dtlsSessionContext.getAuthenticationContext())
                 .with(DTLS_SESSION_SUSPENSION_HINT, dtlsSessionContext.getSessionSuspensionHint());
         if (dtlsSessionContext.getPeerCertificateSubject() != null) {
-            dtlsContext = dtlsContext.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
+            dtlsAttributes = dtlsAttributes.with(DTLS_PEER_CERTIFICATE_SUBJECT, dtlsSessionContext.getPeerCertificateSubject());
         }
         if (dtlsSessionContext.getCid() != null) {
-            dtlsContext = dtlsContext.with(DTLS_CID, dtlsSessionContext.getCid());
+            dtlsAttributes = dtlsAttributes.with(DTLS_CID, dtlsSessionContext.getCid());
         }
         if (dtlsSessionContext.getSessionStartTimestamp() != null) {
-            dtlsContext = dtlsContext.with(DTLS_SESSION_START_TIMESTAMP, dtlsSessionContext.getSessionStartTimestamp());
+            dtlsAttributes = dtlsAttributes.with(DTLS_SESSION_START_TIMESTAMP, dtlsSessionContext.getSessionStartTimestamp());
         }
 
-        return dtlsContext;
+        return dtlsAttributes;
     }
 
-    public static DtlsSessionContext toDtlsSessionContext(TransportContext transportContext) {
+    public static DtlsSessionContext toDtlsSessionContext(MessageAttributes attributes) {
         return new DtlsSessionContext(
-                transportContext.get(DTLS_AUTHENTICATION),
-                transportContext.get(DTLS_PEER_CERTIFICATE_SUBJECT),
-                transportContext.get(DTLS_CID),
-                transportContext.get(DTLS_SESSION_START_TIMESTAMP),
-                transportContext.get(DTLS_SESSION_SUSPENSION_HINT)
+                attributes.get(DTLS_AUTHENTICATION),
+                attributes.get(DTLS_PEER_CERTIFICATE_SUBJECT),
+                attributes.get(DTLS_CID),
+                attributes.get(DTLS_SESSION_START_TIMESTAMP),
+                attributes.get(DTLS_SESSION_SUSPENSION_HINT)
         );
     }
 }

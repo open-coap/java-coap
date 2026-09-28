@@ -25,7 +25,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import opencoap.codec.CoapPacket;
-import opencoap.core.TransportContext;
+import opencoap.core.MessageAttributes;
 import opencoap.transport.BlockingCoapTransport;
 import opencoap.util.AsyncQueue;
 
@@ -82,7 +82,7 @@ public class MockCoapTransport extends BlockingCoapTransport {
         public void verifyReceived(CoapPacket packet) throws InterruptedException {
             CoapPacket received = sentPackets.poll(1, TimeUnit.SECONDS);
             assertNotNull(received);
-            received.setTransportContext(TransportContext.EMPTY);
+            received.setAttributes(MessageAttributes.EMPTY);
 
             assertEquals(packet, received);
         }

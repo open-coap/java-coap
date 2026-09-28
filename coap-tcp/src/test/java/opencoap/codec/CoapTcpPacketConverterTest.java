@@ -23,10 +23,10 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import opencoap.core.CoapRequest;
 import opencoap.core.Code;
 import opencoap.core.ContentFormat;
+import opencoap.core.MessageAttributes;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.TransportContext;
 import org.junit.jupiter.api.Test;
 
 class CoapTcpPacketConverterTest {
@@ -55,7 +55,7 @@ class CoapTcpPacketConverterTest {
 
     @Test
     void convertPingToCoap() {
-        CoapRequest req = CoapRequest.ping(LOCAL_5683, TransportContext.EMPTY);
+        CoapRequest req = CoapRequest.ping(LOCAL_5683, MessageAttributes.EMPTY);
 
         // when
         CoapPacket coapPacket = CoapTcpPacketConverter.toCoapPacket(req);
