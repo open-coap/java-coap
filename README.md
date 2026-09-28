@@ -47,6 +47,11 @@ This project started as a fork from https://github.com/PelionIoT/java-coap, but 
 - mbedtls: DTLS transport
 - netty: UDP and DTLS only
 
+## Upgrading
+
+Upgrading from 6.x to 7.0? See the [Migration Guide](MIGRATION.md) for breaking changes and before/after diffs.
+For 6.x documentation and maintenance releases, see the [`release/6.x`](https://github.com/open-coap/java-coap/tree/release/6.x) branch.
+
 Runtime requirements
 ------------
 
