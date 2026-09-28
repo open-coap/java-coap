@@ -6,8 +6,8 @@ description = "coap-mbedtls"
 
 dependencies {
     api(project(":coap-core"))
-    api("io.github.open-coap:kotlin-mbedtls:1.35.6")
-    api("io.github.open-coap:kotlin-mbedtls-netty:1.35.6")
+    api("io.github.open-coap:kotlin-mbedtls:1.36.0")
+    api("io.github.open-coap:kotlin-mbedtls-netty:1.36.0")
     api("io.netty:netty-handler:4.2.18.Final")
 
     testImplementation(project(":coap-netty"))
@@ -15,7 +15,7 @@ dependencies {
     testImplementation(testFixtures(project(":coap-core")))
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation("io.netty:netty-transport-native-epoll:4.2.15.Final:linux-x86_64")
-    testImplementation("ch.qos.logback:logback-classic:1.6.3")
+    testImplementation("ch.qos.logback:logback-classic:1.6.4")
     testImplementation("org.awaitility:awaitility:4.3.0")
 }
 
