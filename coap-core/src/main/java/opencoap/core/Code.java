@@ -79,7 +79,13 @@ public enum Code {
         return coapCode;
     }
 
-    public static Code valueOf(int code) {
+    /**
+     * Decodes a wire code value.
+     *
+     * @param code code value, {@code (class << 5) + detail}
+     * @return matching code, or {@code null} if there is no constant for it (including 0.00, Empty message)
+     */
+    public static Code fromCode(int code) {
         for (Code c : values()) {
             if (c.getCoapCode() == code) {
                 return c;
@@ -88,9 +94,15 @@ public enum Code {
         return null;
     }
 
-    public static Code valueOf(int codeClass, int codeDetail) {
+    /**
+     * Decodes a code from its class and detail parts.
+     *
+     * @return matching code, or {@code null} if there is no constant for it (including 0.00, Empty message)
+     * @see #fromCode(int)
+     */
+    public static Code fromCode(int codeClass, int codeDetail) {
         int coapCode = (codeClass << 5) + codeDetail;
-        return valueOf(coapCode);
+        return fromCode(coapCode);
     }
 
     public boolean isSignaling() {

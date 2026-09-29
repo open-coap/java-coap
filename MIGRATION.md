@@ -43,6 +43,7 @@ This document outlines breaking changes and migration steps between versions of 
   - `CoapServerBuilderForTcp` &rarr; `TcpCoapServerBuilder`
   - `PayloadSizeVerifier` &rarr; `MaxMessageSizeFilter`
   - `Validations.assume` &rarr; `Validations.check`
+  - `Method.valueOf(int)` / `MessageType.valueOf(int)` / `Code.valueOf(int)` &rarr; `fromCode(int)`
 - **Reduced visibility:** a few internal helpers that were public in 6.x are now package-private, and `BlockingCoapTransport.sendPacket0` is now `protected`. See [section 10](#10-reduced-visibility).
 - **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
@@ -330,6 +331,22 @@ Implementation classes have been renamed to describe their concrete structure ra
 ```diff
 -Method method = Method.iPATCH;
 +Method method = Method.IPATCH;
+```
+
+#### Wire Code Decoding
+
+`Method`, `MessageType` and `Code` decoded wire values with a static `valueOf(int)`, which was easy to confuse with the enum's `valueOf(String)` lookup by name. These are renamed to `fromCode`, with no change in behaviour:
+
+| 6.x | 7.0 | Unknown value |
+|---|---|---|
+| `Method.valueOf(int)` | `Method.fromCode(int)` | throws `CoapException` |
+| `MessageType.valueOf(int)` | `MessageType.fromCode(int)` | throws `CoapException` |
+| `Code.valueOf(int)` | `Code.fromCode(int)` | returns `null` |
+| `Code.valueOf(int codeClass, int codeDetail)` | `Code.fromCode(int codeClass, int codeDetail)` | returns `null` |
+
+```diff
+-Code code = Code.valueOf(2, 5);
++Code code = Code.fromCode(2, 5);
 ```
 
 #### CLI Transport Codec

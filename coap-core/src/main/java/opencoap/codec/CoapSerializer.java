@@ -147,7 +147,7 @@ public class CoapSerializer {
                 throw new CoapException("CoAP version %s not supported", version);
             }
 
-            coap.setMessageType(MessageType.valueOf((tempByte >> 4) & 0x3));
+            coap.setMessageType(MessageType.fromCode((tempByte >> 4) & 0x3));
 
             byte tokenLen = (byte) (tempByte & 0x0F);
             if (tokenLen > 8) {
@@ -157,9 +157,9 @@ public class CoapSerializer {
             tempByte = inputStream.read();         //second byte
             if (tempByte >= 1 && tempByte <= 10) {
                 //method code
-                coap.setMethod(Method.valueOf(tempByte));
+                coap.setMethod(Method.fromCode(tempByte));
             } else {
-                coap.setCode(Code.valueOf(tempByte));
+                coap.setCode(Code.fromCode(tempByte));
             }
 
             int messageId = inputStream.read() << 8;

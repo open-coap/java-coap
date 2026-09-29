@@ -40,8 +40,8 @@ public class CodeTest {
         }
 
 
-        assertEquals(Code.C505_PROXYING_NOT_SUPPORTED, Code.valueOf(5, 5));
-        assertEquals(null, Code.valueOf(6, 0));
+        assertEquals(Code.C505_PROXYING_NOT_SUPPORTED, Code.fromCode(5, 5));
+        assertEquals(null, Code.fromCode(6, 0));
     }
 
     @Test
