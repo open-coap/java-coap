@@ -29,7 +29,6 @@ import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Messaging;
 import opencoap.endpoint.Observations;
 import opencoap.endpoint.TcpCoapServer;
 import opencoap.routing.RoutingHandler;
@@ -43,7 +42,7 @@ public class TcpIntegrationTest extends IntegrationTestBase {
     protected CoapServer buildServer(int port, Filter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) throws IOException {
         return TcpCoapServer.builder()
                 .transport(new SingleConnectionSocketServerTransport(port))
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_1024_BERT).withMaxMessageSize(100_000))
+                .messaging(m -> m.withBlockSize(BlockSize.S_1024_BERT).withMaxMessageSize(100_000))
                 .routeFilter(routeFilter)
                 .handler(route)
                 .build();
@@ -55,7 +54,7 @@ public class TcpIntegrationTest extends IntegrationTestBase {
 
         return TcpCoapServer.builder()
                 .transport(new SocketClientTransport(serverAddress, SocketFactory.getDefault(), true))
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_1024_BERT).withMaxIncomingBlockTransferSize(4000).withMaxMessageSize(2100))
+                .messaging(m -> m.withBlockSize(BlockSize.S_1024_BERT).withMaxIncomingBlockTransferSize(4000).withMaxMessageSize(2100))
                 .observations(Observations.receiving(receiver))
                 .buildClient(serverAddress);
     }

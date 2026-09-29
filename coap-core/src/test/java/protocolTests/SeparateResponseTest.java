@@ -30,8 +30,6 @@ import opencoap.core.Code;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
-import opencoap.endpoint.Messaging;
-import opencoap.endpoint.Reliability;
 import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,8 +48,8 @@ public class SeparateResponseTest {
 
         client = CoapServer.builder()
                 .transport(serverTransport)
-                .messaging(Messaging.defaults().withBlockSize(S_32))
-                .reliability(Reliability.defaults()
+                .messaging(m -> m.withBlockSize(S_32))
+                .reliability(r -> r
                         .withRetransmission(ofFixed(ofMillis(500)))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0))
                         .withRequestTagSupplier(RequestTagSupplier.sequential(100)))

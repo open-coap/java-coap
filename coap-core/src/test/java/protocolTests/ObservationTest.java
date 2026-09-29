@@ -33,9 +33,7 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Messaging;
 import opencoap.endpoint.Observations;
-import opencoap.endpoint.Reliability;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
 import opencoap.util.ObservableResource;
@@ -61,8 +59,8 @@ public class ObservationTest {
                         .get("/path1", __ -> CoapResponse.ok("content1").toFuture())
                         .get(RES_OBS_PATH1, obsResource)
                 )
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_128))
-                .reliability(Reliability.defaults().withRetransmission(ofFixed(ofMillis(500))).withResponseTimeout(ofMillis(600))).build();
+                .messaging(m -> m.withBlockSize(BlockSize.S_128))
+                .reliability(r -> r.withRetransmission(ofFixed(ofMillis(500))).withResponseTimeout(ofMillis(600))).build();
 
         observersManager.init(server);
         server.start();
@@ -190,7 +188,7 @@ public class ObservationTest {
         obsResource.putPayload(ClientServerWithBlocksTest.BIG_RESOURCE);
 
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).messaging(Messaging.defaults().withBlockSize(BlockSize.S_128)).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).messaging(m -> m.withBlockSize(BlockSize.S_128)).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         //register observation
         CoapResponse msg = client.sendSync(observe(RES_OBS_PATH1));

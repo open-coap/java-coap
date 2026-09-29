@@ -38,7 +38,6 @@ import opencoap.core.CoapTimeoutException;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Reliability;
 import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
@@ -87,7 +86,7 @@ public class UnreliableTransportTest {
                     }
 
                 })
-                .reliability(Reliability.defaults().withRetransmission(ofExponential(Duration.ofMillis(100), 4)))
+                .reliability(r -> r.withRetransmission(ofExponential(Duration.ofMillis(100), 4)))
                 .buildClient(InMemoryCoapTransport.createAddress(5683))
         ) {
             CoapResponse resp = cnn.sendSync(get("/dropping"));
@@ -125,7 +124,7 @@ public class UnreliableTransportTest {
                 .start();
 
         CoapClient cnn = CoapServer.builder()
-                .transport(InMemoryCoapTransport.create()).reliability(Reliability.defaults().withRetransmission(RetransmissionBackOff.ofFixed(ofMillis(100))))
+                .transport(InMemoryCoapTransport.create()).reliability(r -> r.withRetransmission(RetransmissionBackOff.ofFixed(ofMillis(100))))
                 .buildClient(InMemoryCoapTransport.createAddress(CoapConstants.DEFAULT_PORT));
 
         assertThrows(CoapTimeoutException.class, () ->

@@ -31,8 +31,6 @@ import opencoap.core.Code;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
-import opencoap.endpoint.Messaging;
-import opencoap.endpoint.Reliability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,10 +50,10 @@ public class Block2TransferMaxSizeTest {
         transport = new TransportConnectorMock();
 
         client = CoapServer.builder().transport(transport)
-                .messaging(Messaging.defaults()
+                .messaging(m -> m
                         .withBlockSize(BlockSize.S_32)
                         .withMaxIncomingBlockTransferSize(MAX_TRANSFER_SIZE))
-                .reliability(Reliability.defaults()
+                .reliability(r -> r
                         .withRetransmission(ofFixed(ofMillis(500)))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .buildClient(SERVER_ADDRESS);

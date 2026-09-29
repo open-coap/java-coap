@@ -29,7 +29,6 @@ import opencoap.core.CoapResponse;
 import opencoap.core.CoapTimeoutException;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Reliability;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +38,7 @@ public class TimeoutTest {
     public void testTimeout() throws IOException, CoapException {
         CoapClient client = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create())
-                .reliability(Reliability.defaults().withRetransmission(ofFixed(ofMillis(100))))
+                .reliability(r -> r.withRetransmission(ofFixed(ofMillis(100))))
                 .buildClient(InMemoryCoapTransport.createAddress(0));
 
         assertThrows(CoapTimeoutException.class, () ->
@@ -50,7 +49,7 @@ public class TimeoutTest {
 
     @Test
     public void timeoutTest() throws Exception {
-        CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).reliability(Reliability.defaults().withRetransmission(ofFixed(ofMillis(100)))).build();
+        CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).reliability(r -> r.withRetransmission(ofFixed(ofMillis(100)))).build();
         cnn.start();
 
         CoapRequest request = get("/test/1").from(InMemoryCoapTransport.createAddress(0));

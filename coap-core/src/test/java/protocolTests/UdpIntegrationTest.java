@@ -25,7 +25,6 @@ import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Messaging;
 import opencoap.endpoint.Observations;
 import opencoap.filter.TokenGeneratorFilter;
 
@@ -35,7 +34,7 @@ public class UdpIntegrationTest extends IntegrationTestBase {
     protected CoapClient buildClient(int port) throws IOException {
         return CoapServer.builder()
                 .transport(udp())
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_1024))
+                .messaging(m -> m.withBlockSize(BlockSize.S_1024))
                 .observations(Observations.receiving(receiver))
                 .outboundFilter(TokenGeneratorFilter.sequential(1))
                 .buildClient(localhost(port));
@@ -44,7 +43,7 @@ public class UdpIntegrationTest extends IntegrationTestBase {
     @Override
     protected CoapServer buildServer(int port, Filter<CoapRequest, CoapResponse> routeFilter, Handler<CoapRequest, CoapResponse> route) {
         return CoapServer.builder()
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_1024))
+                .messaging(m -> m.withBlockSize(BlockSize.S_1024))
                 .transport(udp(port))
                 .routeFilter(routeFilter)
                 .handler(route)

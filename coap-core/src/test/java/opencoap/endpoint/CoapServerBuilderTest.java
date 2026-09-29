@@ -41,7 +41,7 @@ public class CoapServerBuilderTest {
         DefaultDuplicateDetectorCache cache =
                 new DefaultDuplicateDetectorCache("testCache", 100, 120_1000, 10_000, 10_000, scheduledExecutorService);
         assertThrows(NullPointerException.class, () ->
-                CoapServer.builder().reliability(Reliability.defaults().withDuplicateDetection(DuplicateDetection.using(cache))).build()
+                CoapServer.builder().reliability(r -> r.withDuplicateDetection(DuplicateDetection.using(cache))).build()
         );
     }
 
@@ -63,10 +63,8 @@ public class CoapServerBuilderTest {
 
     @Test
     public void shouldFail_whenBertBlockSize() {
-        Messaging messaging = Messaging.defaults().withBlockSize(BlockSize.S_1024_BERT);
-
         assertThrows(IllegalArgumentException.class, () ->
-                CoapServer.builder().messaging(messaging)
+                CoapServer.builder().messaging(m -> m.withBlockSize(BlockSize.S_1024_BERT))
         );
     }
 

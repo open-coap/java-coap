@@ -40,7 +40,6 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Reliability;
 import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +75,7 @@ public class NonConfirmableTransactionsTest {
 
         server = CoapServer.builder()
                 .transport(serverTransport)
-                .reliability(Reliability.defaults().withMessageIdSupplier(mid::incrementAndGet))
+                .reliability(r -> r.withMessageIdSupplier(mid::incrementAndGet))
                 .handler(route)
                 .build();
 

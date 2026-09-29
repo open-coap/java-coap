@@ -110,14 +110,14 @@ client = CoapServer.builder()
         // define transport, plain text UDP listening on random port
         .transport(udp())
         // (optional) message size and block-wise transfer settings
-        .messaging(Messaging.defaults()
+        .messaging(m -> m
                 // define maximum block size
                 .withBlockSize(BlockSize.S_1024)
                 // set maximum allowed resource size
                 .withMaxIncomingBlockTransferSize(10_000_000)
         )
         // (optional) retransmission, timeouts and duplicate detection settings
-        .reliability(Reliability.defaults()
+        .reliability(r -> r
                 // set maximum response timeout, default for every request
                 .withResponseTimeout(Duration.ofMinutes(2))
         )

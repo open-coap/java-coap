@@ -28,7 +28,6 @@ import opencoap.core.ContentFormat;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
-import opencoap.endpoint.Reliability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ public class BlockwiseTransferWithTest {
         transport = new TransportConnectorMock();
 
         client = CoapServer.builder().transport(transport)
-                .reliability(Reliability.defaults()
+                .reliability(r -> r
                         .withRetransmission(ofFixed(ofMillis(500)))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .buildClient(SERVER_ADDRESS);

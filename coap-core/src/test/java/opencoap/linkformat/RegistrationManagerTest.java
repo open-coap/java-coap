@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import opencoap.core.Code;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
-import opencoap.endpoint.Reliability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +52,7 @@ public class RegistrationManagerTest {
 
         deviceSrv = CoapServer.builder()
                 .transport(trnsport)
-                .reliability(Reliability.defaults().withMessageIdSupplier(MessageIdSupplier.sequential(0)))
+                .reliability(r -> r.withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .build().start();
     }
 

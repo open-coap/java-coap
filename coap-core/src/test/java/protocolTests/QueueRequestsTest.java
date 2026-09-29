@@ -34,8 +34,6 @@ import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.DuplicateDetection;
 import opencoap.endpoint.MessageIdSupplier;
-import opencoap.endpoint.Messaging;
-import opencoap.endpoint.Reliability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,8 +50,8 @@ public class QueueRequestsTest {
         MockCoapTransport transport = new MockCoapTransport();
 
         client = CoapServer.builder().transport(transport)
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_32).withQueueMaxSize(2))
-                .reliability(Reliability.defaults()
+                .messaging(m -> m.withBlockSize(BlockSize.S_32).withQueueMaxSize(2))
+                .reliability(r -> r
                         .withRetransmission(ofFixed(ofMillis(500)))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0))
                         .withDuplicateDetection(DuplicateDetection.disabled()))

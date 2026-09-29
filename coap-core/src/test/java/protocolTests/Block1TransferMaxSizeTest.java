@@ -35,7 +35,6 @@ import opencoap.core.Opaque;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.Messaging;
 import opencoap.endpoint.Observations;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
@@ -76,7 +75,7 @@ public class Block1TransferMaxSizeTest {
                         .put(CHANGEABLE_RESOURCE_PATH, changeableResource)
                         .get(OBSERVABLE_RESOURCE_PATH, observableResource)
                 )
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_16).withMaxIncomingBlockTransferSize(MAX_DATA))
+                .messaging(m -> m.withBlockSize(BlockSize.S_16).withMaxIncomingBlockTransferSize(MAX_DATA))
                 .transport(udp())
                 .build();
 
@@ -87,7 +86,7 @@ public class Block1TransferMaxSizeTest {
 
         client = CoapServer.builder()
                 .transport(udp())
-                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_16).withMaxIncomingBlockTransferSize(MAX_DATA))
+                .messaging(m -> m.withBlockSize(BlockSize.S_16).withMaxIncomingBlockTransferSize(MAX_DATA))
                 .observations(Observations.receiving(notifReceiver))
                 .buildClient(localhost(SERVER_PORT));
     }
