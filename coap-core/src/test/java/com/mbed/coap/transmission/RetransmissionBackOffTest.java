@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 package com.mbed.coap.transmission;
 
 import static java.time.Duration.ZERO;
+import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -140,5 +141,12 @@ public class RetransmissionBackOffTest {
 
 
         assertThrows(IllegalArgumentException.class, () -> RetransmissionBackOff.ofExponential(ofSeconds(2), -1, 2f));
+    }
+
+    @Test
+    void should_fail_fixed_with_negative_max_attempts() {
+        assertThrows(IllegalArgumentException.class, () -> RetransmissionBackOff.ofFixed(ofMillis(500), -1));
+
+        assertEquals(ofMillis(500), RetransmissionBackOff.ofFixed(ofMillis(500), 0).next(1));
     }
 }
