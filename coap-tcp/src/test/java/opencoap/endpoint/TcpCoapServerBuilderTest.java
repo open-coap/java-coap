@@ -15,7 +15,9 @@
  */
 package opencoap.endpoint;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import opencoap.core.CoapRequest;
@@ -59,6 +61,35 @@ class TcpCoapServerBuilderTest {
 
         client.send(newCoapPacket(LOCAL_5683).mid(2).get().uriPath("/test"));
         client.verifyReceived(newCoapPacket(LOCAL_5683).mid(2).ack(Code.C205_CONTENT).payload("ok"));
+    }
+
+    @Test
+    void shouldApplyOutboundFilter() throws Exception {
+        server = TcpCoapServer.builder()
+                .transport(transport)
+                .outboundFilter((req, next) -> CoapResponse.ok("filtered").toFuture())
+                .build()
+                .start();
+
+        CoapResponse response = server.outboundHandler().apply(CoapRequest.get("/test").to(LOCAL_5683)).get();
+
+        assertEquals("filtered", response.getPayloadString());
+        assertTrue(client.nothingReceived());
+    }
+
+    @Test
+    void shouldHandleRequests_whenTransportLoggingDisabled() throws Exception {
+        server = TcpCoapServer.builder()
+                .transport(transport)
+                .transportLogging(false)
+                .handler(RoutingHandler.builder()
+                        .get("/test", req -> CoapResponse.ok("ok").toFuture())
+                )
+                .build()
+                .start();
+
+        client.send(newCoapPacket(LOCAL_5683).mid(1).get().uriPath("/test"));
+        client.verifyReceived(newCoapPacket(LOCAL_5683).mid(1).ack(Code.C205_CONTENT).payload("ok"));
     }
 
     @Test

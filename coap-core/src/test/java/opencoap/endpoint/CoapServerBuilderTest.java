@@ -18,6 +18,7 @@ package opencoap.endpoint;
 
 import static opencoap.transport.InMemoryCoapTransport.create;
 import static opencoap.util.Networks.localhost;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,6 +63,13 @@ public class CoapServerBuilderTest {
     }
 
     @Test
+    public void shouldAcceptMaxMessageSize_withoutBlockSize() {
+        assertDoesNotThrow(() ->
+                CoapServer.builder().messaging(m -> m.withMaxMessageSize(2000))
+        );
+    }
+
+    @Test
     public void shouldFail_whenBertBlockSize() {
         assertThrows(IllegalArgumentException.class, () ->
                 CoapServer.builder().messaging(m -> m.withBlockSize(BlockSize.S_1024_BERT))
@@ -95,6 +103,44 @@ public class CoapServerBuilderTest {
         // and, max incoming transfer size from second modification is applied
         client.send(newCoapPacket(LOCAL_5683).mid(2).con().put().uriPath("/test").block1Req(0, BlockSize.S_16, true).size1(100).payload("0123456789abcdef"));
         assertEquals(Code.C413_REQUEST_ENTITY_TOO_LARGE, client.receive().getCode());
+
+        server.stop();
+    }
+
+    @Test
+    public void shouldApplyInboundFilter() throws Exception {
+        MockCoapTransport transport = new MockCoapTransport();
+        MockCoapTransport.MockClient client = transport.client();
+        CoapServer server = CoapServer.builder()
+                .transport(transport)
+                .inboundFilter((req, next) -> req.options().getUriPath().equals("/forbidden")
+                        ? CoapResponse.coapResponse(Code.C403_FORBIDDEN).toFuture()
+                        : next.apply(req)
+                )
+                .handler(req -> CoapResponse.ok("ok").toFuture())
+                .build().start();
+
+        client.send(newCoapPacket(LOCAL_5683).mid(1).con().get().uriPath("/forbidden"));
+        client.verifyReceived(newCoapPacket(LOCAL_5683).mid(1).ack(Code.C403_FORBIDDEN));
+
+        client.send(newCoapPacket(LOCAL_5683).mid(2).con().get().uriPath("/test"));
+        client.verifyReceived(newCoapPacket(LOCAL_5683).mid(2).ack(Code.C205_CONTENT).payload("ok"));
+
+        server.stop();
+    }
+
+    @Test
+    public void shouldHandleRequests_whenTransportLoggingDisabled() throws Exception {
+        MockCoapTransport transport = new MockCoapTransport();
+        MockCoapTransport.MockClient client = transport.client();
+        CoapServer server = CoapServer.builder()
+                .transport(transport)
+                .transportLogging(false)
+                .handler(req -> CoapResponse.ok("ok").toFuture())
+                .build().start();
+
+        client.send(newCoapPacket(LOCAL_5683).mid(1).con().get().uriPath("/test"));
+        client.verifyReceived(newCoapPacket(LOCAL_5683).mid(1).ack(Code.C205_CONTENT).payload("ok"));
 
         server.stop();
     }
