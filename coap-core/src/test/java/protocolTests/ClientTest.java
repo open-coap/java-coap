@@ -45,7 +45,7 @@ public class ClientTest {
     void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", req -> ok("OK!").toFuture())
                         .post("/fresh", this::handleFresh))
                 .build()

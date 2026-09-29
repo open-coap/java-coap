@@ -29,7 +29,9 @@ import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.Messaging;
 import opencoap.filter.TokenGeneratorFilter;
+import opencoap.routing.RoutingHandler;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -74,8 +76,7 @@ public class SendCommand implements Callable<Integer> {
     public Integer call() throws Exception {
 
         CoapServer cliServer = transportOptions.create(uri,
-                udpBuilder -> udpBuilder.blockSize(blockSize).outboundFilter(TokenGeneratorFilter.RANDOM).build(),
-                tcpBuilder -> tcpBuilder.blockSize(blockSize).outboundFilter(TokenGeneratorFilter.RANDOM).build()
+                Messaging.defaults().withBlockSize(blockSize), TokenGeneratorFilter.RANDOM, RoutingHandler.NOT_FOUND
         ).start();
 
         try (CoapClient cli = CoapClient.create(addressFromUri(uri), cliServer)) {

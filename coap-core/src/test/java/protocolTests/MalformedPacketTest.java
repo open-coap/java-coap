@@ -43,7 +43,7 @@ public class MalformedPacketTest {
     public void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(udp())
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test/1", __ -> CoapResponse.ok("Dziala").toFuture())
                 )
                 .build();

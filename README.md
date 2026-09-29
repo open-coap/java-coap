@@ -109,21 +109,28 @@ client.close();
 client = CoapServer.builder()
         // define transport, plain text UDP listening on random port
         .transport(udp())
+        // (optional) message size and block-wise transfer settings
+        .messaging(Messaging.defaults()
+                // define maximum block size
+                .withBlockSize(BlockSize.S_1024)
+                // set maximum allowed resource size
+                .withMaxIncomingBlockTransferSize(10_000_000)
+        )
+        // (optional) retransmission, timeouts and duplicate detection settings
+        .reliability(Reliability.defaults()
+                // set maximum response timeout, default for every request
+                .withResponseTimeout(Duration.ofMinutes(2))
+        )
         // (optional) register observation listener to handle incoming observations
-        .notificationsReceiver((resourceUriPath, observation) -> {
-            LOGGER.info("Observation: {}", observation);
-            // in case of block transfer, call to retrieve rest of payload
-            CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
-            return true; // return false to terminate observation
-        })
-        // (optional) set custom observation relation store, for example one that will use external storage
-        .observationsStore(new HashMapObservationsStore())
-        // (optional) define maximum block size
-        .blockSize(BlockSize.S_1024)
-        // (optional) set maximum response timeout, default for every request
-        .responseTimeout(Duration.ofMinutes(2))
-        // (optional) set maximum allowed resource size
-        .maxIncomingBlockTransferSize(10_000_000)
+        .observations(Observations.receiving((resourceUriPath, observation) -> {
+                    LOGGER.info("Observation: {}", observation);
+                    // in case of block transfer, call to retrieve rest of payload
+                    CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
+                    return true; // return false to terminate observation
+                })
+                // (optional) set custom observation relation store, for example one that will use external storage
+                .withStore(new HashMapObservationsStore())
+        )
         // (optional) set extra filters (interceptors) to outbound pipeline
         .outboundFilter(
                 // each request will be set with different Token
@@ -177,7 +184,7 @@ server = CoapServer.builder()
         .transport(new DatagramSocketTransport(5683))
         // define routing
         // (note that each resource function is a `Handler` type and can be decorated/transformed with `Filter`)
-        .route(RoutingHandler.builder()
+        .handler(RoutingHandler.builder()
                 .get("/.well-known/core", req ->
                         CoapResponse.ok("</sensors/temperature>", ContentFormat.APPLICATION_LINK_FORMAT).toFuture()
                 )

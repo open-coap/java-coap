@@ -45,7 +45,8 @@ This document outlines breaking changes and migration steps between versions of 
   - `Validations.assume` &rarr; `Validations.check`
   - `Method.valueOf(int)` / `MessageType.valueOf(int)` / `Code.valueOf(int)` &rarr; `fromCode(int)`
   - `LinkFormatBuilder` &rarr; `LinkFormatParser`
-- **Method renames:** leftover, misspelled and inconsistent method names are corrected, e.g. `CoapPacket.headers()` &rarr; `options()`, `CoapServer.clientService()` &rarr; `outboundHandler()`, `CoapServerBuilder.midSupplier(...)` &rarr; `messageIdSupplier(...)`. `LinkFormatBuilder` is renamed to `LinkFormatParser`. See [section 11](#11-renamed-methods).
+- **Method renames:** leftover, misspelled and inconsistent method names are corrected, e.g. `CoapPacket.headers()` &rarr; `options()`, `CoapServer.clientService()` &rarr; `outboundHandler()`, `MessageIdSupplier.getNextMID()` &rarr; `next()`. `LinkFormatBuilder` is renamed to `LinkFormatParser`. See [section 11](#11-renamed-methods).
+- **Server builder settings grouped:** `CoapServerBuilder` and `TcpCoapServerBuilder` take immutable `Messaging`, `Reliability` (UDP only) and `Observations` values instead of flat setters. `route(...)` is renamed to `handler(...)`, `inboundRequestFilter(...)` to `inboundFilter(...)`, and `TcpCoapServerBuilder` gains `inboundFilter(...)`. See [section 12](#12-server-builder-configuration).
 - **Reduced visibility:** a few internal helpers that were public in 6.x are now package-private, and `BlockingCoapTransport.sendPacket0` is now `protected`. See [section 10](#10-reduced-visibility).
 - **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
@@ -519,7 +520,7 @@ Implementors whose names repeated the interface name were renamed as well:
 
  CoapServer.builder()
 -        .route(RouterService.builder()
-+        .route(RoutingHandler.builder()
++        .handler(RoutingHandler.builder()
                  .get("/sensors/temperature", req -> CoapResponse.ok("21C").toFuture())
          )
 ```
@@ -587,8 +588,8 @@ Type-changing filters:
 
 `CoapServerBuilder` and `TcpCoapServerBuilder` now take the same type for their filter hooks. Previously the UDP builder took `Filter<CoapRequest, CoapResponse, CoapRequest, CoapResponse>` while the TCP builder took `Filter.SimpleFilter<CoapRequest, CoapResponse>`. Both now take `Filter<CoapRequest, CoapResponse>`:
 
-- `CoapServerBuilder.routeFilter(...)`, `inboundRequestFilter(...)`, `outboundFilter(...)`
-- `TcpCoapServerBuilder.routeFilter(...)`, `outboundFilter(...)`
+- `CoapServerBuilder.routeFilter(...)`, `inboundFilter(...)` (was `inboundRequestFilter(...)`), `outboundFilter(...)`
+- `TcpCoapServerBuilder.routeFilter(...)`, `inboundFilter(...)` (new), `outboundFilter(...)`
 - `RoutingHandler.RouteBuilder.filter(...)`
 
 Lambdas passed directly need no change. Variables or classes typed as the 4-parameter form must be changed to `Filter<CoapRequest, CoapResponse>`, because a `MappingFilter` is not accepted where a `Filter` is expected.
@@ -704,14 +705,14 @@ Methods whose names were left over from earlier renames, misspelled, or inconsis
 | `CoapOptions.IF_NON_MATCH` | `CoapOptions.IF_NONE_MATCH` | The option is called If-None-Match (RFC 7252 §5.10.8.2) |
 | `CoapOptions.getIfNonMatch()` / `setIfNonMatch(Boolean)` | `CoapOptions.getIfNoneMatch()` / `setIfNoneMatch(Boolean)` | Same |
 | `CoapOptionsBuilder.ifNonMatch()` | `CoapOptionsBuilder.ifNoneMatch()` | Same |
-| `CoapOptions.containsUnrecognisedCriticalOption(...)` | `CoapOptions.containsUnrecognizedCriticalOption(...)` | American spelling, as in `CoapServerBuilder.recognizedCustomOptions` |
+| `CoapOptions.containsUnrecognisedCriticalOption(...)` | `CoapOptions.containsUnrecognizedCriticalOption(...)` | American spelling, as in `Messaging.withRecognizedCustomOptions` |
 | `Capabilities.isBERTEnabled()` | `Capabilities.isBertEnabled()` | Matches `BlockOption.isBert()` |
 | `LinkFormat.setOAutobservable(Boolean)` | `LinkFormat.setAutoObservable(Boolean)` | Typo |
 | `LinkFormat.getMaxSize()` | `LinkFormat.getMaximumSize()` | Both read the `sz` attribute. Only the one matching `setMaximumSize` is kept |
 | `LinkFormat.getContentType()` / `setContentType(Integer)` | `LinkFormat.getContentFormat()` / `setContentFormat(Integer)` | The `ct` attribute is a CoAP Content-Format |
 | `MessageIdSupplier.getNextMID()` | `MessageIdSupplier.next()` | Matches `RequestTagSupplier.next()` |
 | `RequestTagSupplier.createSequential(...)` | `RequestTagSupplier.sequential(...)` | Matches `MessageIdSupplier.sequential(...)` |
-| `CoapServerBuilder.midSupplier(...)` | `CoapServerBuilder.messageIdSupplier(...)` | Named after the `MessageIdSupplier` type, like `requestTagSupplier(...)` |
+| `CoapServerBuilder.midSupplier(...)` | `Reliability.withMessageIdSupplier(...)` | Named after the `MessageIdSupplier` type, like `withRequestTagSupplier(...)`. See [section 12](#12-server-builder-configuration) |
 | `SignallingHeaderOptions` | `SignalingCoapOptions` | See [Signaling Options](#signaling-options-rfc-8323-spelling) |
 
 ```diff
@@ -725,8 +726,9 @@ Methods whose names were left over from earlier renames, misspelled, or inconsis
  CoapServer.builder()
 -        .midSupplier(MessageIdSupplier.sequential(0))
 -        .requestTagSupplier(RequestTagSupplier.createSequential(100))
-+        .messageIdSupplier(MessageIdSupplier.sequential(0))
-+        .requestTagSupplier(RequestTagSupplier.sequential(100))
++        .reliability(Reliability.defaults()
++                .withMessageIdSupplier(MessageIdSupplier.sequential(0))
++                .withRequestTagSupplier(RequestTagSupplier.sequential(100)))
 ```
 
 A custom `MessageIdSupplier` implements `next()`:
@@ -762,3 +764,78 @@ A custom `MessageIdSupplier` implements `next()`:
 +List<LinkFormat> links = LinkFormatParser.parse(payload);
 +String text = LinkFormatParser.format(links);
 ```
+
+### 12. Server Builder Configuration
+
+The flat setters on `CoapServerBuilder` and `TcpCoapServerBuilder` are grouped into immutable values in `opencoap.endpoint`. Each value starts from `defaults()` (or a factory), and every `with*` method returns a modified copy. Both builders accept the same `Messaging` and `Observations` values, so one configuration can be used for UDP and TCP.
+
+| Value | Contents | Accepted by |
+|---|---|---|
+| `Messaging` | block size, max message size, max incoming block transfer size, queue size, recognized custom options | `CoapServerBuilder`, `TcpCoapServerBuilder` |
+| `Reliability` | retransmission, response timeout, message id supplier, request tag supplier, duplicate detection | `CoapServerBuilder` |
+| `DuplicateDetection` | `cache(size)`, `using(PutOnlyMap)` or `disabled()`, plus `onDuplicate(callback)` | `Reliability.withDuplicateDetection(...)` |
+| `Observations` | `none()` (default) or `receiving(receiver)`, plus `withStore(store)` | `CoapServerBuilder`, `TcpCoapServerBuilder` |
+
+`messaging` and `reliability` also accept a function that receives the current value and returns a modified one. Unlike passing a value, which replaces all settings, a function keeps what was set before:
+
+```java
+CoapServer.builder()
+        .messaging(m -> m.withBlockSize(BlockSize.S_1024))
+        .messaging(m -> m.withQueueMaxSize(10)) // block size is kept
+        .reliability(r -> r.withResponseTimeout(Duration.ofSeconds(30)))
+```
+
+`transport`, `executor`, `transportLogging`, `routeFilter`, `outboundFilter` and, on TCP, `csmStorage` stay as builder setters.
+
+| 6.x | 7.0 |
+|---|---|
+| `blockSize(size)` | `messaging(Messaging.defaults().withBlockSize(size))` |
+| `maxMessageSize(size)` | `messaging(Messaging.defaults().withMaxMessageSize(size))` |
+| `maxIncomingBlockTransferSize(size)` | `messaging(Messaging.defaults().withMaxIncomingBlockTransferSize(size))` |
+| `queueMaxSize(size)` | `messaging(Messaging.defaults().withQueueMaxSize(size))` |
+| `recognizedCustomOptions(options)` | `messaging(Messaging.defaults().withRecognizedCustomOptions(options))` |
+| `retransmission(backOff)` | `reliability(Reliability.defaults().withRetransmission(backOff))` |
+| `responseTimeout(timeout)` | `reliability(Reliability.defaults().withResponseTimeout(timeout))` |
+| `midSupplier(supplier)` | `reliability(Reliability.defaults().withMessageIdSupplier(supplier))` |
+| `requestTagSupplier(supplier)` | `reliability(Reliability.defaults().withRequestTagSupplier(supplier))` |
+| `duplicateMsgCacheSize(size)` | `reliability(Reliability.defaults().withDuplicateDetection(DuplicateDetection.cache(size)))` |
+| `duplicateMessageDetectorCache(cache)` | `reliability(Reliability.defaults().withDuplicateDetection(DuplicateDetection.using(cache)))` |
+| `noDuplicateCheck()` | `reliability(Reliability.defaults().withDuplicateDetection(DuplicateDetection.disabled()))` |
+| `duplicatedCoapMessageCallback(callback)` | `DuplicateDetection.cache(10_000).onDuplicate(callback)` (or on `using(cache)`) |
+| `notificationsReceiver(receiver)` | `observations(Observations.receiving(receiver))` |
+| `observationsStore(store)` | `observations(Observations.receiving(receiver).withStore(store))` |
+| `route(handler)` / `route(routeBuilder)` | `handler(handler)` / `handler(routeBuilder)` |
+| `inboundRequestFilter(filter)` | `inboundFilter(filter)` |
+
+```diff
+ CoapServer server = CoapServer.builder()
+         .transport(udp(5683))
+-        .route(router)
+-        .blockSize(BlockSize.S_1024)
+-        .recognizedCustomOptions(options)
+-        .retransmission(RetransmissionBackOff.ofFixed(Duration.ofMillis(500)))
+-        .responseTimeout(Duration.ofMinutes(2))
+-        .duplicateMsgCacheSize(10_000)
+-        .notificationsReceiver(receiver)
+-        .inboundRequestFilter(filter)
++        .handler(router)
++        .messaging(Messaging.defaults()
++                .withBlockSize(BlockSize.S_1024)
++                .withRecognizedCustomOptions(options))
++        .reliability(Reliability.defaults()
++                .withRetransmission(RetransmissionBackOff.ofFixed(Duration.ofMillis(500)))
++                .withResponseTimeout(Duration.ofMinutes(2))
++                .withDuplicateDetection(DuplicateDetection.cache(10_000)))
++        .observations(Observations.receiving(receiver))
++        .inboundFilter(filter)
+         .build();
+```
+
+#### Behavior changes
+
+- **UDP: `blockSize` and `maxMessageSize` can not both be set.** On UDP the maximum message size is derived from the block size, and 6.x silently ignored `maxMessageSize` when `blockSize` was set. `CoapServerBuilder.messaging(...)` now throws `IllegalArgumentException` when both are set, and also when the block size is BERT (TCP only). Remove `withMaxMessageSize(...)` when a block size is set.
+- **TCP: block size enables block-wise transfer.** `TcpCoapServerBuilder` treats any non-null `Messaging.withBlockSize(...)` as "block-wise enabled", as 6.x did. The actual block size is derived from the maximum message size negotiated in CSM (RFC 8323).
+- **Observation store needs a receiver.** `Observations.none().withStore(...)` throws `IllegalArgumentException`. In 6.x, setting `notificationsReceiver` after `observationsStore` kept the store, and setting it before replaced the store with an in-memory one. The order no longer matters.
+- **Duplicate callback needs detection.** `DuplicateDetection.disabled().onDuplicate(...)` throws `IllegalArgumentException`, because no duplicates are detected.
+- **Per-server defaults.** When no message id supplier, request tag supplier or observations store is set, each server built by the builder, including every server of `buildGroup(...)`, gets its own instance. In 6.x one instance was shared by all servers built from the same builder.
+- **Stricter validation.** `withMaxMessageSize`, `withMaxIncomingBlockTransferSize`, `withQueueMaxSize` and `DuplicateDetection.cache` require a positive value. The `with*` methods and builder setters reject `null`, except `withBlockSize(null)`, which disables block-wise transfer.

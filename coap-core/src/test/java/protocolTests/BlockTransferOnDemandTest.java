@@ -49,7 +49,7 @@ public class BlockTransferOnDemandTest {
 
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/man", new ManualBlockTransferCoapResource())
                         .get("/missing-second-block", new MissingSecondBlock())
                         .build()

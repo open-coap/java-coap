@@ -36,6 +36,7 @@ import opencoap.core.Handler;
 import opencoap.core.MessageAttributes;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.Messaging;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
@@ -54,12 +55,12 @@ public class ForwardingAttributesTest {
     @BeforeEach
     public void setUp() throws IOException {
         server = CoapServer.builder()
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", coapResourceTest)
                         .put("/test", coapResourceTest)
                         .get("/obs", observersManager.then(__ -> CoapResponse.ok("A").toFuture()))
                 )
-                .blockSize(BlockSize.S_16).transport(srvTransport).build();
+                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_16)).transport(srvTransport).build();
 
         observersManager.init(server);
         server.start();
@@ -92,7 +93,7 @@ public class ForwardingAttributesTest {
     @Test
     public void testRequestWithBlocks() throws IOException, CoapException {
         InMemoryCoapTransport cliTransport = spy(new InMemoryCoapTransport());
-        CoapClient client = CoapServer.builder().transport(cliTransport).blockSize(BlockSize.S_16).buildClient(InMemoryCoapTransport.createAddress(5683));
+        CoapClient client = CoapServer.builder().transport(cliTransport).messaging(Messaging.defaults().withBlockSize(BlockSize.S_16)).buildClient(InMemoryCoapTransport.createAddress(5683));
 
         srvTransport.setAttributes(MessageAttributes.of(MY_TEXT, "dupa"));
         CoapResponse resp = client.sendSync(put("/test").payload("fhdkfhsdkj fhsdjkhfkjsdh fjkhs dkjhfsdjkh")

@@ -29,6 +29,9 @@ import opencoap.core.ContentFormat;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.Messaging;
+import opencoap.endpoint.Observations;
+import opencoap.endpoint.Reliability;
 import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,11 +53,12 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .messageIdSupplier(MessageIdSupplier.sequential(0))
-                .blockSize(BlockSize.S_32)
-                .notificationsReceiver(notifReceiver)
-                .retransmission(ofFixed(ofMillis(500)))
-                .requestTagSupplier(RequestTagSupplier.sequential(100))
+                .messaging(Messaging.defaults().withBlockSize(BlockSize.S_32))
+                .reliability(Reliability.defaults()
+                        .withRetransmission(ofFixed(ofMillis(500)))
+                        .withMessageIdSupplier(MessageIdSupplier.sequential(0))
+                        .withRequestTagSupplier(RequestTagSupplier.sequential(100)))
+                .observations(Observations.receiving(notifReceiver))
                 .buildClient(SERVER_ADDRESS);
     }
 

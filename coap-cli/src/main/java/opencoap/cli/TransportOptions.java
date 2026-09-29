@@ -23,18 +23,20 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.util.function.Function;
 import opencoap.cli.providers.JdkProvider;
 import opencoap.cli.providers.MbedtlsProvider;
 import opencoap.cli.providers.OpensslProvider;
 import opencoap.cli.providers.Pair;
 import opencoap.cli.providers.PlainTextProvider;
 import opencoap.cli.providers.StandardIoProvider;
+import opencoap.core.CoapRequest;
+import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
+import opencoap.core.Handler;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.CoapServerBuilder;
+import opencoap.endpoint.Messaging;
 import opencoap.endpoint.TcpCoapServer;
-import opencoap.endpoint.TcpCoapServerBuilder;
 import opencoap.transport.CoapTcpTransport;
 import opencoap.transport.CoapTransport;
 import org.slf4j.LoggerFactory;
@@ -72,14 +74,24 @@ class TransportOptions {
         psk = Pair.split(pskPair, ':').mapValue(Opaque::decodeHex);
     }
 
-    public final CoapServer create(URI uri, Function<CoapServerBuilder, CoapServer> configureUdp, Function<TcpCoapServerBuilder, CoapServer> configureTcp) {
+    public final CoapServer create(URI uri, Messaging messaging, Filter<CoapRequest, CoapResponse> outboundFilter, Handler<CoapRequest, CoapResponse> handler) {
         try {
             CoapTransport transport = createTransport(uri);
 
             if (transport instanceof CoapTcpTransport) {
-                return configureTcp.apply(TcpCoapServer.builder().transport((CoapTcpTransport) transport));
+                return TcpCoapServer.builder()
+                        .transport((CoapTcpTransport) transport)
+                        .messaging(messaging)
+                        .outboundFilter(outboundFilter)
+                        .handler(handler)
+                        .build();
             } else {
-                return configureUdp.apply(CoapServer.builder().transport(transport));
+                return CoapServer.builder()
+                        .transport(transport)
+                        .messaging(messaging)
+                        .outboundFilter(outboundFilter)
+                        .handler(handler)
+                        .build();
             }
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);

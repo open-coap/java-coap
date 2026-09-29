@@ -55,7 +55,7 @@ public class Block1Size1LimitTest {
     public void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(udp())
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test/1", __ -> CoapResponse.ok("alive").toFuture())
                         .put("/test/1", __ -> coapResponse(Code.C204_CHANGED).toFuture())
                 )

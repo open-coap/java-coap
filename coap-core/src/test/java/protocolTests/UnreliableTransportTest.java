@@ -38,6 +38,7 @@ import opencoap.core.CoapTimeoutException;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.Reliability;
 import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
@@ -57,7 +58,7 @@ public class UnreliableTransportTest {
     public void setUp() throws IOException {
         server = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create(5683))
-                .route(route)
+                .handler(route)
                 .build();
         server.start();
     }
@@ -86,7 +87,7 @@ public class UnreliableTransportTest {
                     }
 
                 })
-                .retransmission(ofExponential(Duration.ofMillis(100), 4))
+                .reliability(Reliability.defaults().withRetransmission(ofExponential(Duration.ofMillis(100), 4)))
                 .buildClient(InMemoryCoapTransport.createAddress(5683))
         ) {
             CoapResponse resp = cnn.sendSync(get("/dropping"));
@@ -117,14 +118,14 @@ public class UnreliableTransportTest {
         server.stop();
         server = CoapServer.builder()
                 .transport(new DroppingPacketsTransportWrapper(CoapConstants.DEFAULT_PORT, (byte) 100))
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", __ -> ok("TEST").toFuture())
                         .build())
                 .build()
                 .start();
 
         CoapClient cnn = CoapServer.builder()
-                .transport(InMemoryCoapTransport.create()).retransmission(RetransmissionBackOff.ofFixed(ofMillis(100)))
+                .transport(InMemoryCoapTransport.create()).reliability(Reliability.defaults().withRetransmission(RetransmissionBackOff.ofFixed(ofMillis(100))))
                 .buildClient(InMemoryCoapTransport.createAddress(CoapConstants.DEFAULT_PORT));
 
         assertThrows(CoapTimeoutException.class, () ->

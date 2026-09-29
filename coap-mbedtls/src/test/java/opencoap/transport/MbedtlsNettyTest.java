@@ -92,7 +92,7 @@ public class MbedtlsNettyTest {
         server = CoapServer.builder()
                 .transport(serverTransport)
                 .executor(eventLoopGroup)
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK!").toFuture())
                         .post("/echo", req -> ok(req.getPayload()).toFuture())
                         .get("/dtls-ctx", req -> {

@@ -90,7 +90,7 @@ public class MultiChannelNettyTest {
 
     private CoapServerGroup createServer() throws IOException {
         return CoapServer.builder()
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK").toFuture())
                 )
                 .transport(() -> new NettyCoapTransport(bootstrap, EMPTY_RESOLVER))
