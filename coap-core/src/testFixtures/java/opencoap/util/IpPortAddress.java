@@ -16,7 +16,6 @@
  */
 package opencoap.util;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -26,12 +25,10 @@ import java.util.Arrays;
  * Container class for raw IP and port without hostname. Avoids deterministic
  * problem of serializing InetSocketAddress with hostname.
  */
-public final class IpPortAddress implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public final class IpPortAddress {
     private final byte[] ip;
     private final int port;
-    private transient String textRepresentation;
+    private String textRepresentation;
 
     public IpPortAddress(byte[] ip, int port) {
         if (ip.length != 4 && ip.length != 16) {

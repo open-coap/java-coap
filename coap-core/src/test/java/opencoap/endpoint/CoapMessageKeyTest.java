@@ -45,6 +45,6 @@ public class CoapMessageKeyTest {
 
     @Test
     public void equalsAndHashTest() throws Exception {
-        EqualsVerifier.forClass(CoapMessageKey.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(CoapMessageKey.class).withIgnoredFields("createdTimestampMillis").suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 }

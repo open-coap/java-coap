@@ -151,7 +151,7 @@ public class RoutingHandler implements Handler<CoapRequest, CoapResponse> {
     static final class RequestMatcher {
         final Method method;
         final String uriPath;
-        private final transient boolean isPrefixed;
+        private final boolean isPrefixed;
 
         RequestMatcher(Method method, String uriPath) {
             this.method = method;

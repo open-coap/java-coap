@@ -138,7 +138,7 @@ public class RoutingHandlerRoutesTest {
 
     @Test
     public void equalsAndHashTest() {
-        EqualsVerifier.forClass(RoutingHandler.RequestMatcher.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(RoutingHandler.RequestMatcher.class).withIgnoredFields("isPrefixed").suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 
 }

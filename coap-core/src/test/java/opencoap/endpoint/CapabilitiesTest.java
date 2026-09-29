@@ -100,7 +100,7 @@ public class CapabilitiesTest {
 
     @Test
     public void equalsAndHashTest() {
-        EqualsVerifier.forClass(Capabilities.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(Capabilities.class).withIgnoredFields("requestTagSupplier").suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 
 }
