@@ -19,9 +19,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import io.netty.util.concurrent.Promise;
 import java.util.concurrent.CompletableFuture;
 
-public class NettyUtils {
+class NettyUtils {
 
-    public static <T> CompletableFuture<T> toCompletableFuture(Promise<T> nettyPromise) {
+    static <T> CompletableFuture<T> toCompletableFuture(Promise<T> nettyPromise) {
 
         if (nettyPromise.isSuccess()) {
             return completedFuture(nettyPromise.getNow());

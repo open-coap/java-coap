@@ -106,7 +106,7 @@ public class CoapOptions {
 
     // one case per CoAP option number, a flat switch is the clearest form available
     @SuppressWarnings("PMD.NcssCount")
-    public boolean parseOption(int type, Opaque data) {
+    boolean parseOption(int type, Opaque data) {
         switch (type) {
             case CONTENT_FORMAT:
                 // assigned directly, a malformed peer may send a value outside the uint16 range

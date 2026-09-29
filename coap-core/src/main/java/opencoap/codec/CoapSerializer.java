@@ -34,7 +34,7 @@ import opencoap.core.Method;
 import opencoap.core.Opaque;
 
 public class CoapSerializer {
-    public static final int PAYLOAD_MARKER = 0xFF;
+    static final int PAYLOAD_MARKER = 0xFF;
 
     /**
      * Serialize CoAP message
@@ -84,7 +84,7 @@ public class CoapSerializer {
         }
     }
 
-    public static Code writeCode(OutputStream os, CoapPacket coapPacket) throws IOException {
+    static Code writeCode(OutputStream os, CoapPacket coapPacket) throws IOException {
         Code code = coapPacket.getCode();
         Method method = coapPacket.getMethod();
 

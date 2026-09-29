@@ -49,7 +49,7 @@ public class MockCoapTransport extends BlockingCoapTransport {
     }
 
     @Override
-    public void sendPacket0(CoapPacket coapPacket) {
+    protected void sendPacket0(CoapPacket coapPacket) {
         sentPackets.add(coapPacket);
     }
 

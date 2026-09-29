@@ -46,7 +46,7 @@ public class TransportConnectorMock extends BlockingCoapTransport {
     }
 
     @Override
-    public void sendPacket0(CoapPacket request) throws IOException {
+    protected void sendPacket0(CoapPacket request) throws IOException {
         CoapPacket[] resp = findResponse(request);
         if (resp != null) {
             for (CoapPacket r : resp) {

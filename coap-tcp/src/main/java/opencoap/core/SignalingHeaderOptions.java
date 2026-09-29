@@ -39,7 +39,7 @@ public class SignalingHeaderOptions extends CoapOptions {
     }
 
     @Override
-    public boolean parseOption(int type, Opaque data) {
+    boolean parseOption(int type, Opaque data) {
         switch (type) {
             case SIGN_OPTION_2:
                 signalingOption2 = data;

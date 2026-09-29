@@ -23,7 +23,7 @@ import java.io.InputStream;
 /**
  * InputStream decorator that throws EOFException if data in not available.
  */
-public class EofInputStream extends InputStream {
+class EofInputStream extends InputStream {
     private final InputStream inputStream;
 
     private EofInputStream(InputStream inputStream) {
@@ -53,7 +53,7 @@ public class EofInputStream extends InputStream {
         return inputStream.available();
     }
 
-    public static EofInputStream wrap(InputStream inputStream) {
+    static EofInputStream wrap(InputStream inputStream) {
         if (inputStream instanceof EofInputStream) {
             return (EofInputStream) inputStream;
         } else {

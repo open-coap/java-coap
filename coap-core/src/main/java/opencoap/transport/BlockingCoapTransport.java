@@ -37,6 +37,6 @@ public abstract class BlockingCoapTransport implements CoapTransport {
         return objectCompletableFuture;
     }
 
-    public abstract void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException;
+    protected abstract void sendPacket0(CoapPacket coapPacket) throws CoapException, IOException;
 
 }

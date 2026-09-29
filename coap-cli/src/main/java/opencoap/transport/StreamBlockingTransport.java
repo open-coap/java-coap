@@ -56,7 +56,7 @@ public class StreamBlockingTransport extends BlockingCoapTransport implements Co
     }
 
     @Override
-    public void sendPacket0(CoapPacket coapPacket) throws IOException, CoapException {
+    protected void sendPacket0(CoapPacket coapPacket) throws IOException, CoapException {
         codec.serialize(outputStream, coapPacket);
         outputStream.flush();
     }

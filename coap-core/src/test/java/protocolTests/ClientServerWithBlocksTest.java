@@ -172,7 +172,7 @@ public class ClientServerWithBlocksTest {
     public void blockRequest_size_negotiation() throws IOException, CoapException {
         CoapTransport limitedTransport = new InMemoryCoapTransport() {
             @Override
-            public void sendPacket0(CoapPacket coapPacket) {
+            protected void sendPacket0(CoapPacket coapPacket) {
                 //emulate network that cuts data it larger that 40 bytes
                 if (coapPacket.getPayload().size() > 40) {
                     coapPacket.setPayload(coapPacket.getPayload().slice(0, 40));
