@@ -173,7 +173,7 @@ public class TcpCoapServerBuilder {
 
         // OUTBOUND
         TcpExchangeFilter exchangeFilter = new TcpExchangeFilter();
-        Handler<CoapRequest, CoapResponse> outboundService = outboundFilter
+        Handler<CoapRequest, CoapResponse> outboundHandler = outboundFilter
                 .andThen(new ObserveRequestFilter(observationsStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
@@ -195,7 +195,7 @@ public class TcpCoapServerBuilder {
 
         coapTransport.setListener(dispatcher);
 
-        return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, Function::identity);
+        return new CoapServer(coapTransport, dispatcher::handle, outboundHandler, sendNotification, Function::identity);
     }
 
     private boolean hasRoute() {

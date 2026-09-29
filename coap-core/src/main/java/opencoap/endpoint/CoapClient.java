@@ -37,7 +37,7 @@ import opencoap.core.MessageAttributes;
 public class CoapClient implements Closeable {
 
     private final InetSocketAddress destination;
-    protected final Handler<CoapRequest, CoapResponse> clientService;
+    protected final Handler<CoapRequest, CoapResponse> outboundHandler;
     private final Closeable closeable;
     private final Function<CoapResponse, Boolean> resolvePingResponse;
     static final Function<CoapResponse, Boolean> defaultResolvePingResponse = resp -> resp.getCode() == null;
@@ -48,12 +48,12 @@ public class CoapClient implements Closeable {
 
     public static CoapClient create(InetSocketAddress target, CoapServer server, Function<CoapResponse, Boolean> resolvePingResponse) {
         require(server.isRunning());
-        return new CoapClient(target, server.clientService(), server::stop, resolvePingResponse);
+        return new CoapClient(target, server.outboundHandler(), server::stop, resolvePingResponse);
     }
 
-    CoapClient(InetSocketAddress destination, Handler<CoapRequest, CoapResponse> clientService, Closeable closeable, Function<CoapResponse, Boolean> resolvePingResponse) {
+    CoapClient(InetSocketAddress destination, Handler<CoapRequest, CoapResponse> outboundHandler, Closeable closeable, Function<CoapResponse, Boolean> resolvePingResponse) {
         this.destination = destination;
-        this.clientService = clientService;
+        this.outboundHandler = outboundHandler;
         this.closeable = closeable;
         this.resolvePingResponse = resolvePingResponse;
     }
@@ -63,7 +63,7 @@ public class CoapClient implements Closeable {
     }
 
     public CompletableFuture<CoapResponse> send(CoapRequest.Builder request) {
-        return clientService.apply(request.address(destination).build());
+        return outboundHandler.apply(request.address(destination).build());
     }
 
     public CoapResponse sendSync(CoapRequest request) throws CoapException {
@@ -83,7 +83,7 @@ public class CoapClient implements Closeable {
     }
 
     public CompletableFuture<Boolean> ping() throws CoapException {
-        return clientService.apply(CoapRequest.ping(destination, MessageAttributes.EMPTY))
+        return outboundHandler.apply(CoapRequest.ping(destination, MessageAttributes.EMPTY))
                 .thenApply(resolvePingResponse);
     }
 

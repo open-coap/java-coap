@@ -32,7 +32,7 @@ final class SequentialMessageIdSupplier implements MessageIdSupplier {
     }
 
     @Override
-    public int getNextMID() {
+    public int next() {
         return 0xFFFF & globalMid.incrementAndGet();
     }
 }

@@ -48,10 +48,10 @@ public class SeparateResponseTest {
 
         client = CoapServer.builder()
                 .transport(serverTransport)
-                .midSupplier(MessageIdSupplier.sequential(0))
+                .messageIdSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(S_32)
                 .retransmission(ofFixed(ofMillis(500)))
-                .requestTagSupplier(RequestTagSupplier.createSequential(100))
+                .requestTagSupplier(RequestTagSupplier.sequential(100))
                 .buildClient(SERVER_ADDRESS);
     }
 

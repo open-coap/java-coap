@@ -71,7 +71,7 @@ public final class CoapServerBuilder {
     private int duplicationMaxSize = 10000;
     private PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectionCache;
     private ScheduledExecutorService scheduledExecutorService;
-    private MessageIdSupplier midSupplier = new SequentialMessageIdSupplier();
+    private MessageIdSupplier messageIdSupplier = new SequentialMessageIdSupplier();
     private Duration responseTimeout = Duration.ofMillis(DELAYED_TRANSACTION_TIMEOUT_MS);
     private DuplicatedCoapMessageCallback duplicatedCoapMessageCallback = DuplicatedCoapMessageCallback.NULL;
     private RetransmissionBackOff retransmissionBackOff = RetransmissionBackOff.ofDefault();
@@ -85,7 +85,7 @@ public final class CoapServerBuilder {
     private Filter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
     private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
     private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
-    private RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential();
+    private RequestTagSupplier requestTagSupplier = RequestTagSupplier.sequential();
     private boolean isTransportLoggingEnabled = true;
     private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
@@ -182,8 +182,8 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder midSupplier(MessageIdSupplier midSupplier) {
-        this.midSupplier = midSupplier;
+    public CoapServerBuilder messageIdSupplier(MessageIdSupplier messageIdSupplier) {
+        this.messageIdSupplier = messageIdSupplier;
         return this;
     }
 
@@ -259,7 +259,7 @@ public final class CoapServerBuilder {
         RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(scheduler, retransmissionBackOff, CoapPacket::isConfirmable);
         PiggybackedExchangeFilter piggybackedExchangeFilter = new PiggybackedExchangeFilter();
 
-        Handler<CoapRequest, CoapResponse> outboundService = outboundFilter
+        Handler<CoapRequest, CoapResponse> outboundHandler = outboundFilter
                 .andThen(new ObserveRequestFilter(observationStore::add))
                 .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
                 .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
@@ -267,7 +267,7 @@ public final class CoapServerBuilder {
                 .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::toCoapResponse)) // convert coap packet
-                .andThenMap(midSupplier::update)
+                .andThenMap(messageIdSupplier::update)
                 .andThen(retransmissionFilter)
                 .andThen(piggybackedExchangeFilter)
                 .then(sender);
@@ -278,7 +278,7 @@ public final class CoapServerBuilder {
                 .andThen(new BlockWiseNotificationFilter(capabilities()))
                 .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::isAck))
-                .andThenMap(midSupplier::update)
+                .andThenMap(messageIdSupplier::update)
                 .andThen(retransmissionFilter)
                 .andThen(piggybackedExchangeFilter)
                 .then(sender);
@@ -289,7 +289,7 @@ public final class CoapServerBuilder {
                 ? new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback)
                 : Filter.identity();
         Handler<CoapPacket, CoapPacket> inboundService = duplicateDetector
-                .andThen(new CoapRequestConverter(midSupplier))
+                .andThen(new CoapRequestConverter(messageIdSupplier))
                 .andThen(inboundRequestFilter)
                 .andThen(new RescueFilter())
                 .andThen(new CriticalOptionVerifier(recognizedCustomOptions))
@@ -306,7 +306,7 @@ public final class CoapServerBuilder {
                 piggybackedExchangeFilter::handleResponse, exchangeFilter::handleResponse
         );
 
-        return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, () -> {
+        return new CoapServer(coapTransport, dispatcher::handle, outboundHandler, sendNotification, () -> {
             piggybackedExchangeFilter.stop();
             if (duplicateDetectorCache != null) {
                 duplicateDetectorCache.stop();

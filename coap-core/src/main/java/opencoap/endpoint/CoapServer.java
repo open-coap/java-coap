@@ -36,16 +36,16 @@ public class CoapServer {
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final CoapTransport transport;
     private final Consumer<CoapPacket> dispatcher;
-    private final Handler<CoapRequest, CoapResponse> outboundService;
-    private final Handler<SeparateResponse, Boolean> outboundResponseService;
+    private final Handler<CoapRequest, CoapResponse> outboundHandler;
+    private final Handler<SeparateResponse, Boolean> notificationHandler;
     private final Runnable stopAll;
 
-    public CoapServer(CoapTransport transport, Consumer<CoapPacket> dispatcher, Handler<CoapRequest, CoapResponse> outboundService,
-            Handler<SeparateResponse, Boolean> outboundResponseService, Runnable stopAll) {
+    public CoapServer(CoapTransport transport, Consumer<CoapPacket> dispatcher, Handler<CoapRequest, CoapResponse> outboundHandler,
+            Handler<SeparateResponse, Boolean> notificationHandler, Runnable stopAll) {
         this.transport = transport;
         this.dispatcher = dispatcher;
-        this.outboundService = outboundService;
-        this.outboundResponseService = outboundResponseService;
+        this.outboundHandler = outboundHandler;
+        this.notificationHandler = notificationHandler;
         this.stopAll = stopAll;
     }
 
@@ -123,12 +123,12 @@ public class CoapServer {
     }
 
 
-    public final Handler<CoapRequest, CoapResponse> clientService() {
-        return outboundService;
+    public final Handler<CoapRequest, CoapResponse> outboundHandler() {
+        return outboundHandler;
     }
 
-    public Handler<SeparateResponse, Boolean> outboundResponseService() {
-        return outboundResponseService;
+    public Handler<SeparateResponse, Boolean> notificationHandler() {
+        return notificationHandler;
     }
 
     CoapTransport getTransport() {

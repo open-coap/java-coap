@@ -44,7 +44,7 @@ public class Observation2Test {
 
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0))
+        client = CoapServer.builder().transport(transport).messageIdSupplier(MessageIdSupplier.sequential(0))
                 .notificationsReceiver(notifReceiver)
                 .buildClient(SERVER_ADDRESS);
 

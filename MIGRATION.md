@@ -31,7 +31,7 @@ This document outlines breaking changes and migration steps between versions of 
   - `DtlsTransportContext` &rarr; `DtlsAttributes`
   - `MediaTypes` &rarr; `ContentFormat`
   - `BasicHeaderOptions` / `HeaderOptions` &rarr; `CoapOptions`
-  - `SignallingHeaderOptions` &rarr; `SignalingHeaderOptions`
+  - `SignallingHeaderOptions` &rarr; `SignalingCoapOptions`
   - `Method.iPATCH` &rarr; `Method.IPATCH`
   - `CoapRequestEntityIncomplete` &rarr; `CoapRequestEntityIncompleteException`
   - `CoapRequestEntityTooLarge` &rarr; `CoapRequestEntityTooLargeException`
@@ -44,6 +44,8 @@ This document outlines breaking changes and migration steps between versions of 
   - `PayloadSizeVerifier` &rarr; `MaxMessageSizeFilter`
   - `Validations.assume` &rarr; `Validations.check`
   - `Method.valueOf(int)` / `MessageType.valueOf(int)` / `Code.valueOf(int)` &rarr; `fromCode(int)`
+  - `LinkFormatBuilder` &rarr; `LinkFormatParser`
+- **Method renames:** leftover, misspelled and inconsistent method names are corrected, e.g. `CoapPacket.headers()` &rarr; `options()`, `CoapServer.clientService()` &rarr; `outboundHandler()`, `CoapServerBuilder.midSupplier(...)` &rarr; `messageIdSupplier(...)`. `LinkFormatBuilder` is renamed to `LinkFormatParser`. See [section 11](#11-renamed-methods).
 - **Reduced visibility:** a few internal helpers that were public in 6.x are now package-private, and `BlockingCoapTransport.sendPacket0` is now `protected`. See [section 10](#10-reduced-visibility).
 - **Content-Format constants & uint16 typing:** `ContentFormat` constants dropped the `CT_` prefix (e.g. `APPLICATION_JSON`), fixed typos (`APPLICATION_COSE_*`, `APPLICATION_LINK_FORMAT`, `APPLICATION_OCTET_STREAM`), and content formats are now typed as `int`/`Integer` (RFC 7252 uint16) instead of `short`/`Short`.
 
@@ -139,7 +141,7 @@ All classes have been migrated from legacy prefixes (`com.mbed.coap.*`, `org.ope
 | `com.mbed.coap.transport.udp` | `opencoap.transport` | `DatagramSocketTransport` |
 | `com.mbed.coap.transport.javassl` | `opencoap.transport` | `SocketClientTransport`, `SSLSocketClientTransport` |
 | `com.mbed.coap.transport.stdio` | `opencoap.transport` | `StreamBlockingTransport`, `OpensslProcessTransport` |
-| `com.mbed.coap.linkformat` | `opencoap.linkformat` | `LinkFormat`, `LinkFormatBuilder`, `PToken` |
+| `com.mbed.coap.linkformat` | `opencoap.linkformat` | `LinkFormat`, `LinkFormatParser` (was `LinkFormatBuilder`), `PToken` |
 | `com.mbed.coap.utils` | `opencoap.core` | `Handler`, `Filter`, `MappingFilter` |
 | `com.mbed.coap.utils` | `opencoap.util` | `FutureHelpers`, `ExecutorHelpers`, `Scheduler`, `Validations` |
 | `org.opencoap.coap.netty` | `opencoap.transport` | `NettyCoapTransport`, `CoapCodec`, `NettyUtils` |
@@ -263,18 +265,18 @@ In addition, all `ContentFormat` constants dropped the redundant `CT_` prefix (e
 | `CT_APPLICATION_CODE_KEY` | `APPLICATION_COSE_KEY` | Corrected "CODE" typo to "COSE" (RFC 8152) |
 | `CT_APPLICATION_CODE_KEY_SET` | `APPLICATION_COSE_KEY_SET` | Corrected "CODE" typo to "COSE" (RFC 8152) |
 
-#### Signaling Header Options (RFC 8323 spelling)
+#### Signaling Options (RFC 8323 spelling)
 
-Spelling corrected from `Signalling` to `Signaling` to match RFC 8323 and the existing `SignalingOptions` class.
+`SignallingHeaderOptions` is renamed to `SignalingCoapOptions`. The spelling now matches RFC 8323 and the existing `SignalingOptions` class, and "HeaderOptions" is replaced by `CoapOptions`, which it extends.
 
 ```diff
 -import com.mbed.coap.packet.SignallingHeaderOptions;
-+import opencoap.core.SignalingHeaderOptions;
++import opencoap.core.SignalingCoapOptions;
 
 -SignallingHeaderOptions options = new SignallingHeaderOptions(Code.C701_CSM);
 -options.putSignallingOptions(signalingOptions);
 -SignalingOptions sig = options.toSignallingOptions(Code.C701_CSM);
-+SignalingHeaderOptions options = new SignalingHeaderOptions(Code.C701_CSM);
++SignalingCoapOptions options = new SignalingCoapOptions(Code.C701_CSM);
 +options.putSignalingOptions(signalingOptions);
 +SignalingOptions sig = options.toSignalingOptions(Code.C701_CSM);
 ```
@@ -402,7 +404,7 @@ Content format is now uniformly represented as `int` / `Integer`:
 - **Options & Builders:** `CoapOptions`, `CoapOptionsBuilder`, `CoapRequest.Builder`, and `CoapResponse.Builder` accept and return `int` / `Integer` for `contentFormat` and `accept`.
 - **Range validation:** `CoapOptions.setContentFormat(Integer)` and `setAccept(Integer)` validate that values fall within `0..65535` (`0xFFFF`), throwing `IllegalArgumentException` otherwise.
 - **Removed overload trap:** The `CoapOptions.setAccept(short)` overload has been removed to eliminate ambiguity with `setAccept(Integer)`.
-- **LinkFormat:** `LinkFormat.getContentType()` and `setContentType(Integer)` now use `Integer` instead of `Short`.
+- **LinkFormat:** `LinkFormat.getContentType()` and `setContentType(...)` are renamed to `getContentFormat()` and `setContentFormat(Integer)`, and use `Integer` instead of `Short`.
 - **Utility methods:** `ContentFormat.contentFormatToString(Integer)` and `ContentFormat.parseContentFormat(String)` use `Integer`.
 
 ```diff
@@ -417,14 +419,14 @@ Content format is now uniformly represented as `int` / `Integer`:
 
 ```diff
 -Short ct = linkFormat.getContentType();
-+Integer ct = linkFormat.getContentType();
++Integer ct = linkFormat.getContentFormat();
 ```
 
 #### Option Numbers and Constant Type Corrections
 
 Other option-related constants and fields that could not represent their full domains have also been corrected:
 
-- **Option number constants:** `CoapOptions` option constants (`IF_MATCH`, `URI_HOST`, `ETAG`, `IF_NON_MATCH`, `URI_PORT`, `LOCATION_PATH`, `URI_PATH`, `CONTENT_FORMAT`, `MAX_AGE`, `URI_QUERY`, `ACCEPT`, `LOCATION_QUERY`, `PROXY_URI`, `PROXY_SCHEME`, `SIZE1`) changed from `byte` to `int` (CoAP option numbers are unsigned integers).
+- **Option number constants:** `CoapOptions` option constants (`IF_MATCH`, `URI_HOST`, `ETAG`, `IF_NONE_MATCH`, `URI_PORT`, `LOCATION_PATH`, `URI_PATH`, `CONTENT_FORMAT`, `MAX_AGE`, `URI_QUERY`, `ACCEPT`, `LOCATION_QUERY`, `PROXY_URI`, `PROXY_SCHEME`, `SIZE1`) changed from `byte` to `int` (CoAP option numbers are unsigned integers).
 - **Default Max-Age:** `CoapOptions.DEFAULT_MAX_AGE` changed from `short` (`60`) to `long` (`60L`), matching the `Long maxAge` field.
 - **Max retransmit:** `CoapConstants.MAX_RETRANSMIT` changed from `Short` to primitive `int` (`4`).
 
@@ -439,9 +441,9 @@ In 6.x, options were split across `BasicHeaderOptions` (base RFC 7252 options) a
 In 7.0, both classes are unified into a single `CoapOptions` class in `opencoap.core`. Packet structures and builders now consistently produce and consume `CoapOptions`:
 
 - `CoapRequest.options()` and `CoapResponse.options()` return `CoapOptions`.
-- `CoapPacket.headers()` returns `CoapOptions` and `setHeaderOptions(...)` accepts `CoapOptions`.
+- `CoapPacket.headers()` and `setHeaderOptions(...)` are renamed to `options()` and `setOptions(CoapOptions)`.
 - `CoapOptionsBuilder.build()` returns `CoapOptions`.
-- `SignalingHeaderOptions` now extends `CoapOptions` directly.
+- `SignallingHeaderOptions` is renamed to `SignalingCoapOptions` and extends `CoapOptions` directly.
 
 ```diff
 -import com.mbed.coap.packet.HeaderOptions;
@@ -457,9 +459,9 @@ In 7.0, both classes are unified into a single `CoapOptions` class in `opencoap.
 +CoapOptions options = request.options();
 ```
 
-##### SignalingHeaderOptions Duplication Fix
+##### SignalingCoapOptions Duplication Fix
 
-Because `HeaderOptions` did not override `duplicate(HeaderOptions)`, `SignalingHeaderOptions.duplicate()` previously invoked `super.duplicate(BasicHeaderOptions)`, silently dropping all extended option fields (Observe, Block1, Block2, Size2, Echo, Request-Tag, and Correlation-Tag) during duplication. With the unified `CoapOptions`, `duplicate()` now correctly copies all options.
+Because `HeaderOptions` did not override `duplicate(HeaderOptions)`, `SignallingHeaderOptions.duplicate()` previously invoked `super.duplicate(BasicHeaderOptions)`, silently dropping all extended option fields (Observe, Block1, Block2, Size2, Echo, Request-Tag, and Correlation-Tag) during duplication. With the unified `CoapOptions`, `duplicate()` now correctly copies all options.
 
 #### Option Wire Framing Extracted to CoapSerializer
 
@@ -530,7 +532,7 @@ Implementors whose names repeated the interface name were renamed as well:
 +Handler<CoapRequest, CoapResponse> suspend = new DtlsSessionSuspensionHandler();
 ```
 
-Method names that return handlers, such as `CoapServer.clientService()` and `CoapServer.outboundResponseService()`, are unchanged; only their return type is now `Handler`.
+Methods that returned services are renamed as well: `CoapServer.clientService()` is now `outboundHandler()` and `CoapServer.outboundResponseService()` is now `notificationHandler()`. See [Renamed Methods](#11-renamed-methods).
 
 #### Filter and MappingFilter
 
@@ -685,4 +687,78 @@ These were public in 6.x but are internal implementation details, not meant to b
          // ...
      }
  }
+```
+
+### 11. Renamed Methods
+
+Methods whose names were left over from earlier renames, misspelled, or inconsistent with the rest of the API are renamed. The old names are removed.
+
+| 6.x | 7.0 | Why |
+|---|---|---|
+| `CoapServer.clientService()` | `CoapServer.outboundHandler()` | Left over from the `Service` &rarr; `Handler` rename |
+| `CoapServer.outboundResponseService()` | `CoapServer.notificationHandler()` | Left over from the `Service` &rarr; `Handler` rename. It is the pipeline that sends observation notifications |
+| `CoapClient.clientService` (protected field) | `CoapClient.outboundHandler` | Follows `CoapServer.outboundHandler()` |
+| `CoapPacket.headers()` | `CoapPacket.options()` | Matches `CoapRequest`, `CoapResponse` and `SeparateResponse` |
+| `CoapPacket.setHeaderOptions(CoapOptions)` | `CoapPacket.setOptions(CoapOptions)` | Same |
+| `CoapOptions.isUnsave(int)` | `CoapOptions.isUnsafe(int)` | Typo. RFC 7252 §5.4.2 calls it "Unsafe" |
+| `CoapOptions.IF_NON_MATCH` | `CoapOptions.IF_NONE_MATCH` | The option is called If-None-Match (RFC 7252 §5.10.8.2) |
+| `CoapOptions.getIfNonMatch()` / `setIfNonMatch(Boolean)` | `CoapOptions.getIfNoneMatch()` / `setIfNoneMatch(Boolean)` | Same |
+| `CoapOptionsBuilder.ifNonMatch()` | `CoapOptionsBuilder.ifNoneMatch()` | Same |
+| `CoapOptions.containsUnrecognisedCriticalOption(...)` | `CoapOptions.containsUnrecognizedCriticalOption(...)` | American spelling, as in `CoapServerBuilder.recognizedCustomOptions` |
+| `Capabilities.isBERTEnabled()` | `Capabilities.isBertEnabled()` | Matches `BlockOption.isBert()` |
+| `LinkFormat.setOAutobservable(Boolean)` | `LinkFormat.setAutoObservable(Boolean)` | Typo |
+| `LinkFormat.getMaxSize()` | `LinkFormat.getMaximumSize()` | Both read the `sz` attribute. Only the one matching `setMaximumSize` is kept |
+| `LinkFormat.getContentType()` / `setContentType(Integer)` | `LinkFormat.getContentFormat()` / `setContentFormat(Integer)` | The `ct` attribute is a CoAP Content-Format |
+| `MessageIdSupplier.getNextMID()` | `MessageIdSupplier.next()` | Matches `RequestTagSupplier.next()` |
+| `RequestTagSupplier.createSequential(...)` | `RequestTagSupplier.sequential(...)` | Matches `MessageIdSupplier.sequential(...)` |
+| `CoapServerBuilder.midSupplier(...)` | `CoapServerBuilder.messageIdSupplier(...)` | Named after the `MessageIdSupplier` type, like `requestTagSupplier(...)` |
+| `SignallingHeaderOptions` | `SignalingCoapOptions` | See [Signaling Options](#signaling-options-rfc-8323-spelling) |
+
+```diff
+-CoapOptions options = packet.headers();
+-packet.setHeaderOptions(options);
++CoapOptions options = packet.options();
++packet.setOptions(options);
+```
+
+```diff
+ CoapServer.builder()
+-        .midSupplier(MessageIdSupplier.sequential(0))
+-        .requestTagSupplier(RequestTagSupplier.createSequential(100))
++        .messageIdSupplier(MessageIdSupplier.sequential(0))
++        .requestTagSupplier(RequestTagSupplier.sequential(100))
+```
+
+A custom `MessageIdSupplier` implements `next()`:
+
+```diff
+ class MyMessageIdSupplier implements MessageIdSupplier {
+     @Override
+-    public int getNextMID() {
++    public int next() {
+         // ...
+     }
+ }
+```
+
+#### LinkFormatBuilder Renamed to LinkFormatParser
+
+`LinkFormatBuilder` was not a builder but a set of static parse and format helpers, so it is renamed to `LinkFormatParser`. The two list parsers are merged into one `parse` that returns a `List`, and `toString(Collection)`, which reused `Object.toString`'s name, is now `format`:
+
+| 6.x | 7.0 |
+|---|---|
+| `LinkFormatBuilder.parseList(String)` (returns `LinkFormat[]`) | `LinkFormatParser.parse(String)` (returns `List<LinkFormat>`) |
+| `LinkFormatBuilder.parseLinkAsList(String)` | `LinkFormatParser.parse(String)` |
+| `LinkFormatBuilder.parse(String)` (single link) | `LinkFormatParser.parse(String).get(0)` |
+| `LinkFormatBuilder.toString(Collection<LinkFormat>)` | `LinkFormatParser.format(Collection<LinkFormat>)` |
+| `LinkFormatBuilder.filter(List<LinkFormat>, Map<String, String>)` | `LinkFormatParser.filter(List<LinkFormat>, Map<String, String>)` |
+
+```diff
+-import opencoap.linkformat.LinkFormatBuilder;
++import opencoap.linkformat.LinkFormatParser;
+
+-LinkFormat[] links = LinkFormatBuilder.parseList(payload);
+-String text = LinkFormatBuilder.toString(Arrays.asList(links));
++List<LinkFormat> links = LinkFormatParser.parse(payload);
++String text = LinkFormatParser.format(links);
 ```

@@ -46,8 +46,8 @@ class CoapTcpPacketConverterTest {
         expected.setMessageType(null);
         expected.setToken(variableUInt(123));
         expected.setMethod(Method.POST);
-        expected.headers().setUriPath("/path1");
-        expected.headers().setContentFormat(ContentFormat.APPLICATION_XML);
+        expected.options().setUriPath("/path1");
+        expected.options().setContentFormat(ContentFormat.APPLICATION_XML);
         expected.setPayload("<test>");
 
         assertEquals(expected, coapPacket);
@@ -86,8 +86,8 @@ class CoapTcpPacketConverterTest {
         expected.setMessageType(null);
         expected.setToken(variableUInt(142));
         expected.setCode(Code.C201_CREATED);
-        expected.headers().setMaxAge(412L);
-        expected.headers().setEtag(Opaque.of("123"));
+        expected.options().setMaxAge(412L);
+        expected.options().setEtag(Opaque.of("123"));
         expected.setPayload("<test>");
 
         assertEquals(expected, coapPacket);

@@ -39,20 +39,20 @@ import org.junit.jupiter.api.Test;
 
 public class CoapClientTest {
     private CoapClient client;
-    private final Handler<CoapRequest, CoapResponse> clientService = mock(Handler.class);
+    private final Handler<CoapRequest, CoapResponse> outboundHandler = mock(Handler.class);
     private final Opaque token1001 = Opaque.ofBytes(0x03, 0xE9);
 
 
     @BeforeEach
     public void setUp() throws Exception {
-        reset(clientService);
-        client = new CoapClient(LOCAL_5683, clientService, () -> {
+        reset(outboundHandler);
+        client = new CoapClient(LOCAL_5683, outboundHandler, () -> {
         }, CoapClient.defaultResolvePingResponse);
     }
 
     @Test
     public void request() {
-        given(clientService.apply(get("/test").from(LOCAL_5683)))
+        given(outboundHandler.apply(get("/test").from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok("ABC", TEXT_PLAIN).toFuture());
 
         // when
@@ -64,7 +64,7 @@ public class CoapClientTest {
 
     @Test
     public void pingRequest() throws Exception {
-        given(clientService.apply(ping(LOCAL_5683, MessageAttributes.EMPTY)))
+        given(outboundHandler.apply(ping(LOCAL_5683, MessageAttributes.EMPTY)))
                 .willReturn(completedFuture(CoapResponse.of(null)));
 
         // when
@@ -76,7 +76,7 @@ public class CoapClientTest {
 
     @Test
     public void syncRequest() throws CoapException {
-        given(clientService.apply(get("/test").from(LOCAL_5683)))
+        given(outboundHandler.apply(get("/test").from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok("ABC", TEXT_PLAIN).toFuture());
 
         // when
@@ -89,7 +89,7 @@ public class CoapClientTest {
 
     @Test
     public void observationTest() throws Exception {
-        given(clientService.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
+        given(outboundHandler.apply(get("/test").token(token1001).observe().from(LOCAL_5683)))
                 .willReturn(CoapResponse.ok().payload("1").contentFormat(TEXT_PLAIN).observe(1).toFuture());
 
         // when

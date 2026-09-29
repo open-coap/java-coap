@@ -40,7 +40,7 @@ import opencoap.core.CoapOptions;
 import opencoap.core.Code;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.SignalingHeaderOptions;
+import opencoap.core.SignalingCoapOptions;
 import opencoap.core.SignalingOptions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -59,7 +59,7 @@ public class CoapTcpPacketSerializerTest {
         assertArrayEquals(rawCp, CoapTcpPacketSerializer.serialize(cp2));
         assertEquals(Opaque.variableUInt(1234L), cp2.getToken());
         assertEquals(Code.C204_CHANGED, cp2.getCode());
-        assertEquals("/test", cp2.headers().getUriPath());
+        assertEquals("/test", cp2.options().getUriPath());
         assertEquals("some test payload", cp2.getPayloadString());
 
         assertSimilar(cp, cp2);
@@ -136,8 +136,8 @@ public class CoapTcpPacketSerializerTest {
     @Test
     public void coapPacketTest3_overTcp() throws CoapException, IOException {
         CoapPacket cp = new CoapPacket(Method.PUT, null, "", null);
-        cp.headers().setUriPath("/test2");
-        cp.headers().setLocationPath("");
+        cp.options().setUriPath("/test2");
+        cp.options().setLocationPath("");
         cp.setPayload("t�m� on varsin miel??$�");
         byte[] rawCp = CoapTcpPacketSerializer.serialize(cp);
         CoapPacket cp2 = CoapTcpPacketSerializer.deserialize(null, new ByteArrayInputStream(rawCp));
@@ -147,7 +147,7 @@ public class CoapTcpPacketSerializerTest {
         assertArrayEquals(rawCp, CoapTcpPacketSerializer.serialize(cp2));
         assertEquals(Method.PUT, cp2.getMethod());
         assertEquals(null, cp2.getMessageType());
-        assertEquals("/test2", cp2.headers().getUriPath());
+        assertEquals("/test2", cp2.options().getUriPath());
     }
 
     @Test
@@ -171,14 +171,14 @@ public class CoapTcpPacketSerializerTest {
         CoapPacket cp = new CoapPacket(null);
         cp.setCode(Code.C701_CSM);
         cp.setMessageType(null);
-        SignalingHeaderOptions headers = new SignalingHeaderOptions(cp.getCode());
-        cp.setHeaderOptions(headers);
+        SignalingCoapOptions headers = new SignalingCoapOptions(cp.getCode());
+        cp.setOptions(headers);
 
         SignalingOptions sign = new SignalingOptions();
         sign.setMaxMessageSize(7);
         sign.setBlockWiseTransfer(true);
         headers.putSignalingOptions(sign);
-        cp.headers().setMaxAge(100L);
+        cp.options().setMaxAge(100L);
 
         byte[] rawCp = CoapTcpPacketSerializer.serialize(cp);
         CoapPacket cp2 = CoapTcpPacketSerializer.deserialize(null, new ByteArrayInputStream(rawCp));
@@ -188,9 +188,9 @@ public class CoapTcpPacketSerializerTest {
         assertArrayEquals(rawCp, CoapTcpPacketSerializer.serialize(cp2));
         assertEquals(Code.C701_CSM, cp2.getCode());
         assertEquals(null, cp2.getMessageType());
-        assertEquals(7, ((SignalingHeaderOptions) cp2.headers()).toSignalingOptions(Code.C701_CSM).getMaxMessageSize().intValue());
-        assertTrue(((SignalingHeaderOptions) cp2.headers()).toSignalingOptions(Code.C701_CSM).getBlockWiseTransfer());
-        assertEquals(100, cp2.headers().getMaxAgeValue());
+        assertEquals(7, ((SignalingCoapOptions) cp2.options()).toSignalingOptions(Code.C701_CSM).getMaxMessageSize().intValue());
+        assertTrue(((SignalingCoapOptions) cp2.options()).toSignalingOptions(Code.C701_CSM).getBlockWiseTransfer());
+        assertEquals(100, cp2.options().getMaxAgeValue());
 
         assertSimilar(cp, cp2);
     }
@@ -297,7 +297,7 @@ public class CoapTcpPacketSerializerTest {
 
         assertEquals(0, pkt.getToken().size());
         assertEquals(pkt.getPayload(), Opaque.of("payload89012"));
-        assertEquals("/aaa/bbb", pkt.headers().getUriPath());
+        assertEquals("/aaa/bbb", pkt.options().getUriPath());
 
 
         // incorrect length (less than written payload), read only part of payload
@@ -313,7 +313,7 @@ public class CoapTcpPacketSerializerTest {
 
         assertEquals(0, pkt.getToken().size());
         assertEquals(pkt.getPayload(), Opaque.of("payload890"));
-        assertEquals("/aaa/bbb", pkt.headers().getUriPath());
+        assertEquals("/aaa/bbb", pkt.options().getUriPath());
     }
 
     @Test

@@ -44,7 +44,7 @@ public class BlockwiseTransferWithTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0))
+        client = CoapServer.builder().transport(transport).messageIdSupplier(MessageIdSupplier.sequential(0))
                 .retransmission(ofFixed(ofMillis(500)))
                 .buildClient(SERVER_ADDRESS);
     }

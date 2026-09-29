@@ -48,7 +48,7 @@ public class LinkFormat implements Serializable {
     static final String LINK_TYPE = "type";
     //
     //--- RFC 7252 ---
-    static final String LINK_CONTENT_TYPE = "ct";
+    static final String LINK_CONTENT_FORMAT = "ct";
     //--- draft-ietf-core-observe-08 ---
     static final String LINK_OBSERVABLE = "obs";
     //no ietf spec
@@ -86,8 +86,8 @@ public class LinkFormat implements Serializable {
     private static void parse(String paramName, LinkFormat lf, CharSequence val) throws ParseException, NumberFormatException {
         if (LINK_MAXIMUM_SIZE.equals(paramName)) {
             lf.setMaximumSize(Integer.parseInt(val.toString()));
-        } else if (LINK_CONTENT_TYPE.equals(paramName)) {
-            lf.setContentType(Integer.parseInt(val.toString().split(" ")[0]));
+        } else if (LINK_CONTENT_FORMAT.equals(paramName)) {
+            lf.setContentFormat(Integer.parseInt(val.toString().split(" ")[0]));
         } else if (LINK_HREFLANG.equals(paramName)) {
             lf.setHRefLang(((PToken) val).toString());
         } else if (LINK_RELATIONS.equals(paramName)) {
@@ -236,12 +236,8 @@ public class LinkFormat implements Serializable {
         params.put(LINK_MAXIMUM_SIZE, val);
     }
 
-    public Integer getMaximumSize() {
-        return getParamInt(LINK_MAXIMUM_SIZE);
-    }
-
-    public void setContentType(Integer val) {
-        params.put(LINK_CONTENT_TYPE, val);
+    public void setContentFormat(Integer val) {
+        params.put(LINK_CONTENT_FORMAT, val);
     }
 
     /**
@@ -258,7 +254,7 @@ public class LinkFormat implements Serializable {
         params.put(LINK_OBSERVABLE, val);
     }
 
-    public void setOAutobservable(Boolean val) {
+    public void setAutoObservable(Boolean val) {
         params.put(LINK_AUTO_OBSERVABLE, val);
     }
 
@@ -507,10 +503,10 @@ public class LinkFormat implements Serializable {
      * values. A link MAY include either a ct attribute or a type attribute, but
      * MUST NOT include both.
      *
-     * @return Content type
+     * @return Content-Format code
      */
-    public Integer getContentType() {
-        return getParamInt(LINK_CONTENT_TYPE);
+    public Integer getContentFormat() {
+        return getParamInt(LINK_CONTENT_FORMAT);
     }
 
     /**
@@ -526,7 +522,7 @@ public class LinkFormat implements Serializable {
      *
      * @return Maximum size estimate
      */
-    public Integer getMaxSize() {
+    public Integer getMaximumSize() {
         return getParamInt(LINK_MAXIMUM_SIZE);
     }
 

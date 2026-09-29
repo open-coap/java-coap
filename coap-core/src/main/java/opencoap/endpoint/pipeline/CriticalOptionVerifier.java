@@ -40,7 +40,7 @@ public class CriticalOptionVerifier implements Filter<CoapRequest, CoapResponse>
 
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Handler<CoapRequest, CoapResponse> service) {
-        if (request.options().containsUnrecognisedCriticalOption(recognizedCustomOptions)) {
+        if (request.options().containsUnrecognizedCriticalOption(recognizedCustomOptions)) {
             return coapResponse(Code.C402_BAD_OPTION).toFuture();
         }
         return service.apply(request);

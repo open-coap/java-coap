@@ -25,11 +25,11 @@ public interface RequestTagSupplier {
 
     Opaque next();
 
-    static RequestTagSupplier createSequential() {
-        return createSequential(new Random().nextInt(0xFFFF));
+    static RequestTagSupplier sequential() {
+        return sequential(new Random().nextInt(0xFFFF));
     }
 
-    static RequestTagSupplier createSequential(int init) {
+    static RequestTagSupplier sequential(int init) {
         final AtomicInteger current = new AtomicInteger(init);
 
         return () -> Opaque.variableUInt(current.incrementAndGet());

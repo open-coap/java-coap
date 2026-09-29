@@ -49,7 +49,7 @@ public class QueueRequestsTest {
         MockCoapTransport transport = new MockCoapTransport();
 
         client = CoapServer.builder().transport(transport)
-                .midSupplier(MessageIdSupplier.sequential(0))
+                .messageIdSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(BlockSize.S_32)
                 .noDuplicateCheck()
                 .queueMaxSize(2)

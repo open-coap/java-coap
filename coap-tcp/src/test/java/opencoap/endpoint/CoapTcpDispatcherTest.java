@@ -43,7 +43,7 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
-import opencoap.core.SignalingHeaderOptions;
+import opencoap.core.SignalingCoapOptions;
 import opencoap.core.SignalingOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -230,12 +230,12 @@ class CoapTcpDispatcherTest {
         packet.setMessageType(null);
         packet.setCode(Code.C701_CSM);
 
-        SignalingHeaderOptions headers = new SignalingHeaderOptions(packet.getCode());
+        SignalingCoapOptions headers = new SignalingCoapOptions(packet.getCode());
         if (signOpt != null) {
             headers.putSignalingOptions(signOpt);
         }
 
-        packet.setHeaderOptions(headers);
+        packet.setOptions(headers);
         return packet;
     }
 

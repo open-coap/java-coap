@@ -18,7 +18,7 @@ package opencoap.core;
 
 import static opencoap.core.CoapOptions.hasNoCacheKey;
 import static opencoap.core.CoapOptions.isCritical;
-import static opencoap.core.CoapOptions.isUnsave;
+import static opencoap.core.CoapOptions.isUnsafe;
 import static opencoap.core.Opaque.decodeHex;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -417,34 +417,34 @@ public class CoapOptionsTest {
     @Test
     public void criticalOptTest() throws Exception {
         CoapOptions h = new CoapOptions();
-        assertFalse(h.containsUnrecognisedCriticalOption());
+        assertFalse(h.containsUnrecognizedCriticalOption());
 
         h.put(1000, Opaque.of("foo"));
-        assertFalse(h.containsUnrecognisedCriticalOption());
+        assertFalse(h.containsUnrecognizedCriticalOption());
 
         h.put(1001, Opaque.of("foo"));
-        assertTrue(h.containsUnrecognisedCriticalOption());
+        assertTrue(h.containsUnrecognizedCriticalOption());
 
         h.put(1001, Opaque.of("foo"));
-        assertFalse(h.containsUnrecognisedCriticalOption(Collections.singleton(1001)));
+        assertFalse(h.containsUnrecognizedCriticalOption(Collections.singleton(1001)));
     }
 
     @Test
     public void optionCharacteristics() throws Exception {
         assertTrue(isCritical(CoapOptions.IF_MATCH));
-        assertFalse(isUnsave(CoapOptions.IF_MATCH));
+        assertFalse(isUnsafe(CoapOptions.IF_MATCH));
         assertFalse(hasNoCacheKey(CoapOptions.IF_MATCH));
 
         assertFalse(isCritical(CoapOptions.ETAG));
-        assertFalse(isUnsave(CoapOptions.ETAG));
+        assertFalse(isUnsafe(CoapOptions.ETAG));
         assertFalse(hasNoCacheKey(CoapOptions.ETAG));
 
         assertTrue(isCritical(CoapOptions.URI_PORT));
-        assertTrue(isUnsave(CoapOptions.URI_PORT));
+        assertTrue(isUnsafe(CoapOptions.URI_PORT));
         assertFalse(hasNoCacheKey(CoapOptions.URI_PORT));
 
         assertFalse(isCritical(CoapOptions.SIZE1));
-        assertFalse(isUnsave(CoapOptions.SIZE1));
+        assertFalse(isUnsafe(CoapOptions.SIZE1));
         assertTrue(hasNoCacheKey(CoapOptions.SIZE1));
     }
 
@@ -488,7 +488,7 @@ public class CoapOptionsTest {
     @Test
     public void failWhenTooLargeDeltaToSerialize() throws Exception {
         CoapOptions h = new CoapOptions();
-        h.setIfNonMatch(false);
+        h.setIfNoneMatch(false);
         h.put(65805, new Opaque(new byte[1]));
         assertThrows(IllegalArgumentException.class, () ->
                 CoapSerializer.serializeOptions(h, Mockito.mock(OutputStream.class))
@@ -691,7 +691,7 @@ public class CoapOptionsTest {
     @Test
     void correlationOptionShouldBeElectiveAndSafeToForward() {
         assertFalse(isCritical(CoapOptions.OPEN_COAP_CORRELATION_TAG));
-        assertFalse(isUnsave(CoapOptions.OPEN_COAP_CORRELATION_TAG));
+        assertFalse(isUnsafe(CoapOptions.OPEN_COAP_CORRELATION_TAG));
         assertFalse(hasNoCacheKey(CoapOptions.OPEN_COAP_CORRELATION_TAG));
     }
 

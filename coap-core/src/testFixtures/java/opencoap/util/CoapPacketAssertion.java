@@ -28,27 +28,27 @@ public class CoapPacketAssertion {
         assertEquals(cp1.getCode(), cp2.getCode());
         assertEquals(cp1.getMessageId(), cp2.getMessageId());
 
-        assertEquals(cp1.headers().getBlock1Req(), cp2.headers().getBlock1Req());
-        assertEquals(cp1.headers().getBlock2Res(), cp2.headers().getBlock2Res());
-        assertEquals(cp1.headers().getUriPath(), cp2.headers().getUriPath());
-        assertEquals(cp1.headers().getUriAuthority(), cp2.headers().getUriAuthority());
-        assertEquals(cp1.headers().getUriHost(), cp2.headers().getUriHost());
-        assertEquals(cp1.headers().getUriQueryList(), cp2.headers().getUriQueryList());
-        assertEquals(cp1.headers().getLocationPath(), cp2.headers().getLocationPath());
-        assertEquals(cp1.headers().getLocationQuery(), cp2.headers().getLocationQuery());
+        assertEquals(cp1.options().getBlock1Req(), cp2.options().getBlock1Req());
+        assertEquals(cp1.options().getBlock2Res(), cp2.options().getBlock2Res());
+        assertEquals(cp1.options().getUriPath(), cp2.options().getUriPath());
+        assertEquals(cp1.options().getUriAuthority(), cp2.options().getUriAuthority());
+        assertEquals(cp1.options().getUriHost(), cp2.options().getUriHost());
+        assertEquals(cp1.options().getUriQueryList(), cp2.options().getUriQueryList());
+        assertEquals(cp1.options().getLocationPath(), cp2.options().getLocationPath());
+        assertEquals(cp1.options().getLocationQuery(), cp2.options().getLocationQuery());
 
-        assertEquals(cp1.headers().getAccept(), cp2.headers().getAccept());
-        assertArrayEquals(cp1.headers().getIfMatch(), cp2.headers().getIfMatch());
-        assertArrayEquals(cp1.headers().getEtagArray(), cp2.headers().getEtagArray());
+        assertEquals(cp1.options().getAccept(), cp2.options().getAccept());
+        assertArrayEquals(cp1.options().getIfMatch(), cp2.options().getIfMatch());
+        assertArrayEquals(cp1.options().getEtagArray(), cp2.options().getEtagArray());
 
-        assertEquals(cp1.headers().getIfNonMatch(), cp2.headers().getIfNonMatch());
-        assertEquals(cp1.headers().getContentFormat(), cp2.headers().getContentFormat());
-        assertEquals(cp1.headers().getEtag(), cp2.headers().getEtag());
-        assertEquals(cp1.headers().getMaxAge(), cp2.headers().getMaxAge());
-        assertEquals(cp1.headers().getObserve(), cp2.headers().getObserve());
-        assertEquals(cp1.headers().getProxyUri(), cp2.headers().getProxyUri());
+        assertEquals(cp1.options().getIfNoneMatch(), cp2.options().getIfNoneMatch());
+        assertEquals(cp1.options().getContentFormat(), cp2.options().getContentFormat());
+        assertEquals(cp1.options().getEtag(), cp2.options().getEtag());
+        assertEquals(cp1.options().getMaxAge(), cp2.options().getMaxAge());
+        assertEquals(cp1.options().getObserve(), cp2.options().getObserve());
+        assertEquals(cp1.options().getProxyUri(), cp2.options().getProxyUri());
         assertEquals(cp1.getToken(), cp2.getToken());
-        assertEquals(cp1.headers().getUriPort(), cp2.headers().getUriPort());
+        assertEquals(cp1.options().getUriPort(), cp2.options().getUriPort());
 
         assertEquals(cp1.getPayloadString(), cp2.getPayloadString());
 

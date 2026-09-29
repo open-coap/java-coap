@@ -47,6 +47,7 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -62,7 +63,7 @@ import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
 import opencoap.linkformat.LinkFormat;
-import opencoap.linkformat.LinkFormatBuilder;
+import opencoap.linkformat.LinkFormatParser;
 import org.junit.jupiter.api.Test;
 
 public class CoapPacketTest {
@@ -71,20 +72,20 @@ public class CoapPacketTest {
     public void linkFormat() throws ParseException {
 
         String linkFormatString = "</a/relay>;if=\"ns.wadl#a\";rt=\"ns:relay\";ct=\"0\"";
-        LinkFormat[] lf = LinkFormatBuilder.parseList(linkFormatString);
-        assertEquals(1, lf.length);
-        assertEquals("/a/relay", lf[0].getUri());
-        assertArrayEquals(new String[]{"ns.wadl#a"}, lf[0].getInterfaceDescriptionArray());
-        assertArrayEquals(new String[]{"ns:relay"}, lf[0].getResourceTypeArray());
-        assertEquals((Integer) 0, lf[0].getContentType());
+        List<LinkFormat> lf = LinkFormatParser.parse(linkFormatString);
+        assertEquals(1, lf.size());
+        assertEquals("/a/relay", lf.get(0).getUri());
+        assertArrayEquals(new String[]{"ns.wadl#a"}, lf.get(0).getInterfaceDescriptionArray());
+        assertArrayEquals(new String[]{"ns:relay"}, lf.get(0).getResourceTypeArray());
+        assertEquals((Integer) 0, lf.get(0).getContentFormat());
 
         linkFormatString = "</a/relay>;if=\"ns.wadl#a\";rt=\"ns:relay\";ct=\"0\","
                 + "</s/light>;if=\"ns.wadl#s\";rt=\"ucum:lx\";ct=\"0\","
                 + "</s/power>;if=\"ns.wadl#s\";rt=\"ucum:W\";ct=\"0\","
                 + "</s/temp>;if=\"ns.wadl#s\";rt=\"ucum:Cel\";ct=\"0\"";
 
-        lf = LinkFormatBuilder.parseList(linkFormatString);
-        assertEquals(4, lf.length);
+        lf = LinkFormatParser.parse(linkFormatString);
+        assertEquals(4, lf.size());
     }
 
     @Test
@@ -113,25 +114,25 @@ public class CoapPacketTest {
 
         CoapPacket cp = deserialize(null, new ByteArrayInputStream(raw));
 
-        assertEquals("/temperatura/wnętrze", cp.headers().getUriPath());
+        assertEquals("/temperatura/wnętrze", cp.options().getUriPath());
     }
 
     @Test
     public void shouldDeserializeControlCharactersInOpaqueOptionAndPayload() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", null);
-        cp.headers().setEtag(Opaque.ofBytes(0x00, 0x0d, 0x0a));
+        cp.options().setEtag(Opaque.ofBytes(0x00, 0x0d, 0x0a));
         cp.setPayload("first\r\nsecond");
 
         CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(serialize(cp)));
 
         // not text options, arbitrary bytes are legal there
-        assertEquals(Opaque.ofBytes(0x00, 0x0d, 0x0a), cp2.headers().getEtag());
+        assertEquals(Opaque.ofBytes(0x00, 0x0d, 0x0a), cp2.options().getEtag());
         assertEquals("first\r\nsecond", cp2.getPayloadString());
     }
 
     private static byte[] rawPacketWithOption(int optionNumber, String value) {
         CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, null, null);
-        cp.headers().put(optionNumber, Opaque.of(value));
+        cp.options().put(optionNumber, Opaque.of(value));
         return serialize(cp);
     }
 
@@ -145,7 +146,7 @@ public class CoapPacketTest {
         assertArrayEquals(rawCp, serialize(cp2));
         assertEquals(Method.GET, cp2.getMethod());
         assertEquals(MessageType.Confirmable, cp2.getMessageType());
-        assertEquals("/test", cp2.headers().getUriPath());
+        assertEquals("/test", cp2.options().getUriPath());
         assertNull(cp2.getCode());
         assertNull(cp2.getPayloadString());
     }
@@ -168,8 +169,8 @@ public class CoapPacketTest {
     public void coapPacketTest3() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "", null);
         cp.setMessageId(1234);
-        cp.headers().setUriPath("/test2");
-        cp.headers().setLocationPath("");
+        cp.options().setUriPath("/test2");
+        cp.options().setLocationPath("");
         cp.setPayload("t�m� on varsin miel??$�");
         byte[] rawCp = serialize(cp);
         CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(rawCp));
@@ -179,13 +180,13 @@ public class CoapPacketTest {
         assertArrayEquals(rawCp, serialize(cp2));
         assertEquals(Method.PUT, cp2.getMethod());
         assertEquals(MessageType.Confirmable, cp2.getMessageType());
-        assertEquals("/test2", cp2.headers().getUriPath());
+        assertEquals("/test2", cp2.options().getUriPath());
     }
 
     @Test
     public void coapPacketTestWithHightNumberBlock() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Reset, "", null);
-        cp.headers().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
+        cp.options().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
         cp.setMessageId(0xFFFF);
 
         byte[] rawCp = serialize(cp);
@@ -199,10 +200,10 @@ public class CoapPacketTest {
     @Test
     public void coapPacketTestWithPathAndQuery() throws CoapException, ParseException {
         CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
-        cp.headers().setUriPath("/test/path/1");
-        cp.headers().setUriQueryList("par1=1", "par2=201");
-        cp.headers().setLocationPath("/loc/path/2");
-        cp.headers().setLocationQuery("lpar1=1&lpar2=2");
+        cp.options().setUriPath("/test/path/1");
+        cp.options().setUriQueryList("par1=1", "par2=201");
+        cp.options().setLocationPath("/loc/path/2");
+        cp.options().setLocationQuery("lpar1=1&lpar2=2");
         cp.setMessageId(3612);
 
         byte[] rawCp = serialize(cp);
@@ -217,10 +218,10 @@ public class CoapPacketTest {
         Map<String, String> q = new HashMap<>();
         q.put("par1", "1");
         q.put("par2", "201");
-        assertEquals(q, cp.headers().getUriQueryMap());
+        assertEquals(q, cp.options().getUriQueryMap());
 
-        assertNull(cp.headers().getContentFormat());
-        assertNull(cp.headers().getContentFormat());
+        assertNull(cp.options().getContentFormat());
+        assertNull(cp.options().getContentFormat());
 
     }
 
@@ -228,11 +229,11 @@ public class CoapPacketTest {
     public void shouldRoundTripUint16ContentFormat() throws CoapException {
         for (int contentFormat : new int[]{0, 1, 255, 256, 32767, 32768, 65000, 65535}) {
             CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", LOCAL_5683);
-            cp.headers().setContentFormat(contentFormat);
+            cp.options().setContentFormat(contentFormat);
 
             CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(serialize(cp)));
 
-            assertEquals(contentFormat, cp2.headers().getContentFormat().intValue());
+            assertEquals(contentFormat, cp2.options().getContentFormat().intValue());
         }
     }
 
@@ -247,15 +248,15 @@ public class CoapPacketTest {
     @Test
     public void coapPacketTestWithHeaders() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
-        cp.headers().setAccept(432);
-        cp.headers().setIfMatch(new Opaque[]{Opaque.variableUInt(0x9853)});
-        cp.headers().setIfNonMatch(Boolean.TRUE);
-        cp.headers().setContentFormat(423);
-        cp.headers().setEtag(new Opaque[]{Opaque.variableUInt(98), Opaque.variableUInt(78543)});
-        cp.headers().setMaxAge(7118543L);
-        cp.headers().setObserve(123);
-        cp.headers().setProxyUri("/proxy/uri/test");
-        cp.headers().setUriPort(64154);
+        cp.options().setAccept(432);
+        cp.options().setIfMatch(new Opaque[]{Opaque.variableUInt(0x9853)});
+        cp.options().setIfNoneMatch(Boolean.TRUE);
+        cp.options().setContentFormat(423);
+        cp.options().setEtag(new Opaque[]{Opaque.variableUInt(98), Opaque.variableUInt(78543)});
+        cp.options().setMaxAge(7118543L);
+        cp.options().setObserve(123);
+        cp.options().setProxyUri("/proxy/uri/test");
+        cp.options().setUriPort(64154);
 
         cp.setMessageId(3612);
 
@@ -272,8 +273,8 @@ public class CoapPacketTest {
     @Test
     public void coapPacketTestWithEmptyLocHeader() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.GET, MessageType.Reset, "", null);
-        cp.headers().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
-        cp.headers().setLocationQuery("");
+        cp.options().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
+        cp.options().setLocationQuery("");
         cp.setMessageId(0);
 
         byte[] rawCp = serialize(cp);
@@ -286,8 +287,8 @@ public class CoapPacketTest {
 
         assertEquals(Method.GET, cp2.getMethod());
         assertEquals(MessageType.Reset, cp2.getMessageType());
-        assertEquals(cp.headers().getBlock2Res(), cp2.headers().getBlock2Res());
-        assertEquals(null, cp2.headers().getUriPath());
+        assertEquals(cp.options().getBlock2Res(), cp2.options().getBlock2Res());
+        assertEquals(null, cp2.options().getUriPath());
         assertNull(cp2.getCode());
         assertNull(cp2.getPayloadString());
     }
@@ -306,32 +307,32 @@ public class CoapPacketTest {
         cp.setMessageId(0);
         Opaque hdrVal = new Opaque(new byte[]{1, 2, 3, 4, 5, 6, 7});
         int hdrType = 100;
-        cp.headers().put(hdrType, hdrVal);
-        assertEquals(hdrVal, cp.headers().getCustomOption(hdrType));
+        cp.options().put(hdrType, hdrVal);
+        assertEquals(hdrVal, cp.options().getCustomOption(hdrType));
 
         byte[] rawCp = serialize(cp);
 
         CoapPacket cp2 = CoapSerializer.deserialize(null, new ByteArrayInputStream(rawCp));
         System.out.println(cp);
         System.out.println(cp2);
-        //assertEquals(1, cp2.headers().getUnrecognizedOptions().size());
-        assertEquals(hdrVal, cp2.headers().getCustomOption(hdrType));
-        assertEquals(cp.headers(), cp2.headers());
+        //assertEquals(1, cp2.options().getUnrecognizedOptions().size());
+        assertEquals(hdrVal, cp2.options().getCustomOption(hdrType));
+        assertEquals(cp.options(), cp2.options());
     }
 
     @Test
     public void uriPathWithDoubleSlashes() throws CoapException {
         CoapPacket cp = new CoapPacket(null);
         cp.setMessageId(2);
-        cp.headers().setUriPath("/3/13/0/");
-        cp.headers().setLocationPath("/2//1");
-        cp.headers().setUriQueryList("te=12", "", "ble=14");
+        cp.options().setUriPath("/3/13/0/");
+        cp.options().setLocationPath("/2//1");
+        cp.options().setUriQueryList("te=12", "", "ble=14");
         cp.setMessageId(17);
 
         CoapPacket cp2 = CoapSerializer.deserialize(null, serialize(cp));
         assertEquals(cp, cp2);
-        assertEquals("/3/13/0/", cp2.headers().getUriPath());
-        assertEquals("/2//1", cp2.headers().getLocationPath());
+        assertEquals("/3/13/0/", cp2.options().getUriPath());
+        assertEquals("/2//1", cp2.options().getLocationPath());
     }
 
     @Test
@@ -378,13 +379,13 @@ public class CoapPacketTest {
     @Test
     public void shouldAllowObserveValueUpToThreeBytes() {
         CoapPacket packet = new CoapPacket(null);
-        packet.headers().setObserve(0xFFFFFF);
+        packet.options().setObserve(0xFFFFFF);
 
-        assertEquals(Integer.valueOf(0xFFFFFF), packet.headers().getObserve());
+        assertEquals(Integer.valueOf(0xFFFFFF), packet.options().getObserve());
 
         //non valid
         try {
-            packet.headers().setObserve(0xFFFFFF + 1);
+            packet.options().setObserve(0xFFFFFF + 1);
             fail();
         } catch (IllegalArgumentException ex) {
             //as expected
@@ -533,7 +534,7 @@ public class CoapPacketTest {
         CoapPacket expected = new CoapPacket(Code.C205_CONTENT, MessageType.Confirmable, LOCAL_1_5683);
         expected.setToken(Opaque.of("100"));
         expected.setPayload("<dupa>");
-        expected.headers().setContentFormat(ContentFormat.APPLICATION_XML);
+        expected.options().setContentFormat(ContentFormat.APPLICATION_XML);
 
         assertEquals(expected, packet);
     }

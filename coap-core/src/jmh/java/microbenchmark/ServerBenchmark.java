@@ -60,7 +60,7 @@ public class ServerBenchmark {
         coapReq = new CoapPacket(Method.GET, MessageType.Confirmable, "/path1/sub2/sub3", null);
         coapReq.setMessageId(1234);
         coapReq.setToken(Opaque.variableUInt(0x0102030405L));
-        coapReq.headers().setMaxAge(4321L);
+        coapReq.options().setMaxAge(4321L);
 
         server = CoapServer.builder()
                 .transport(mockTransport)

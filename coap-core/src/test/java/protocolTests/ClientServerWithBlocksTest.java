@@ -199,7 +199,7 @@ public class ClientServerWithBlocksTest {
                 )
                 .fromLocal(SERVER_PORT);
 
-        CompletableFuture<CoapResponse> resp = cnn.clientService().apply(request);
+        CompletableFuture<CoapResponse> resp = cnn.outboundHandler().apply(request);
 
         assertEquals(Code.C205_CONTENT, resp.join().getCode());
         assertEquals(BODY, resp.join().getPayload());
@@ -232,7 +232,7 @@ public class ClientServerWithBlocksTest {
                 .options(o -> o.block1Req(1, BlockSize.S_128, true))
                 .toLocal(SERVER_PORT);
 
-        CoapResponse resp = cnn.clientService().apply(request).join();
+        CoapResponse resp = cnn.outboundHandler().apply(request).join();
 
         assertEquals(Code.C408_REQUEST_ENTITY_INCOMPLETE, resp.getCode(), resp.getPayloadString());
         assertTrue(resp.getPayloadString().startsWith("no prev blocks"));

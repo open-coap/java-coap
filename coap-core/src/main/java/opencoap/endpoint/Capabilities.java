@@ -78,12 +78,12 @@ public final class Capabilities {
         return (int) Math.min(maxMessageSize, Integer.MAX_VALUE);
     }
 
-    public boolean isBERTEnabled() {
+    public boolean isBertEnabled() {
         return blockwiseTransfer && maxMessageSize > BASE_MAX_MESSAGE_SIZE;
     }
 
     public BlockSize getBlockSize() {
-        if (isBERTEnabled()) {
+        if (isBertEnabled()) {
             return BlockSize.S_1024_BERT;
         }
 

@@ -30,7 +30,7 @@ public class CoapTcpPacketConverter {
         } else {
             packet.setMethod(request.getMethod());
             packet.setToken(request.getToken());
-            packet.setHeaderOptions(request.options());
+            packet.setOptions(request.options());
             packet.setPayload(request.getPayload());
         }
 
@@ -42,7 +42,7 @@ public class CoapTcpPacketConverter {
         packet.setMessageType(null);
         packet.setCode(resp.getCode());
         packet.setToken(resp.getToken());
-        packet.setHeaderOptions(resp.options().duplicate());
+        packet.setOptions(resp.options().duplicate());
         packet.setPayload(resp.getPayload());
         return packet;
     }

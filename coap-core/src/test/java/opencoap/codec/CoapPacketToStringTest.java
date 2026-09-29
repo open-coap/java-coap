@@ -32,28 +32,28 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(5):0x73686f7274", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.TEXT_PLAIN);
+        cp.options().setContentFormat(ContentFormat.TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_XML);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_XML);
         assertEquals("CON GET MID:0 URI:/test ContTp:41 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_LWM2M_JSON);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_LWM2M_JSON);
         assertEquals("CON GET MID:0 URI:/test ContTp:11543 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_JSON);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_JSON);
         assertEquals("CON GET MID:0 URI:/test ContTp:50 pl:'short'", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.TEXT_PLAIN);
+        cp.options().setContentFormat(ContentFormat.TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl(5):0x73686f7274", cp.toString(false, true, false));
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_OCTET_STREAM);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_OCTET_STREAM);
         assertEquals("CON GET MID:0 URI:/test ContTp:42 pl(5):0x73686f7274", cp.toString());
 
         assertEquals("CON GET MID:0 URI:/test ContTp:42 pl(5)", cp.toString(false, false, false, true));
 
         //unknown
-        cp.headers().setContentFormat(4321);
+        cp.options().setContentFormat(4321);
         assertEquals("CON GET MID:0 URI:/test ContTp:4321 pl(5):0x73686f7274", cp.toString());
     }
 
@@ -65,14 +65,14 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c..", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.TEXT_PLAIN);
+        cp.options().setContentFormat(ContentFormat.TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl(51):'long payload long payload long payload long ..'", cp.toString());
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_EXI);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_EXI);
         assertEquals("CON GET MID:0 URI:/test ContTp:47 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c..", cp.toString());
 
         //unknown
-        cp.headers().setContentFormat(5321);
+        cp.options().setContentFormat(5321);
         assertEquals("CON GET MID:0 URI:/test ContTp:5321 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c..", cp.toString());
     }
 
@@ -84,14 +84,14 @@ public class CoapPacketToStringTest {
 
         assertEquals("CON GET MID:0 URI:/test pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164", cp.toString(true));
 
-        cp.headers().setContentFormat(ContentFormat.TEXT_PLAIN);
+        cp.options().setContentFormat(ContentFormat.TEXT_PLAIN);
         assertEquals("CON GET MID:0 URI:/test ContTp:0 pl:'long payload long payload long payload long payload'", cp.toString(true));
 
-        cp.headers().setContentFormat(ContentFormat.APPLICATION_EXI);
+        cp.options().setContentFormat(ContentFormat.APPLICATION_EXI);
         assertEquals("CON GET MID:0 URI:/test ContTp:47 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164", cp.toString(true));
 
         //unknown
-        cp.headers().setContentFormat(5321);
+        cp.options().setContentFormat(5321);
         assertEquals("CON GET MID:0 URI:/test ContTp:5321 pl(51):0x6c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164206c6f6e67207061796c6f6164", cp.toString(true));
     }
 

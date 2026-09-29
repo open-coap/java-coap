@@ -72,7 +72,7 @@ public class CoapSerializer {
             coap.getToken().writeTo(outputStream);
 
             // options
-            serializeOptions(coap.headers(), outputStream);
+            serializeOptions(coap.options(), outputStream);
 
             //payload
             if (coap.getPayload().nonEmpty()) {
@@ -172,7 +172,7 @@ public class CoapSerializer {
             //read headers
             CoapOptions options = new CoapOptions();
             boolean hasPayloadMarker = deserializeOptions(options, inputStream);
-            coap.setHeaderOptions(options);
+            coap.setOptions(options);
 
             //read payload
             if (hasPayloadMarker) {

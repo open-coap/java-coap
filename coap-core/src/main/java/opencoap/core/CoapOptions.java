@@ -52,7 +52,7 @@ public class CoapOptions {
     public static final int IF_MATCH = 1; //multiple
     public static final int URI_HOST = 3;
     public static final int ETAG = 4;      //multiple in request
-    public static final int IF_NON_MATCH = 5;
+    public static final int IF_NONE_MATCH = 5;
     public static final int URI_PORT = 7;
     public static final int LOCATION_PATH = 8; //multiple
     public static final int URI_PATH = 11;  //multiple
@@ -90,7 +90,7 @@ public class CoapOptions {
     private List<String> uriQuery;
     private Integer accept;
     private Opaque[] ifMatch;
-    private Boolean ifNonMatch;
+    private Boolean ifNoneMatch;
     private String proxyUri;
     private String proxyScheme;
     private Integer uriPort;
@@ -145,8 +145,8 @@ public class CoapOptions {
             case IF_MATCH:
                 ifMatch = DataConvertingUtility.extendOption(ifMatch, data);
                 break;
-            case IF_NON_MATCH:
-                ifNonMatch = Boolean.TRUE;
+            case IF_NONE_MATCH:
+                ifNoneMatch = Boolean.TRUE;
                 break;
             case URI_PORT:
                 uriPort = data.toInt();
@@ -194,11 +194,11 @@ public class CoapOptions {
         return unrecognizedOptions.get(optNumber).getFirstValue();
     }
 
-    public boolean containsUnrecognisedCriticalOption() {
-        return containsUnrecognisedCriticalOption(Collections.emptySet());
+    public boolean containsUnrecognizedCriticalOption() {
+        return containsUnrecognizedCriticalOption(Collections.emptySet());
     }
 
-    public boolean containsUnrecognisedCriticalOption(final Collection<Integer> customOptions) {
+    public boolean containsUnrecognizedCriticalOption(final Collection<Integer> customOptions) {
         if (unrecognizedOptions == null) {
             return false;
         }
@@ -214,7 +214,7 @@ public class CoapOptions {
         return (optionNumber & 1) != 0;
     }
 
-    public static boolean isUnsave(int optionNumber) {
+    public static boolean isUnsafe(int optionNumber) {
         return (optionNumber & 2) != 0;
     }
 
@@ -300,8 +300,8 @@ public class CoapOptions {
         if (this.uriPort != null) {
             list.add(RawOption.fromUint(URI_PORT, uriPort));
         }
-        if (ifNonMatch != null && ifNonMatch) {
-            list.add(RawOption.fromEmpty(IF_NON_MATCH));
+        if (ifNoneMatch != null && ifNoneMatch) {
+            list.add(RawOption.fromEmpty(IF_NONE_MATCH));
         }
         if (ifMatch != null) {
             list.add(new RawOption(IF_MATCH, ifMatch));
@@ -396,8 +396,8 @@ public class CoapOptions {
         if (ifMatch != null && ifMatch.length > 0) {
             sb.append(" ifMatch:").append(ifMatch[0]);
         }
-        if (ifNonMatch != null && ifNonMatch) {
-            sb.append(" ifNonMatch");
+        if (ifNoneMatch != null && ifNoneMatch) {
+            sb.append(" ifNoneMatch");
         }
         if (accept != null) {
             sb.append(" accept:").append(accept);
@@ -687,12 +687,12 @@ public class CoapOptions {
         this.ifMatch = ifMatch;
     }
 
-    public Boolean getIfNonMatch() {
-        return ifNonMatch;
+    public Boolean getIfNoneMatch() {
+        return ifNoneMatch;
     }
 
-    public void setIfNonMatch(Boolean ifNonMatch) {
-        this.ifNonMatch = ifNonMatch;
+    public void setIfNoneMatch(Boolean ifNoneMatch) {
+        this.ifNoneMatch = ifNoneMatch;
     }
 
     public String getLocationQuery() {
@@ -859,7 +859,7 @@ public class CoapOptions {
         opts.uriQuery = uriQuery == null ? null : new ArrayList<>(uriQuery);
         opts.accept = accept;
         opts.ifMatch = ifMatch;
-        opts.ifNonMatch = ifNonMatch;
+        opts.ifNoneMatch = ifNoneMatch;
         opts.proxyUri = proxyUri;
         opts.proxyScheme = proxyScheme;
         opts.uriPort = uriPort;
@@ -893,7 +893,7 @@ public class CoapOptions {
         hash = 41 * hash + (this.uriQuery != null ? this.uriQuery.hashCode() : 0);
         hash = 41 * hash + (this.accept != null ? this.accept.hashCode() : 0);
         hash = 41 * hash + Arrays.deepHashCode(this.ifMatch);
-        hash = 41 * hash + (this.ifNonMatch != null ? this.ifNonMatch.hashCode() : 0);
+        hash = 41 * hash + (this.ifNoneMatch != null ? this.ifNoneMatch.hashCode() : 0);
         hash = 41 * hash + (this.proxyUri != null ? this.proxyUri.hashCode() : 0);
         hash = 41 * hash + (this.proxyScheme != null ? this.proxyScheme.hashCode() : 0);
         hash = 41 * hash + (this.uriPort != null ? this.uriPort.hashCode() : 0);
@@ -948,7 +948,7 @@ public class CoapOptions {
         if (!Arrays.deepEquals(this.ifMatch, other.ifMatch)) {
             return false;
         }
-        if (!Objects.equals(this.ifNonMatch, other.ifNonMatch)) {
+        if (!Objects.equals(this.ifNoneMatch, other.ifNoneMatch)) {
             return false;
         }
         if (!Objects.equals(this.proxyUri, other.proxyUri)) {

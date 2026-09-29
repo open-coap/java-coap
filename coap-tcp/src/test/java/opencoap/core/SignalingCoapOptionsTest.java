@@ -20,11 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Test;
-class SignalingHeaderOptionsTest {
+class SignalingCoapOptionsTest {
 
     @Test
     void duplicate() {
-        SignalingHeaderOptions signOpts = new SignalingHeaderOptions(Code.C701_CSM);
+        SignalingCoapOptions signOpts = new SignalingCoapOptions(Code.C701_CSM);
         signOpts.putSignalingOptions(SignalingOptions.capabilities(100, true));
         signOpts.setMaxAge(120L);
         signOpts.setRequestTag(Opaque.of("tag"));
@@ -38,12 +38,12 @@ class SignalingHeaderOptionsTest {
 
     @Test
     public void failWhenNotCSMCode() {
-        assertThrows(IllegalArgumentException.class, () -> new SignalingHeaderOptions(Code.C205_CONTENT));
+        assertThrows(IllegalArgumentException.class, () -> new SignalingCoapOptions(Code.C205_CONTENT));
     }
 
     @Test
     public void equalsAndHashTest() throws Exception {
-        EqualsVerifier.forClass(SignalingHeaderOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
+        EqualsVerifier.forClass(SignalingCoapOptions.class).suppress(Warning.NONFINAL_FIELDS).usingGetClass().verify();
     }
 
 }
