@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 package com.mbed.coap.packet;
 
+import com.mbed.coap.exception.CoapMessageFormatException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,6 +33,19 @@ class PacketUtils {
 
     static int read8(InputStream is) throws IOException {
         return is.read();
+    }
+
+    /**
+     * Parses a response or signaling code, returns null for 0.00 (Empty).
+     *
+     * @throws CoapMessageFormatException if the code is not recognized
+     */
+    static Code parseCode(int code) throws CoapMessageFormatException {
+        Code c = Code.valueOf(code);
+        if (c == null && code != 0) {
+            throw new CoapMessageFormatException(String.format("Unknown code: %d.%02d", code >>> 5, code & 0x1F));
+        }
+        return c;
     }
 
 }
