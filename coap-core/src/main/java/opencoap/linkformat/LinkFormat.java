@@ -17,7 +17,6 @@
 package opencoap.linkformat;
 
 import static opencoap.util.Validations.require;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,9 +28,8 @@ import java.util.Objects;
  * @see <a
  * href="http://tools.ietf.org/rfc/rfc6690.txt">http://tools.ietf.org/rfc/rfc6690.txt</a>
  */
-public class LinkFormat implements Serializable {
+public class LinkFormat {
 
-    private static final long serialVersionUID = 100003L;
     private String uri;
     private final Map<String, Object> params = new HashMap<>();
     //

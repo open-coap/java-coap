@@ -23,7 +23,7 @@ public class CoapMessageKey {
 
     private final int mid;
     private final InetSocketAddress sourceAddress;
-    private final transient long createdTimestampMillis;
+    private final long createdTimestampMillis;
 
     public CoapMessageKey(int mid, InetSocketAddress sourceAddress) {
         this.mid = mid;

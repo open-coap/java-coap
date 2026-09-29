@@ -31,7 +31,7 @@ public final class Capabilities {
 
     private final boolean blockwiseTransfer;
     private final long maxMessageSize;
-    private final transient RequestTagSupplier requestTagSupplier;
+    private final RequestTagSupplier requestTagSupplier;
 
     public static Capabilities min(Capabilities cap1, Capabilities cap2) {
         return new Capabilities(

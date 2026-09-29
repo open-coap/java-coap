@@ -24,7 +24,7 @@ import opencoap.core.Code;
 class CoapRequestEntityTooLargeException extends CoapCodeException {
 
     private final int maxSize;
-    private final BlockOption blockOptionHint;
+    private final transient BlockOption blockOptionHint;
 
     CoapRequestEntityTooLargeException(int maxSize, String message) {
         super(Code.C413_REQUEST_ENTITY_TOO_LARGE, message);

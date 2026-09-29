@@ -16,11 +16,10 @@
  */
 package opencoap.linkformat;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-final class PToken implements CharSequence, Serializable {
+final class PToken implements CharSequence {
 
     private static final int validRangeStart = 33; //'!'
     private static final int validRangeStop = 126; //'~'

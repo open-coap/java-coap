@@ -16,13 +16,12 @@
  */
 package opencoap.core;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * This class implements RFC7959 (Block-Wise Transfers in the Constrained Application Protocol)
  */
-public final class BlockOption implements Serializable {
+public final class BlockOption {
 
     private final int blockNr;
     private final boolean more;
