@@ -160,6 +160,9 @@ public final class CoapServerBuilder {
         if (duplicateDetectionCache != null) {
             return duplicateDetectionCache;
         }
+        if (duplicationMaxSize < 0) {
+            return null;
+        }
         return new DefaultDuplicateDetectorCache("Default cache", duplicationMaxSize, scheduledExecutorService);
     }
 
@@ -282,7 +285,9 @@ public final class CoapServerBuilder {
 
         // INBOUND
         PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
-        DuplicateDetector duplicateDetector = new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback);
+        Filter<CoapPacket, CoapPacket> duplicateDetector = duplicateDetectorCache != null
+                ? new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback)
+                : Filter.identity();
         Handler<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(midSupplier))
                 .andThen(inboundRequestFilter)
@@ -303,7 +308,9 @@ public final class CoapServerBuilder {
 
         return new CoapServer(coapTransport, dispatcher::handle, outboundService, sendNotification, () -> {
             piggybackedExchangeFilter.stop();
-            duplicateDetectorCache.stop();
+            if (duplicateDetectorCache != null) {
+                duplicateDetectorCache.stop();
+            }
             if (stopExecutor) {
                 effectiveExecutorService.shutdown();
             }

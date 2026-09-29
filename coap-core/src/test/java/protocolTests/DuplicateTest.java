@@ -136,6 +136,31 @@ public class DuplicateTest {
     }
 
     @Test
+    public void shouldNotDetectDuplicates_whenDuplicateCheckIsDisabled() throws Exception {
+        AtomicInteger requests = new AtomicInteger(0);
+        MockCoapTransport noDuplicateCheckTransport = new MockCoapTransport();
+        CoapServer noDuplicateCheckServer = CoapServer.builder()
+                .transport(noDuplicateCheckTransport)
+                .noDuplicateCheck()
+                .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
+                .route(req -> CoapResponse.ok("#" + requests.incrementAndGet()).toFuture())
+                .build();
+        noDuplicateCheckServer.start();
+        MockCoapTransport.MockClient noDuplicateCheckClient = noDuplicateCheckTransport.client();
+
+        // when
+        noDuplicateCheckClient.send(coap(12).con().put().uriPath("/test"));
+        noDuplicateCheckClient.send(coap(12).con().put().uriPath("/test"));
+
+        // then
+        noDuplicateCheckClient.verifyReceived(coap(12).ack(Code.C205_CONTENT).payload("#1"));
+        noDuplicateCheckClient.verifyReceived(coap(12).ack(Code.C205_CONTENT).payload("#2"));
+        assertEquals(0, duplicated.get());
+
+        noDuplicateCheckServer.stop();
+    }
+
+    @Test
     void observationRepeated() throws Exception {
         CoapClient outbound = CoapClient.create(LOCAL_5683, server);
 
