@@ -143,7 +143,7 @@ public class DuplicateTest {
         MockCoapTransport noDuplicateCheckTransport = new MockCoapTransport();
         CoapServer noDuplicateCheckServer = CoapServer.builder()
                 .transport(noDuplicateCheckTransport)
-                .reliability(r -> r.withDuplicateDetection(DuplicateDetection.disabled()))
+                .reliability(r -> r.withoutDuplicateDetection())
                 .handler(req -> CoapResponse.ok("#" + requests.incrementAndGet()).toFuture())
                 .build();
         noDuplicateCheckServer.start();

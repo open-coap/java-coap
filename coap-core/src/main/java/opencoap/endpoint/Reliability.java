@@ -137,6 +137,15 @@ public final class Reliability {
         return new Reliability(retransmission, responseTimeout, messageIdSupplier, requestTagSupplier, requireNonNull(duplicateDetection));
     }
 
+    /**
+     * Disables duplicate detection, same as {@code withDuplicateDetection(DuplicateDetection.disabled())}.
+     *
+     * @return modified copy
+     */
+    public Reliability withoutDuplicateDetection() {
+        return withDuplicateDetection(DuplicateDetection.disabled());
+    }
+
     RetransmissionBackOff getRetransmission() {
         return retransmission;
     }

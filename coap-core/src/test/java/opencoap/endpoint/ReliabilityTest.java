@@ -16,6 +16,7 @@
 package opencoap.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -83,6 +84,11 @@ class ReliabilityTest {
 
     private static void assertBetween(long minMillis, long maxMillis, Duration actual) {
         assertTrue(actual.toMillis() >= minMillis && actual.toMillis() <= maxMillis, "Expected " + minMillis + ".." + maxMillis + " ms, got " + actual);
+    }
+
+    @Test
+    void shouldDisableDuplicateDetection() {
+        assertFalse(Reliability.defaults().withoutDuplicateDetection().getDuplicateDetection().isEnabled());
     }
 
     @Test
