@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * Copyright (C) 2011-2021 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,7 +150,7 @@ public class CoapSerializer {
                 //method code
                 coap.setMethod(Method.valueOf(tempByte));
             } else {
-                coap.setCode(Code.valueOf(tempByte));
+                coap.setCode(PacketUtils.parseCode(tempByte));
             }
 
             int messageId = inputStream.read() << 8;
