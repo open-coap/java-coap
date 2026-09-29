@@ -20,7 +20,7 @@ public enum Method {
 
     GET, POST, PUT, DELETE, FETCH, PATCH, IPATCH;
 
-    public static Method valueOf(int methodCode) throws CoapException {
+    public static Method fromCode(int methodCode) throws CoapException {
         switch (methodCode) {
             case 1:
                 return GET;

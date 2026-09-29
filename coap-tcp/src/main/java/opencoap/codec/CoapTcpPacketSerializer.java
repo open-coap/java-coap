@@ -115,9 +115,9 @@ public final class CoapTcpPacketSerializer {
     private static void parseAndSetCodeOrMethod(CoapPacket coapPacket, int codeOrMethod) throws CoapException {
         if (codeOrMethod >= 1 && codeOrMethod <= 10) {
             //method code
-            coapPacket.setMethod(Method.valueOf(codeOrMethod));
+            coapPacket.setMethod(Method.fromCode(codeOrMethod));
         } else {
-            coapPacket.setCode(Code.valueOf(codeOrMethod));
+            coapPacket.setCode(Code.fromCode(codeOrMethod));
         }
     }
 

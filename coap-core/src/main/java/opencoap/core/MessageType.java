@@ -20,7 +20,7 @@ public enum MessageType {
 
     Confirmable, NonConfirmable, Acknowledgement, Reset;
 
-    public static MessageType valueOf(int transactionMessage) throws CoapException {
+    public static MessageType fromCode(int transactionMessage) throws CoapException {
         switch (transactionMessage) {
             case 0:
                 return Confirmable;
