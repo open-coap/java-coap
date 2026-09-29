@@ -25,7 +25,7 @@ import opencoap.codec.RawOption;
  * Implements CoAP additional header options from
  * - RFC 8323
  */
-public class SignalingHeaderOptions extends CoapOptions {
+public class SignalingCoapOptions extends CoapOptions {
 
     private static final byte SIGN_OPTION_2 = 2;
     private static final byte SIGN_OPTION_4 = 4;
@@ -33,7 +33,7 @@ public class SignalingHeaderOptions extends CoapOptions {
     private Opaque signalingOption2;
     private Opaque signalingOption4;
 
-    public SignalingHeaderOptions(Code code) {
+    public SignalingCoapOptions(Code code) {
         require(code.isSignaling());
         this.code = code;
     }
@@ -105,7 +105,7 @@ public class SignalingHeaderOptions extends CoapOptions {
 
     @Override
     public CoapOptions duplicate() {
-        SignalingHeaderOptions opts = new SignalingHeaderOptions(code);
+        SignalingCoapOptions opts = new SignalingCoapOptions(code);
         super.duplicate(opts);
 
         opts.signalingOption2 = signalingOption2;
@@ -126,7 +126,7 @@ public class SignalingHeaderOptions extends CoapOptions {
             return false;
         }
 
-        SignalingHeaderOptions that = (SignalingHeaderOptions) o;
+        SignalingCoapOptions that = (SignalingCoapOptions) o;
         return code == that.code && Objects.equals(signalingOption2, that.signalingOption2) && Objects.equals(signalingOption4, that.signalingOption4);
     }
 

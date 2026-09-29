@@ -81,7 +81,7 @@ public class Block1Size1LimitTest {
         CoapPacket resp = exchange(firstBlock(2, Integer.MAX_VALUE));
 
         assertEquals(Code.C413_REQUEST_ENTITY_TOO_LARGE, resp.getCode());
-        assertEquals(DEFAULT_MAX_TRANSFER_SIZE, resp.headers().getSize1().intValue());
+        assertEquals(DEFAULT_MAX_TRANSFER_SIZE, resp.options().getSize1().intValue());
 
         // the packet must not have taken the receive loop down with it
         assertEquals(Code.C205_CONTENT, exchange(probe(3)).getCode());
@@ -106,8 +106,8 @@ public class Block1Size1LimitTest {
         CoapPacket packet = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test/1", serverAddress);
         packet.setMessageId(messageId);
         packet.setToken(Opaque.decodeHex("aabb"));
-        packet.headers().setSize1(size1);
-        packet.headers().setBlock1Req(new BlockOption(0, BlockSize.S_16, true));
+        packet.options().setSize1(size1);
+        packet.options().setBlock1Req(new BlockOption(0, BlockSize.S_16, true));
         packet.setPayload(opaqueOfSize(16));
         return packet;
     }

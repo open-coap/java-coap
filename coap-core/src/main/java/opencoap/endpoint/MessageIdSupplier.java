@@ -30,10 +30,10 @@ public interface MessageIdSupplier {
      *
      * @return next unique message id
      */
-    int getNextMID();
+    int next();
 
     default CoapPacket update(CoapPacket packet) {
-        packet.setMessageId(getNextMID());
+        packet.setMessageId(next());
         return packet;
     }
 

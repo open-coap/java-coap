@@ -31,7 +31,7 @@ import opencoap.core.CoapOptions;
 import opencoap.core.Code;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.SignalingHeaderOptions;
+import opencoap.core.SignalingCoapOptions;
 
 /**
  * This class implements serialization on de-serialization for CoAP over TCP packet.
@@ -77,12 +77,12 @@ public final class CoapTcpPacketSerializer {
 
         CoapOptions options;
         if (pkt.getCode() != null && pkt.getCode().isSignaling()) {
-            options = new SignalingHeaderOptions(pkt.getCode());
+            options = new SignalingCoapOptions(pkt.getCode());
         } else {
             options = new CoapOptions();
         }
         int leftPayloadLen = CoapSerializer.deserializeOptions(options, is, (int) pktContext.getLength());
-        pkt.setHeaderOptions(options);
+        pkt.setOptions(options);
 
         if (leftPayloadLen > 0) {
             pkt.setPayload(Opaque.read(is, leftPayloadLen));
@@ -224,7 +224,7 @@ public final class CoapTcpPacketSerializer {
         // because options size included into packet length field together with
         // payload marker and payload size
         ByteArrayOutputStream headerOptionsStream = new ByteArrayOutputStream();
-        CoapSerializer.serializeOptions(coapPacket.headers(), headerOptionsStream);
+        CoapSerializer.serializeOptions(coapPacket.options(), headerOptionsStream);
 
         // token length
         int tokenLen = coapPacket.getToken().size();

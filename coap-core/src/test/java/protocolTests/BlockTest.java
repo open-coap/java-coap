@@ -50,11 +50,11 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .midSupplier(MessageIdSupplier.sequential(0))
+                .messageIdSupplier(MessageIdSupplier.sequential(0))
                 .blockSize(BlockSize.S_32)
                 .notificationsReceiver(notifReceiver)
                 .retransmission(ofFixed(ofMillis(500)))
-                .requestTagSupplier(RequestTagSupplier.createSequential(100))
+                .requestTagSupplier(RequestTagSupplier.sequential(100))
                 .buildClient(SERVER_ADDRESS);
     }
 

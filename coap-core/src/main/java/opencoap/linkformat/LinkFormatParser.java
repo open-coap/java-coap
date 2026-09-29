@@ -23,9 +23,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class LinkFormatBuilder {
+public class LinkFormatParser {
 
-    public static String toString(Collection<LinkFormat> links) {
+    /**
+     * Formats links as a link value list.
+     *
+     * @param links links to format
+     * @return textual representation of link value list
+     */
+    public static String format(Collection<LinkFormat> links) {
         StringBuilder sb = new StringBuilder();
         for (LinkFormat lf : links) {
             lf.buildToString(sb);
@@ -43,25 +49,13 @@ public class LinkFormatBuilder {
      * Parses link value list.
      *
      * @param linkValueList textual representation of link value list
-     * @return array of link format
-     * @throws ParseException when link is malformed
-     */
-    public static LinkFormat[] parseList(String linkValueList) throws ParseException {
-        List<LinkFormat> linkFormats = parseLinkAsList(linkValueList);
-        return linkFormats.toArray(new LinkFormat[0]);
-    }
-
-    /**
-     * Parses link value list.
-     *
-     * @param linkValueList textual representation of link value list
      * @return list with parsed link value objects
      * @throws ParseException when link is malformed
      */
-    public static List<LinkFormat> parseLinkAsList(String linkValueList) throws ParseException {
+    public static List<LinkFormat> parse(String linkValueList) throws ParseException {
         List<LinkFormat> linkHeaderList = new LinkedList<>();
         for (String ln : linkValueList.split(",")) {
-            LinkFormat lf = parse(ln);
+            LinkFormat lf = parseLink(ln);
             linkHeaderList.add(lf);
         }
         return linkHeaderList;
@@ -74,7 +68,7 @@ public class LinkFormatBuilder {
      * @return LinkFormat parsed object
      * @throws ParseException when link is malformed
      */
-    public static LinkFormat parse(String ln) throws ParseException {
+    static LinkFormat parseLink(String ln) throws ParseException {
         String[] subLn = ln.split(";");
         if (subLn[0].indexOf('<') < 0 || subLn[0].indexOf('>') < 0) {
             throw new ParseException("Can not parse URI-Reference", 0);
@@ -126,7 +120,7 @@ public class LinkFormatBuilder {
 
     private static boolean filter(String key, LinkFormat lf, String val) {
         if (key.equals(LinkFormat.LINK_RELATIONS) || key.equals(LinkFormat.LINK_REV) || key.equals(LinkFormat.LINK_RESOURCE_TYPE)
-                || key.equals(LinkFormat.LINK_INTERFACE_DESCRIPTION) || key.equals(LinkFormat.LINK_CONTENT_TYPE)) {
+                || key.equals(LinkFormat.LINK_INTERFACE_DESCRIPTION) || key.equals(LinkFormat.LINK_CONTENT_FORMAT)) {
             //for parameters with multiple values ('relation-types')
             String[] paramVals = lf.getParamRelationTypes(key);
             return hasMatch(val, paramVals);

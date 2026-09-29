@@ -199,7 +199,7 @@ public class ObservationTest {
         obsResource.putPayload(ClientServerWithBlocksTest.BIG_RESOURCE.concat(of("change-1")));
         CoapResponse packet = notifReceiver.take().asResponse();
         assertEquals(ClientServerWithBlocksTest.BIG_RESOURCE.slice(0, 128), packet.getPayload());
-        //assertEquals(Integer.valueOf(1), packet.headers().getObserve());
+        //assertEquals(Integer.valueOf(1), packet.options().getObserve());
 
         client.close();
     }

@@ -22,7 +22,7 @@ public class RequestTagSupplierTest {
 
     @Test
     void shouldGeneratedSequentialRequestTags() {
-        RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential(0);
+        RequestTagSupplier requestTagSupplier = RequestTagSupplier.sequential(0);
 
         assertEquals("01", requestTagSupplier.next().toHex());
         assertEquals("02", requestTagSupplier.next().toHex());
@@ -31,7 +31,7 @@ public class RequestTagSupplierTest {
 
     @Test
     void shouldGeneratedSequentialRequestTags_lardInit() {
-        RequestTagSupplier requestTagSupplier = RequestTagSupplier.createSequential(0x7ffffffd);
+        RequestTagSupplier requestTagSupplier = RequestTagSupplier.sequential(0x7ffffffd);
 
         assertEquals("7ffffffe", requestTagSupplier.next().toHex());
         assertEquals("7fffffff", requestTagSupplier.next().toHex());

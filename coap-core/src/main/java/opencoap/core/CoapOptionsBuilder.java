@@ -209,8 +209,8 @@ public class CoapOptionsBuilder {
         return this;
     }
 
-    public CoapOptionsBuilder ifNonMatch() {
-        options.setIfNonMatch(true);
+    public CoapOptionsBuilder ifNoneMatch() {
+        options.setIfNoneMatch(true);
         return this;
     }
 

@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import opencoap.core.CoapCodeException;
@@ -55,7 +56,7 @@ import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.linkformat.LinkFormat;
-import opencoap.linkformat.LinkFormatBuilder;
+import opencoap.linkformat.LinkFormatParser;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
 import opencoap.util.Bytes;
@@ -204,8 +205,8 @@ abstract class IntegrationTestBase {
         CoapResponse msg = client.sendSync(get(CoapConstants.WELL_KNOWN_CORE));
 
         assertNotNull(msg);
-        LinkFormat[] links = LinkFormatBuilder.parseList(msg.getPayloadString());
-        assertEquals(2, links.length);
+        List<LinkFormat> links = LinkFormatParser.parse(msg.getPayloadString());
+        assertEquals(2, links.size());
     }
 
     @Test

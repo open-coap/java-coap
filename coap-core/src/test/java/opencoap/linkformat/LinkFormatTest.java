@@ -39,23 +39,23 @@ public class LinkFormatTest {
     @Test
     public void parseSingle() throws ParseException {
 
-        LinkFormat lf = LinkFormatBuilder.parse("</power>");
+        LinkFormat lf = LinkFormatParser.parseLink("</power>");
         assertEquals("/power", lf.getUri());
-        assertEquals(null, lf.getContentType());
+        assertEquals(null, lf.getContentFormat());
         assertNull(lf.getResourceTypeArray());
         assertNull(lf.getInterfaceDescriptionArray());
         assertEquals(false, lf.isObservable());
 
-        lf = LinkFormatBuilder.parse("</temp>;rt=\"test\"");
+        lf = LinkFormatParser.parseLink("</temp>;rt=\"test\"");
         assertEquals("/temp", lf.getUri());
-        assertEquals(null, lf.getContentType());
+        assertEquals(null, lf.getContentFormat());
         assertArrayEquals(new String[]{"test"}, lf.getResourceTypeArray());
         assertNull(lf.getInterfaceDescriptionArray());
         assertEquals(false, lf.isObservable());
 
-        lf = LinkFormatBuilder.parse("</temp>;obs");
+        lf = LinkFormatParser.parseLink("</temp>;obs");
         assertEquals("/temp", lf.getUri());
-        assertEquals(null, lf.getContentType());
+        assertEquals(null, lf.getContentFormat());
         assertNull(lf.getResourceTypeArray());
         assertNull(lf.getInterfaceDescriptionArray());
         assertEquals(true, lf.isObservable());
@@ -64,25 +64,25 @@ public class LinkFormatTest {
     @Test
     public void parseSingle_withMultCt() throws ParseException {
 
-        LinkFormat lf = LinkFormatBuilder.parse("</power>;ct=\"0 41\"");
+        LinkFormat lf = LinkFormatParser.parseLink("</power>;ct=\"0 41\"");
         assertEquals("/power", lf.getUri());
-        assertEquals(0, lf.getContentType().intValue());
+        assertEquals(0, lf.getContentFormat().intValue());
     }
 
     @Test
     public void parseList() throws ParseException {
 
-        LinkFormat[] lfArr = LinkFormatBuilder.parseList("</power>;rt=\"rt-test\",</temp>;obs;if=\"if-test\"");
-        LinkFormat lf1 = lfArr[0];
-        LinkFormat lf2 = lfArr[1];
+        List<LinkFormat> links = LinkFormatParser.parse("</power>;rt=\"rt-test\",</temp>;obs;if=\"if-test\"");
+        LinkFormat lf1 = links.get(0);
+        LinkFormat lf2 = links.get(1);
         assertEquals("/power", lf1.getUri());
-        assertEquals(null, lf1.getContentType());
+        assertEquals(null, lf1.getContentFormat());
         assertArrayEquals(new String[]{"rt-test"}, lf1.getResourceTypeArray());
         assertNull(lf1.getInterfaceDescriptionArray());
         assertEquals(false, lf1.isObservable());
 
         assertEquals("/temp", lf2.getUri());
-        assertEquals(null, lf2.getContentType());
+        assertEquals(null, lf2.getContentFormat());
         assertNull(lf2.getResourceTypeArray());
         assertArrayEquals(new String[]{"if-test"}, lf2.getInterfaceDescriptionArray());
         assertEquals(true, lf2.isObservable());
@@ -102,18 +102,18 @@ public class LinkFormatTest {
         lf.setTitle("my title");
         lf.setType("example type");
         lf.setAnchor("/test/anch");
-        lf.setContentType(12);
-        lf.setOAutobservable(true);
+        lf.setContentFormat(12);
+        lf.setAutoObservable(true);
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
 
         assertEquals(lf, lf2);
         assertEquals(lf.getUri(), lf2.getUri());
-        assertEquals(lf.getContentType(), lf2.getContentType());
+        assertEquals(lf.getContentFormat(), lf2.getContentFormat());
         assertArrayEquals(lf.getResourceTypeArray(), lf2.getResourceTypeArray());
         assertArrayEquals(lf.getInterfaceDescriptionArray(), lf2.getInterfaceDescriptionArray());
         assertEquals(lf.isObservable(), lf2.isObservable());
-        assertEquals(lf.getMaxSize(), lf2.getMaxSize());
+        assertEquals(lf.getMaximumSize(), lf2.getMaximumSize());
         assertEquals(lf.getResourceInstance(), lf2.getResourceInstance());
         assertEquals(lf.getExport(), lf2.getExport());
         assertEquals(lf.getMedia(), lf2.getMedia());
@@ -137,17 +137,17 @@ public class LinkFormatTest {
         lf.set("type", "example type");
         lf.set("anchor", "/test/anch");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
 
         assertEquals(lf, lf2);
         assertEquals(lf.getUri(), lf2.getUri());
-        assertEquals(lf.getContentType(), lf2.getContentType());
+        assertEquals(lf.getContentFormat(), lf2.getContentFormat());
         assertArrayEquals(lf.getResourceTypeArray(), lf2.getResourceTypeArray());
         assertEquals(lf.getResourceType(), lf2.getResourceType());
         assertArrayEquals(lf.getInterfaceDescriptionArray(), lf2.getInterfaceDescriptionArray());
         assertEquals(lf.getInterfaceDescription(), lf2.getInterfaceDescription());
         assertEquals(lf.isObservable(), lf2.isObservable());
-        assertEquals(lf.getMaxSize(), lf2.getMaxSize());
+        assertEquals(lf.getMaximumSize(), lf2.getMaximumSize());
         assertEquals(lf.getResourceInstance(), lf2.getResourceInstance());
         assertEquals(lf.getExport(), lf2.getExport());
         assertEquals(lf.getMedia(), lf2.getMedia());
@@ -164,14 +164,14 @@ public class LinkFormatTest {
         lf.set("atr2", 22);
         lf.set("atr3", Boolean.TRUE);
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
 
         assertEquals(lf.toString(), lf2.toString());
         assertEquals(lf.getParam("atr1"), lf2.getParam("atr1"));
         assertEquals(lf.getParam("atr2"), lf2.getParam("atr2"));
         assertEquals(lf.getParam("atr3"), lf2.getParam("atr3"));
         assertEquals(lf.getUri(), lf2.getUri());
-        assertEquals(lf.getContentType(), lf2.getContentType());
+        assertEquals(lf.getContentFormat(), lf2.getContentFormat());
         assertArrayEquals(lf.getResourceTypeArray(), lf2.getResourceTypeArray());
         assertArrayEquals(lf.getInterfaceDescriptionArray(), lf2.getInterfaceDescriptionArray());
         assertEquals(lf.isObservable(), lf2.isObservable());
@@ -182,20 +182,20 @@ public class LinkFormatTest {
         LinkFormat lf = new LinkFormat("/test");
         lf.setRelations("rel1");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertArrayEquals(new String[]{"rel1"}, lf2.getRelations());
 
         //multiple relations
         lf.setRelations("rel1", "rel2", "rel3");
 
-        lf2 = LinkFormatBuilder.parse(lf.toString());
+        lf2 = LinkFormatParser.parseLink(lf.toString());
         assertArrayEquals(new String[]{"rel1", "rel2", "rel3"}, lf2.getRelations());
 
         //parse
-        assertArrayEquals(new String[]{"rel1", "rel2"}, LinkFormatBuilder.parse("</dd>;rel=\"rel1 rel2\"").getRelations());
-        assertArrayEquals(new String[]{"relation-example-one"}, LinkFormatBuilder.parse("</dd>;rel=\"relation-example-one\"").getRelations());
-        assertArrayEquals(new String[]{""}, LinkFormatBuilder.parse("</dd>;rel=\"\"").getRelations());
-        assertNull(LinkFormatBuilder.parse("</dd>").getRelations());
+        assertArrayEquals(new String[]{"rel1", "rel2"}, LinkFormatParser.parseLink("</dd>;rel=\"rel1 rel2\"").getRelations());
+        assertArrayEquals(new String[]{"relation-example-one"}, LinkFormatParser.parseLink("</dd>;rel=\"relation-example-one\"").getRelations());
+        assertArrayEquals(new String[]{""}, LinkFormatParser.parseLink("</dd>;rel=\"\"").getRelations());
+        assertNull(LinkFormatParser.parseLink("</dd>").getRelations());
     }
 
     @Test
@@ -211,14 +211,14 @@ public class LinkFormatTest {
         LinkFormat lf = new LinkFormat("/test");
         lf.setAnchor("/s/temp");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertEquals("/s/temp", lf2.getAnchor());
         assertEquals("/s/temp", lf.getAnchor());
 
         //parse
-        assertEquals("/s/temp", LinkFormatBuilder.parse("</dd>;anchor=\"/s/temp\"").getAnchor());
-        assertEquals("", LinkFormatBuilder.parse("</dd>;anchor=\"\"").getAnchor());
-        assertNull(LinkFormatBuilder.parse("</dd>").getAnchor());
+        assertEquals("/s/temp", LinkFormatParser.parseLink("</dd>;anchor=\"/s/temp\"").getAnchor());
+        assertEquals("", LinkFormatParser.parseLink("</dd>;anchor=\"\"").getAnchor());
+        assertNull(LinkFormatParser.parseLink("</dd>").getAnchor());
     }
 
     @Test
@@ -226,20 +226,20 @@ public class LinkFormatTest {
         LinkFormat lf = new LinkFormat("/test");
         lf.setRev("rev1", "rev2");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertArrayEquals(new String[]{"rev1", "rev2"}, lf2.getRev());
 
         //multiple relations
         lf.setRev("rev1", "rev2", "rev3");
 
-        lf2 = LinkFormatBuilder.parse(lf.toString());
+        lf2 = LinkFormatParser.parseLink(lf.toString());
         assertArrayEquals(new String[]{"rev1", "rev2", "rev3"}, lf2.getRev());
 
         //parse
-        assertArrayEquals(new String[]{"rev1", "rev2"}, LinkFormatBuilder.parse("</dd>;rev=\"rev1 rev2\"").getRev());
-        assertArrayEquals(new String[]{"rev-example-one"}, LinkFormatBuilder.parse("</dd>;rev=\"rev-example-one\"").getRev());
-        assertArrayEquals(new String[]{""}, LinkFormatBuilder.parse("</dd>;rev=\"\"").getRev());
-        assertNull(LinkFormatBuilder.parse("</dd>").getRev());
+        assertArrayEquals(new String[]{"rev1", "rev2"}, LinkFormatParser.parseLink("</dd>;rev=\"rev1 rev2\"").getRev());
+        assertArrayEquals(new String[]{"rev-example-one"}, LinkFormatParser.parseLink("</dd>;rev=\"rev-example-one\"").getRev());
+        assertArrayEquals(new String[]{""}, LinkFormatParser.parseLink("</dd>;rev=\"\"").getRev());
+        assertNull(LinkFormatParser.parseLink("</dd>").getRev());
     }
 
     @Test
@@ -249,19 +249,19 @@ public class LinkFormatTest {
 
         assertEquals("</test>;hreflang=LANG-PL", lf.toString());
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertEquals("LANG-PL", lf2.getHRefLang());
         assertEquals("LANG-PL", lf.getHRefLang());
 
         //parse
-        assertEquals("LANG-PL", LinkFormatBuilder.parse("</dd>;hreflang=LANG-PL").getHRefLang());
-        assertEquals("", LinkFormatBuilder.parse("</dd>;hreflang=").getHRefLang());
-        assertNull(LinkFormatBuilder.parse("</dd>").getHRefLang());
+        assertEquals("LANG-PL", LinkFormatParser.parseLink("</dd>;hreflang=LANG-PL").getHRefLang());
+        assertEquals("", LinkFormatParser.parseLink("</dd>;hreflang=").getHRefLang());
+        assertNull(LinkFormatParser.parseLink("</dd>").getHRefLang());
     }
 
     @Test
     public void testFailParseMissingParamValue() {
-        assertThrows(ParseException.class, () -> LinkFormatBuilder.parse("</path>;sz"));
+        assertThrows(ParseException.class, () -> LinkFormatParser.parseLink("</path>;sz"));
     }
 
     @Test
@@ -288,7 +288,7 @@ public class LinkFormatTest {
     @Test
     public void testFailHReflang4() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;hreflang=LANGP L")
+                LinkFormatParser.parseLink("</test>;hreflang=LANGP L")
         );
     }
 
@@ -297,14 +297,14 @@ public class LinkFormatTest {
         LinkFormat lf = new LinkFormat("/test");
         lf.setTitle("test title");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertEquals("test title", lf2.getTitle());
         assertEquals("test title", lf.getTitle());
 
         //parse
-        assertEquals("test title\\test", LinkFormatBuilder.parse("</dd>;title=\"test title\\test\"").getTitle());
-        assertEquals("", LinkFormatBuilder.parse("</dd>;title=\"\"").getTitle());
-        assertNull(LinkFormatBuilder.parse("</dd>").getTitle());
+        assertEquals("test title\\test", LinkFormatParser.parseLink("</dd>;title=\"test title\\test\"").getTitle());
+        assertEquals("", LinkFormatParser.parseLink("</dd>;title=\"\"").getTitle());
+        assertNull(LinkFormatParser.parseLink("</dd>").getTitle());
     }
 
     @Test
@@ -312,14 +312,14 @@ public class LinkFormatTest {
         LinkFormat lf = new LinkFormat("/test");
         lf.setType("test type");
 
-        LinkFormat lf2 = LinkFormatBuilder.parse(lf.toString());
+        LinkFormat lf2 = LinkFormatParser.parseLink(lf.toString());
         assertEquals("test type", lf2.getType());
         assertEquals("test type", lf.getType());
 
         //parse
-        assertEquals("test type\\test", LinkFormatBuilder.parse("</dd>;type=\"test type\\test\"").getType());
-        assertEquals("", LinkFormatBuilder.parse("</dd>;type=\"\"").getType());
-        assertNull(LinkFormatBuilder.parse("</dd>").getType());
+        assertEquals("test type\\test", LinkFormatParser.parseLink("</dd>;type=\"test type\\test\"").getType());
+        assertEquals("", LinkFormatParser.parseLink("</dd>;type=\"\"").getType());
+        assertNull(LinkFormatParser.parseLink("</dd>").getType());
     }
 
     @Test
@@ -328,30 +328,30 @@ public class LinkFormatTest {
                 + "</test/2>;rt=\"dummy-rt dummy-rt2\";obs;media=text/plain,"
                 + "</test/3>;rt=\"dummy-rt3\";obs";
 
-        List<LinkFormat> list = LinkFormatBuilder.parseLinkAsList(LINK);
+        List<LinkFormat> list = LinkFormatParser.parse(LINK);
 
-        List<LinkFormat> links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3"));
+        List<LinkFormat> links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3"));
         assertNotNull(links);
         assertEquals(1, links.size());
         assertEquals("/test/3", links.get(0).getUri());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt"));
         assertNotNull(links);
         assertEquals(2, links.size());
         assertEquals("/test/1", links.get(0).getUri());
         assertEquals("/test/2", links.get(1).getUri());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3&obs=true"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3&obs=true"));
         assertNotNull(links);
         assertEquals(1, links.size());
         assertEquals("/test/3", links.get(0).getUri());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("media=text/plain"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("media=text/plain"));
         assertNotNull(links);
         assertEquals(1, links.size());
         assertEquals("/test/2", links.get(0).getUri());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3&media=text/plain"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-rt3&media=text/plain"));
         assertNotNull(links);
         assertEquals(0, links.size());
     }
@@ -363,34 +363,34 @@ public class LinkFormatTest {
                 + "</test/3>;rt=\"dummy-rt3\";obs,"
                 + "</test/4>";
 
-        List<LinkFormat> list = LinkFormatBuilder.parseLinkAsList(LINK);
+        List<LinkFormat> list = LinkFormatParser.parse(LINK);
 
-        List<LinkFormat> links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-*"));
+        List<LinkFormat> links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy-*"));
         assertNotNull(links);
         assertEquals(3, links.size());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=*"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=*"));
         assertNotNull(links);
         assertEquals(3, links.size());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("obs=*"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("obs=*"));
         assertNotNull(links);
         assertEquals(2, links.size());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("media=text*"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("media=text*"));
         assertNotNull(links);
         assertEquals(1, links.size());
         assertEquals("/test/2", links.get(0).getUri());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy*&media=text/plain"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("rt=dummy*&media=text/plain"));
         assertNotNull(links);
         assertEquals(1, links.size());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("href=/test/1"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("href=/test/1"));
         assertNotNull(links);
         assertEquals(1, links.size());
 
-        links = LinkFormatBuilder.filter(list, DataConvertingUtility.parseUriQuery("href=/test*"));
+        links = LinkFormatParser.filter(list, DataConvertingUtility.parseUriQuery("href=/test*"));
         assertNotNull(links);
         assertEquals(4, links.size());
     }
@@ -398,96 +398,96 @@ public class LinkFormatTest {
     @Test
     public void testFailParse1() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;rt=DUpa")
+                LinkFormatParser.parseLink("</test>;rt=DUpa")
         );
     }
 
     @Test
     public void testFailParse2() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;hreflang=\"LAng-PL\"")
+                LinkFormatParser.parseLink("</test>;hreflang=\"LAng-PL\"")
         );
     }
 
     @Test
     public void testFailParse3() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;sz=\"seven\"")
+                LinkFormatParser.parseLink("</test>;sz=\"seven\"")
         );
     }
 
     @Test
     public void testFailParse4() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;title")
+                LinkFormatParser.parseLink("</test>;title")
         );
     }
 
     @Test
     public void testFailParse4_1() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</test>;rt")
+                LinkFormatParser.parseLink("</test>;rt")
         );
     }
 
     @Test
     public void testFailParse5_missing_uri() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("/fds>;title=\"tytul\"")
+                LinkFormatParser.parseLink("/fds>;title=\"tytul\"")
         );
     }
 
     @Test
     public void testFailParse6() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("/fds>;title=\"tytul\"fds")
+                LinkFormatParser.parseLink("/fds>;title=\"tytul\"fds")
         );
     }
 
     @Test
     public void testFailParse7() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</fds>;title=\"tytul\"dfdss\"")
+                LinkFormatParser.parseLink("</fds>;title=\"tytul\"dfdss\"")
         );
     }
 
     @Test
     public void testFailParse8() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</fds>;obs=\"true\"")
+                LinkFormatParser.parseLink("</fds>;obs=\"true\"")
         );
     }
 
     @Test
     public void testFailParse9() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</fds>;=\"true\"")
+                LinkFormatParser.parseLink("</fds>;=\"true\"")
         );
     }
 
     @Test
     public void testFailParse10() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse(">aa<")
+                LinkFormatParser.parseLink(">aa<")
         );
     }
 
     @Test
     public void testFailParse11_ecp() throws ParseException {
         assertThrows(ParseException.class, () ->
-                LinkFormatBuilder.parse("</t>;exp=123")
+                LinkFormatParser.parseLink("</t>;exp=123")
         );
     }
 
     @Test
     public void testSuccessSpecialCases() throws ParseException {
-        assertEquals("ti=le@sns", LinkFormatBuilder.parse("</fds>;title=\"ti=le@sns\"").getTitle());
-        assertEquals("text/pla=in", LinkFormatBuilder.parse("</fds>;media=text/pla=in").getMedia());
-        assertEquals("/fds", LinkFormatBuilder.parse("</fds>").getUri());
+        assertEquals("ti=le@sns", LinkFormatParser.parseLink("</fds>;title=\"ti=le@sns\"").getTitle());
+        assertEquals("text/pla=in", LinkFormatParser.parseLink("</fds>;media=text/pla=in").getMedia());
+        assertEquals("/fds", LinkFormatParser.parseLink("</fds>").getUri());
 
         LinkFormat lf = new LinkFormat("/test");
-        lf.setContentType(null);
-        assertNull(LinkFormatBuilder.parse(lf.toString()).getContentType());
+        lf.setContentFormat(null);
+        assertNull(LinkFormatParser.parseLink(lf.toString()).getContentFormat());
 
     }
 
@@ -505,7 +505,7 @@ public class LinkFormatTest {
             fuzzyLf = new String(text);
 
             try {
-                LinkFormatBuilder.parse(fuzzyLf);
+                LinkFormatParser.parseLink(fuzzyLf);
                 //fail("exception ParseException is expected");
             } catch (ParseException ex) {
                 //only ParseException is expected
@@ -526,7 +526,7 @@ public class LinkFormatTest {
         lf.setTitle("my title");
         lf.setType("example type");
         lf.setAnchor("/test/anch");
-        lf.setContentType(12);
+        lf.setContentFormat(12);
 
         String nullVal = null;
         //set null
@@ -541,7 +541,7 @@ public class LinkFormatTest {
         lf.setTitle(null);
         lf.setType(null);
         lf.setAnchor(null);
-        lf.setContentType(null);
+        lf.setContentFormat(null);
         lf.set("aaa", ((Integer) null));
         lf.set("bbb", ((Boolean) null));
         lf.setRelations(new String[]{null});
@@ -555,11 +555,11 @@ public class LinkFormatTest {
         assertNull(lf.getMedia());
         assertNull(lf.getTitle());
         assertNull(lf.getAnchor());
-        assertNull(lf.getContentType());
+        assertNull(lf.getContentFormat());
         assertNull(lf.getRev());
         assertNull(lf.getRelations());
 
-        assertEquals(new LinkFormat("/test"), LinkFormatBuilder.parse(lf.toString()));
+        assertEquals(new LinkFormat("/test"), LinkFormatParser.parseLink(lf.toString()));
 
     }
 
@@ -567,11 +567,11 @@ public class LinkFormatTest {
     public void linkFormatWithUnknownParams() throws ParseException {
 
         String linkFormatString = "</deva/temp>;if=\"ns.wadl#c\";unknown=\"param-value\";unknown2=TEST-TOKEN;unknown3;ct=\"1398\"";
-        LinkFormat lf = LinkFormatBuilder.parse(linkFormatString);
+        LinkFormat lf = LinkFormatParser.parseLink(linkFormatString);
 
         LinkFormat lf2 = new LinkFormat("/deva/temp");
         lf2.setInterfaceDescription("ns.wadl#c");
-        lf2.setContentType(1398);
+        lf2.setContentFormat(1398);
         lf2.set("unknown", "param-value");
         lf2.set("unknown2", new PToken("TEST-TOKEN"));
         lf2.set("unknown3", Boolean.TRUE);
@@ -579,7 +579,7 @@ public class LinkFormatTest {
         //        assertEquals("/deva/temp", lf[0].getUri());
         //        assertEquals(new String[]{"ns.wadl#c"}, lf[0].getInterfaceDescription());
         //        assertNull(lf[0].getResourceType());
-        //        assertEquals((Integer) 1398, lf[0].getContentType());
+        //        assertEquals((Integer) 1398, lf[0].getContentFormat());
         assertEquals("param-value", lf.getParam("unknown"));
         assertEquals(lf2, lf);
     }
@@ -602,10 +602,10 @@ public class LinkFormatTest {
     public void failWithNumberParam() throws Exception {
         LinkFormat lf = new LinkFormat("/1");
         lf.set("ct", "abc");
-        assertNull(lf.getContentType());
+        assertNull(lf.getContentFormat());
 
         lf.set("ct", "12");
-        assertEquals(12, lf.getContentType().intValue());
+        assertEquals(12, lf.getContentFormat().intValue());
     }
 
     @Test
@@ -623,12 +623,12 @@ public class LinkFormatTest {
         links.add(new LinkFormat("/1"));
         links.add(new LinkFormat("/2"));
 
-        String linksStr = LinkFormatBuilder.toString(links);
+        String linksStr = LinkFormatParser.format(links);
 
         assertEquals("</1>,</2>", linksStr);
 
         // empty
-        assertEquals("", LinkFormatBuilder.toString(Collections.emptyList()));
+        assertEquals("", LinkFormatParser.format(Collections.emptyList()));
     }
 
     @Test

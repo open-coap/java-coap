@@ -75,7 +75,7 @@ public class NonConfirmableTransactionsTest {
 
         server = CoapServer.builder()
                 .transport(serverTransport)
-                .midSupplier(mid::incrementAndGet)
+                .messageIdSupplier(mid::incrementAndGet)
                 .route(route)
                 .build();
 
@@ -95,7 +95,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundSimpleRequest() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/test2").token(120).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.outboundHandler().apply(put("/test2").token(120).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(120).uriPath("/test2"));
 
         // when
@@ -117,7 +117,7 @@ public class NonConfirmableTransactionsTest {
     @Test
     void outboundRequestWithBlocks() throws InterruptedException {
         // given
-        CompletableFuture<CoapResponse> resp = server.clientService().apply(put("/large2").token(32).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
+        CompletableFuture<CoapResponse> resp = server.outboundHandler().apply(put("/large2").token(32).addAttribute(NON_CONFIRMABLE, true).to(LOCAL_5683));
         client.verifyReceived(coap(1001).non().put().token(32).uriPath("/large2"));
 
         // when

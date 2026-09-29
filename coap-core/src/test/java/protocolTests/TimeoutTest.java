@@ -54,7 +54,7 @@ public class TimeoutTest {
 
         CoapRequest request = get("/test/1").from(InMemoryCoapTransport.createAddress(0));
 
-        CompletableFuture<CoapResponse> callback = cnn.clientService().apply(request);
+        CompletableFuture<CoapResponse> callback = cnn.outboundHandler().apply(request);
 
         //assertEquals("Wrong number of transactions", 1, cnn.getNumberOfTransactions());
         assertThatThrownBy(callback::get)

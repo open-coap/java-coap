@@ -49,7 +49,7 @@ public class Block2TransferMaxSizeTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).midSupplier(MessageIdSupplier.sequential(0)).blockSize(BlockSize.S_32)
+        client = CoapServer.builder().transport(transport).messageIdSupplier(MessageIdSupplier.sequential(0)).blockSize(BlockSize.S_32)
                 .retransmission(ofFixed(ofMillis(500)))
                 .maxIncomingBlockTransferSize(MAX_TRANSFER_SIZE)
                 .buildClient(SERVER_ADDRESS);

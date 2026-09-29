@@ -79,7 +79,7 @@ public class DuplicateTest {
                 .notificationsReceiver(notifReceiver)
                 .duplicateMsgCacheSize(100)
                 .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
-                .midSupplier(mid::incrementAndGet)
+                .messageIdSupplier(mid::incrementAndGet)
                 .route(route)
                 .build();
 

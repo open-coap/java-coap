@@ -26,7 +26,7 @@ import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
 import opencoap.core.SignalingOptions;
-import opencoap.core.SignalingHeaderOptions;
+import opencoap.core.SignalingCoapOptions;
 import opencoap.transport.CoapTcpListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ class CoapTcpDispatcher implements CoapTcpListener {
             }
 
             // OBSERVATION
-            if (packet.headers().getObserve() != null && observationHandler.apply(resp)) {
+            if (packet.options().getObserve() != null && observationHandler.apply(resp)) {
                 return;
             }
         }
@@ -92,7 +92,7 @@ class CoapTcpDispatcher implements CoapTcpListener {
 
     private void onSignal(CoapPacket packet) {
         if (packet.getCode() == Code.C701_CSM) {
-            SignalingOptions signalingOpts = ((SignalingHeaderOptions) packet.headers()).toSignalingOptions(packet.getCode());
+            SignalingOptions signalingOpts = ((SignalingCoapOptions) packet.options()).toSignalingOptions(packet.getCode());
             Capabilities remoteCapabilities = Capabilities.BASE;
             if (signalingOpts != null) {
                 Long maxMessageSize = signalingOpts.getMaxMessageSize();
@@ -121,11 +121,11 @@ class CoapTcpDispatcher implements CoapTcpListener {
         packet.setMessageType(null);
         packet.setCode(Code.C701_CSM);
 
-        SignalingHeaderOptions headers = new SignalingHeaderOptions(packet.getCode());
+        SignalingCoapOptions headers = new SignalingCoapOptions(packet.getCode());
         headers.putSignalingOptions(
                 SignalingOptions.capabilities(ownCapability.getMaxMessageSizeInt(), ownCapability.isBlockTransferEnabled())
         );
-        packet.setHeaderOptions(headers);
+        packet.setOptions(headers);
 
         sender.apply(packet); // .exceptionally(logError(LOGGER));
     }

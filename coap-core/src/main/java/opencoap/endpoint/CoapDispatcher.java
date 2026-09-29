@@ -60,7 +60,7 @@ final class CoapDispatcher {
                 return;
             } else if (packet.isSeparateResponse() && handleSeparateResponse(packet)) {
                 return;
-            } else if (packet.isSeparateResponse() && packet.headers().getObserve() != null) {
+            } else if (packet.isSeparateResponse() && packet.options().getObserve() != null) {
                 handleObservation(packet);
                 return;
             }

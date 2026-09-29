@@ -100,7 +100,7 @@ public class CoapOptionsBuilderTest {
                 .block2Res(2, BlockSize.S_64, true)
                 .size2Res(1001)
                 .ifMatch(decodeHex("ff"))
-                .ifNonMatch()
+                .ifNoneMatch()
                 .etag(decodeHex("00"))
                 .accept(ContentFormat.APPLICATION_CBOR)
                 .proxyUri("/proxy")
@@ -125,7 +125,7 @@ public class CoapOptionsBuilderTest {
         expected.setBlock2Res(new BlockOption(2, BlockSize.S_64, true));
         expected.setSize2Res(1001);
         expected.setIfMatch(new Opaque[]{decodeHex("ff")});
-        expected.setIfNonMatch(true);
+        expected.setIfNoneMatch(true);
         expected.setEtag(decodeHex("00"));
         expected.setAccept(ContentFormat.APPLICATION_CBOR);
         expected.setProxyUri("/proxy");

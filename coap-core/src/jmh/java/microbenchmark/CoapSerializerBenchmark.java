@@ -57,13 +57,13 @@ public class CoapSerializerBenchmark {
         CoapPacket packet = new CoapPacket(Method.GET, MessageType.Confirmable, "/path-pppppppppppppppppp1/path-dddddddddd-2/dfdshffsdkjfhsdks3/444444444444444444444444444444444444444/55555555555555555555555555555555555555555555555", null);
         packet.setMessageId(1234);
         packet.setToken(Opaque.variableUInt(0x0102030405L));
-        packet.headers().setMaxAge(4321L);
-        packet.headers().setEtag(new Opaque(new byte[]{89, 10, 31, 7, 1}));
-        packet.headers().setObserve(9876);
-        packet.headers().setBlock1Req(new BlockOption(13, BlockSize.S_16, true));
-        packet.headers().setContentFormat(ContentFormat.APPLICATION_XML);
-        packet.headers().setLocationPath("/1/222/33333/4444444/555555555555555555555555");
-        packet.headers().setUriQueryList("ppar=val1", "par222222222222222222222=val2222222222222222222222222222222222");
+        packet.options().setMaxAge(4321L);
+        packet.options().setEtag(new Opaque(new byte[]{89, 10, 31, 7, 1}));
+        packet.options().setObserve(9876);
+        packet.options().setBlock1Req(new BlockOption(13, BlockSize.S_16, true));
+        packet.options().setContentFormat(ContentFormat.APPLICATION_XML);
+        packet.options().setLocationPath("/1/222/33333/4444444/555555555555555555555555");
+        packet.options().setUriQueryList("ppar=val1", "par222222222222222222222=val2222222222222222222222222222222222");
         packet.setPayload("<k>12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</k>");
 
         // System.out.println("MSG SIZE: " + packet.toByteArray().length);

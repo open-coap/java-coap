@@ -78,7 +78,7 @@ public class CoapPacket {
     public CoapPacket(Method method, MessageType messageType, String uriPath, InetSocketAddress remoteAddress) {
         this.method = method;
         this.messageType = messageType;
-        this.headers().setUriPath(uriPath);
+        this.options.setUriPath(uriPath);
         this.remoteAddress = remoteAddress;
     }
 
@@ -88,7 +88,7 @@ public class CoapPacket {
         packet.setMethod(req.getMethod());
         packet.setAttributes(req.getAttributes());
         packet.setToken(req.getToken());
-        packet.setHeaderOptions(req.options());
+        packet.setOptions(req.options());
         packet.setPayload(req.getPayload());
 
         return packet;
@@ -99,7 +99,7 @@ public class CoapPacket {
         CoapPacket packet = new CoapPacket(resp.getCode(), messageType, resp.getPeerAddress());
         packet.setAttributes(resp.getAttributes());
         packet.setToken(resp.getToken());
-        packet.setHeaderOptions(resp.options().duplicate());
+        packet.setOptions(resp.options().duplicate());
         packet.setPayload(resp.getPayload());
 
         return packet;
@@ -127,15 +127,15 @@ public class CoapPacket {
     }
 
     /**
-     * Returns CoAP header options instance.
+     * Returns CoAP options instance.
      *
-     * @return header options instance
+     * @return options instance
      */
-    public final CoapOptions headers() {
+    public final CoapOptions options() {
         return options;
     }
 
-    public void setHeaderOptions(CoapOptions options) {
+    public void setOptions(CoapOptions options) {
         this.options = options;
     }
 
@@ -194,7 +194,7 @@ public class CoapPacket {
         response.setCode(coapResponse.getCode());
         response.setToken(getToken());
         response.setPayload(coapResponse.getPayload());
-        response.setHeaderOptions(coapResponse.options().duplicate());
+        response.setOptions(coapResponse.options().duplicate());
 
         if (messageType == MessageType.NonConfirmable) {
             response.setMessageType(MessageType.NonConfirmable);
@@ -425,14 +425,14 @@ public class CoapPacket {
     }
 
     private boolean isTextBasedContentFormat() {
-        if (headers().getContentFormat() == null) {
+        if (options.getContentFormat() == null) {
             return false;
         }
-        return headers().getContentFormat() == ContentFormat.TEXT_PLAIN
-                || headers().getContentFormat() == ContentFormat.APPLICATION_JSON
-                || headers().getContentFormat() == ContentFormat.APPLICATION_LINK_FORMAT
-                || headers().getContentFormat() == ContentFormat.APPLICATION_XML
-                || headers().getContentFormat() == ContentFormat.APPLICATION_LWM2M_JSON;
+        return options.getContentFormat() == ContentFormat.TEXT_PLAIN
+                || options.getContentFormat() == ContentFormat.APPLICATION_JSON
+                || options.getContentFormat() == ContentFormat.APPLICATION_LINK_FORMAT
+                || options.getContentFormat() == ContentFormat.APPLICATION_XML
+                || options.getContentFormat() == ContentFormat.APPLICATION_LWM2M_JSON;
     }
 
     public boolean isEmptyAck() {

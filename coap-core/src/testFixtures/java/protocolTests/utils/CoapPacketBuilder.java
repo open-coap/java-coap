@@ -89,27 +89,27 @@ public class CoapPacketBuilder {
 
 
     public CoapPacketBuilder uriPath(String uriPath) {
-        coapPacket.headers().setUriPath(uriPath);
+        coapPacket.options().setUriPath(uriPath);
         return this;
     }
 
     public CoapPacketBuilder uriQuery(String uriQuery) {
-        coapPacket.headers().setUriQueryList(Arrays.asList(uriQuery.split("&")));
+        coapPacket.options().setUriQueryList(Arrays.asList(uriQuery.split("&")));
         return this;
     }
 
     public CoapPacketBuilder locPath(String locPath) {
-        coapPacket.headers().setLocationPath(locPath);
+        coapPacket.options().setLocationPath(locPath);
         return this;
     }
 
     public CoapPacketBuilder maxAge(long maxAge) {
-        coapPacket.headers().setMaxAge(maxAge);
+        coapPacket.options().setMaxAge(maxAge);
         return this;
     }
 
     public CoapPacketBuilder contFormat(int contentFormat) {
-        coapPacket.headers().setContentFormat(contentFormat);
+        coapPacket.options().setContentFormat(contentFormat);
         return this;
     }
 
@@ -130,7 +130,7 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder obs(int observe) {
-        coapPacket.headers().setObserve(observe);
+        coapPacket.options().setObserve(observe);
         return this;
     }
 
@@ -140,32 +140,32 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder block2Res(int blockNr, BlockSize blockSize, boolean more) {
-        coapPacket.headers().setBlock2Res(new BlockOption(blockNr, blockSize, more));
+        coapPacket.options().setBlock2Res(new BlockOption(blockNr, blockSize, more));
         return this;
     }
 
     public CoapPacketBuilder block1Req(int blockNr, BlockSize blockSize, boolean more) {
-        coapPacket.headers().setBlock1Req(new BlockOption(blockNr, blockSize, more));
+        coapPacket.options().setBlock1Req(new BlockOption(blockNr, blockSize, more));
         return this;
     }
 
     public CoapPacketBuilder size1(Integer size) {
-        coapPacket.headers().setSize1(size);
+        coapPacket.options().setSize1(size);
         return this;
     }
 
     public CoapPacketBuilder size2Res(Integer size) {
-        coapPacket.headers().setSize2Res(size);
+        coapPacket.options().setSize2Res(size);
         return this;
     }
 
     public CoapPacketBuilder etag(int etag) {
-        coapPacket.headers().setEtag(Opaque.variableUInt((etag)));
+        coapPacket.options().setEtag(Opaque.variableUInt((etag)));
         return this;
     }
 
     public CoapPacketBuilder proxy(String proxyUri) {
-        coapPacket.headers().setProxyUri(proxyUri);
+        coapPacket.options().setProxyUri(proxyUri);
         return this;
     }
 
@@ -212,7 +212,7 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder reqTag(String hex) {
-        coapPacket.headers().setRequestTag(Opaque.decodeHex(hex));
+        coapPacket.options().setRequestTag(Opaque.decodeHex(hex));
         return this;
     }
 }

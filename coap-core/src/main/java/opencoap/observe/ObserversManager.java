@@ -52,7 +52,7 @@ public class ObserversManager implements Filter<CoapRequest, CoapResponse> {
 
     public void init(CoapServer server) {
         require(!server.isRunning(), "SubscriptionManager should be initialized with non yet running server");
-        init(server.outboundResponseService());
+        init(server.notificationHandler());
     }
 
     @Override
