@@ -159,7 +159,7 @@ public class CoapSerializer {
                 //method code
                 coap.setMethod(Method.fromCode(tempByte));
             } else {
-                coap.setCode(Code.fromCode(tempByte));
+                coap.setCode(PacketUtils.parseCode(tempByte));
             }
 
             int messageId = inputStream.read() << 8;

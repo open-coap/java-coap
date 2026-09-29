@@ -18,6 +18,7 @@ package opencoap.codec;
 
 import java.io.IOException;
 import java.io.InputStream;
+import opencoap.core.Code;
 
 /**
  * Minor CoapPacket binary read/write utility methods with specific optional checks.
@@ -32,6 +33,19 @@ class PacketUtils {
 
     static int read8(InputStream is) throws IOException {
         return is.read();
+    }
+
+    /**
+     * Parses a response or signaling code, returns null for 0.00 (Empty).
+     *
+     * @throws CoapMessageFormatException if the code is not recognized
+     */
+    static Code parseCode(int code) throws CoapMessageFormatException {
+        Code c = Code.fromCode(code);
+        if (c == null && code != 0) {
+            throw new CoapMessageFormatException(String.format("Unknown code: %d.%02d", code >>> 5, code & 0x1F));
+        }
+        return c;
     }
 
 }
