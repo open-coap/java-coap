@@ -33,6 +33,7 @@ public interface RetransmissionBackOff {
     Duration next(int attempt);
 
     static RetransmissionBackOff ofFixed(Duration interval, int maxAttempts) {
+        require(maxAttempts >= 0);
         return attempt -> {
             require(attempt > 0);
             if (attempt > maxAttempts + 1) {

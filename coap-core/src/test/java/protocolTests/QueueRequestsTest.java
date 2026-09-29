@@ -18,7 +18,6 @@ package protocolTests;
 
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,7 +51,7 @@ public class QueueRequestsTest {
         client = CoapServer.builder().transport(transport)
                 .messaging(m -> m.withBlockSize(BlockSize.S_32).withQueueMaxSize(2))
                 .reliability(r -> r
-                        .withRetransmission(ofFixed(ofMillis(500)))
+                        .withFixedRetransmission(ofMillis(500))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0))
                         .withDuplicateDetection(DuplicateDetection.disabled()))
                 .buildClient(SERVER_ADDRESS);

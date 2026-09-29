@@ -20,7 +20,6 @@ import static java.time.Duration.ofMillis;
 import static opencoap.core.BlockSize.S_32;
 import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.post;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
@@ -50,7 +49,7 @@ public class SeparateResponseTest {
                 .transport(serverTransport)
                 .messaging(m -> m.withBlockSize(S_32))
                 .reliability(r -> r
-                        .withRetransmission(ofFixed(ofMillis(500)))
+                        .withFixedRetransmission(ofMillis(500))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0))
                         .withRequestTagSupplier(RequestTagSupplier.sequential(100)))
                 .buildClient(SERVER_ADDRESS);

@@ -18,7 +18,6 @@ package protocolTests;
 
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.put;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.io.IOException;
@@ -46,7 +45,7 @@ public class BlockwiseTransferWithTest {
 
         client = CoapServer.builder().transport(transport)
                 .reliability(r -> r
-                        .withRetransmission(ofFixed(ofMillis(500)))
+                        .withFixedRetransmission(ofMillis(500))
                         .withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .buildClient(SERVER_ADDRESS);
     }

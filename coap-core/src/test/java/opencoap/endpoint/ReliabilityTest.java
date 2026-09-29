@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +60,32 @@ class ReliabilityTest {
     }
 
     @Test
+    void shouldSetFixedRetransmission() {
+        RetransmissionBackOff noRetransmission = Reliability.defaults().withFixedRetransmission(Duration.ofMillis(500)).getRetransmission();
+        assertEquals(Duration.ofMillis(500), noRetransmission.next(1));
+        assertEquals(Duration.ZERO, noRetransmission.next(2));
+
+        RetransmissionBackOff twoRetransmissions = Reliability.defaults().withFixedRetransmission(Duration.ofMillis(500), 2).getRetransmission();
+        assertEquals(Duration.ofMillis(500), twoRetransmissions.next(1));
+        assertEquals(Duration.ofMillis(500), twoRetransmissions.next(3));
+        assertEquals(Duration.ZERO, twoRetransmissions.next(4));
+    }
+
+    @Test
+    void shouldSetExponentialRetransmission() {
+        RetransmissionBackOff retransmission = Reliability.defaults().withExponentialRetransmission(Duration.ofMillis(100), 2).getRetransmission();
+
+        assertBetween(100, 150, retransmission.next(1));
+        assertBetween(200, 300, retransmission.next(2));
+        assertBetween(400, 600, retransmission.next(3));
+        assertEquals(Duration.ZERO, retransmission.next(4));
+    }
+
+    private static void assertBetween(long minMillis, long maxMillis, Duration actual) {
+        assertTrue(actual.toMillis() >= minMillis && actual.toMillis() <= maxMillis, "Expected " + minMillis + ".." + maxMillis + " ms, got " + actual);
+    }
+
+    @Test
     void shouldCreateNewSuppliers_whenNotSet() {
         Reliability reliability = Reliability.defaults();
 
@@ -73,6 +100,8 @@ class ReliabilityTest {
         assertThrows(IllegalArgumentException.class, () -> reliability.withResponseTimeout(Duration.ofMillis(-1)));
         assertThrows(IllegalArgumentException.class, () -> reliability.withResponseTimeout(Duration.ZERO));
         assertThrows(NullPointerException.class, () -> reliability.withRetransmission(null));
+        assertThrows(IllegalArgumentException.class, () -> reliability.withFixedRetransmission(Duration.ofMillis(500), -1));
+        assertThrows(IllegalArgumentException.class, () -> reliability.withExponentialRetransmission(Duration.ofMillis(500), -1));
         assertThrows(NullPointerException.class, () -> reliability.withMessageIdSupplier(null));
         assertThrows(NullPointerException.class, () -> reliability.withRequestTagSupplier(null));
         assertThrows(NullPointerException.class, () -> reliability.withDuplicateDetection(null));

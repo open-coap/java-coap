@@ -19,7 +19,6 @@ package protocolTests;
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapResponse.ok;
-import static opencoap.endpoint.RetransmissionBackOff.ofExponential;
 import static opencoap.transport.InMemoryCoapTransport.createAddress;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,7 +37,6 @@ import opencoap.core.CoapTimeoutException;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
-import opencoap.endpoint.RetransmissionBackOff;
 import opencoap.routing.RoutingHandler;
 import opencoap.transport.InMemoryCoapTransport;
 import org.junit.jupiter.api.AfterEach;
@@ -86,7 +84,7 @@ public class UnreliableTransportTest {
                     }
 
                 })
-                .reliability(r -> r.withRetransmission(ofExponential(Duration.ofMillis(100), 4)))
+                .reliability(r -> r.withExponentialRetransmission(Duration.ofMillis(100), 4))
                 .buildClient(InMemoryCoapTransport.createAddress(5683))
         ) {
             CoapResponse resp = cnn.sendSync(get("/dropping"));
@@ -124,7 +122,7 @@ public class UnreliableTransportTest {
                 .start();
 
         CoapClient cnn = CoapServer.builder()
-                .transport(InMemoryCoapTransport.create()).reliability(r -> r.withRetransmission(RetransmissionBackOff.ofFixed(ofMillis(100))))
+                .transport(InMemoryCoapTransport.create()).reliability(r -> r.withFixedRetransmission(ofMillis(100)))
                 .buildClient(InMemoryCoapTransport.createAddress(CoapConstants.DEFAULT_PORT));
 
         assertThrows(CoapTimeoutException.class, () ->

@@ -60,6 +60,43 @@ public final class Reliability {
     }
 
     /**
+     * Sets retransmission with a fixed interval, without retransmitting. The interval is how long to wait for an
+     * acknowledgement before the request fails.
+     *
+     * @param interval time to wait for an acknowledgement
+     * @return modified copy
+     * @see RetransmissionBackOff#ofFixed(Duration)
+     */
+    public Reliability withFixedRetransmission(Duration interval) {
+        return withRetransmission(RetransmissionBackOff.ofFixed(interval));
+    }
+
+    /**
+     * Sets retransmission with a fixed interval between attempts.
+     *
+     * @param interval time to wait for an acknowledgement before each retransmission
+     * @param maxRetransmissions maximum number of retransmissions after the first attempt
+     * @return modified copy
+     * @see RetransmissionBackOff#ofFixed(Duration, int)
+     */
+    public Reliability withFixedRetransmission(Duration interval, int maxRetransmissions) {
+        return withRetransmission(RetransmissionBackOff.ofFixed(interval, maxRetransmissions));
+    }
+
+    /**
+     * Sets retransmission with exponential back-off (RFC 7252 §4.2): the interval starts at a random value between
+     * {@code first} and {@code first * ACK_RANDOM_FACTOR} and doubles with each retransmission.
+     *
+     * @param first initial time to wait for an acknowledgement
+     * @param maxRetransmissions maximum number of retransmissions after the first attempt
+     * @return modified copy
+     * @see RetransmissionBackOff#ofExponential(Duration, int)
+     */
+    public Reliability withExponentialRetransmission(Duration first, int maxRetransmissions) {
+        return withRetransmission(RetransmissionBackOff.ofExponential(first, maxRetransmissions));
+    }
+
+    /**
      * Sets default timeout for waiting for a response (default 2 minutes).
      *
      * @param responseTimeout response timeout

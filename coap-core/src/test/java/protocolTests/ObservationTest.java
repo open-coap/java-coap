@@ -21,7 +21,6 @@ import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.observe;
 import static opencoap.core.Opaque.EMPTY;
 import static opencoap.core.Opaque.of;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static opencoap.observe.NotificationsReceiver.REJECT_ALL;
 import static opencoap.transport.DatagramSocketTransport.udp;
 import static org.awaitility.Awaitility.await;
@@ -60,7 +59,7 @@ public class ObservationTest {
                         .get(RES_OBS_PATH1, obsResource)
                 )
                 .messaging(m -> m.withBlockSize(BlockSize.S_128))
-                .reliability(r -> r.withRetransmission(ofFixed(ofMillis(500))).withResponseTimeout(ofMillis(600))).build();
+                .reliability(r -> r.withFixedRetransmission(ofMillis(500)).withResponseTimeout(ofMillis(600))).build();
 
         observersManager.init(server);
         server.start();
