@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -100,6 +101,26 @@ public class CoapTcpPacketSerializerTest {
     @Test
     public void extendedLengthHugePayload() throws CoapException, IOException {
         assertSimplePacketSerializationAndDeserilization(Opaque.decodeHex("7f"), opaqueOfRandom(65807));
+    }
+
+    @Test
+    public void shouldFailToDeserializeUnknownCode() {
+        // 2.07, 4.31, 5.08, 0.11 (method), 1.00 and 6.00 (reserved classes)
+        for (int code : new int[]{0x47, 0x9F, 0xA8, 0x0B, 0x20, 0xC0}) {
+            byte[] raw = new byte[]{0x00, (byte) code}; // no options, no token
+
+            assertThatThrownBy(() -> CoapTcpPacketSerializer.deserialize(null, new ByteArrayInputStream(raw)))
+                    .isInstanceOf(CoapMessageFormatException.class)
+                    .hasMessageStartingWith("Unknown code: ");
+        }
+    }
+
+    @Test
+    public void shouldDeserializeEmptyMessage() throws CoapException, IOException {
+        CoapPacket cp = CoapTcpPacketSerializer.deserialize(null, new ByteArrayInputStream(new byte[]{0x00, 0x00}));
+
+        assertNull(cp.getCode());
+        assertNull(cp.getMethod());
     }
 
     @Test

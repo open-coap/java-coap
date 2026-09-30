@@ -28,7 +28,6 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 import opencoap.core.CoapException;
 import opencoap.core.CoapOptions;
-import opencoap.core.Code;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
 import opencoap.core.SignalingCoapOptions;
@@ -117,7 +116,7 @@ public final class CoapTcpPacketSerializer {
             //method code
             coapPacket.setMethod(Method.fromCode(codeOrMethod));
         } else {
-            coapPacket.setCode(Code.fromCode(codeOrMethod));
+            coapPacket.setCode(PacketUtils.parseCode(codeOrMethod));
         }
     }
 

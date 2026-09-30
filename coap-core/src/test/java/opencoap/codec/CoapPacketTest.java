@@ -118,6 +118,27 @@ public class CoapPacketTest {
     }
 
     @Test
+    public void shouldFailToDeserializeUnknownCode() {
+        // 2.07, 4.31, 5.08, 0.11 (method), 1.00 and 6.00 (reserved classes)
+        for (int code : new int[]{0x47, 0x9F, 0xA8, 0x0B, 0x20, 0xC0}) {
+            byte[] raw = new byte[]{0x60, (byte) code, 0x00, 0x01}; // ACK, no token
+
+            assertThatThrownBy(() -> deserialize(null, new ByteArrayInputStream(raw)))
+                    .isInstanceOf(CoapMessageFormatException.class)
+                    .hasMessageStartingWith("Unknown code: ");
+        }
+    }
+
+    @Test
+    public void shouldDeserializeEmptyMessage() throws CoapException {
+        CoapPacket cp = deserialize(null, new ByteArrayInputStream(new byte[]{0x60, 0x00, 0x00, 0x01}));
+
+        assertNull(cp.getCode());
+        assertNull(cp.getMethod());
+        assertEquals(MessageType.Acknowledgement, cp.getMessageType());
+    }
+
+    @Test
     public void shouldDeserializeControlCharactersInOpaqueOptionAndPayload() throws CoapException {
         CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", null);
         cp.options().setEtag(Opaque.ofBytes(0x00, 0x0d, 0x0a));
