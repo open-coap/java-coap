@@ -30,6 +30,7 @@ tasks {
 
 
     test {
+        jvmArgs("--enable-native-access=ALL-UNNAMED")
         if (System.getProperty("os.name").lowercase().contains("windows")) {
             // On Windows, JNA cannot automatically load native libraries from JAR when they have dependencies on each other,
             // so we extract them and set the path explicitly.
