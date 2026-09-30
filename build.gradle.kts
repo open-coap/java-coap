@@ -7,7 +7,7 @@ plugins {
     id("maven-publish")
     id("pl.allegro.tech.build.axion-release") version "1.21.4"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
-    id("com.github.ben-manes.versions") version "0.64.0"
+    id("io.github.ben-manes.versions") version "0.64.0"
     id("pmd")
     id("com.github.spotbugs") version "6.5.11"
     id("org.gradle.signing")
@@ -25,7 +25,7 @@ allprojects {
     apply {
         plugin("java")
         plugin("se.patrikerdes.use-latest-versions")
-        plugin("com.github.ben-manes.versions")
+        plugin("io.github.ben-manes.versions")
     }
 
     repositories {
@@ -167,9 +167,9 @@ subprojects {
     }
 
     signing {
-        val signingKeyId: String? by project
-        val signingKey: String? by project
-        val signingPassword: String? by project
+        val signingKeyId = findProperty("signingKeyId") as String?
+        val signingKey = findProperty("signingKey") as String?
+        val signingPassword = findProperty("signingPassword") as String?
 
         if (signingKey != null) {
             useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
@@ -181,8 +181,8 @@ subprojects {
 nexusPublishing {
     repositories {
         sonatype {
-            val ossrhUserName: String? by project
-            val ossrhPassword: String? by project
+            val ossrhUserName = findProperty("ossrhUserName") as String?
+            val ossrhPassword = findProperty("ossrhPassword") as String?
 
             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
             snapshotRepositoryUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"))
