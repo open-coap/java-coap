@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 java-coap contributors (https://github.com/open-coap/java-coap)
+ * Copyright (C) 2022-2026 java-coap contributors (https://github.com/open-coap/java-coap)
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public interface RetransmissionBackOff {
     Duration next(int attempt);
 
     static RetransmissionBackOff ofFixed(Duration interval, int maxAttempts) {
+        require(maxAttempts >= 0);
         return attempt -> {
             require(attempt > 0);
             if (attempt > maxAttempts + 1) {
