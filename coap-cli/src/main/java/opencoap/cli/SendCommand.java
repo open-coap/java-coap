@@ -32,12 +32,12 @@ import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.Messaging;
 import opencoap.filter.TokenGeneratorFilter;
 import opencoap.routing.RoutingHandler;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
-import picocli.CommandLine;
 
 @Command(name = "send", mixinStandardHelpOptions = true, description = "Send CoAP requests", usageHelpAutoWidth = true)
 public class SendCommand implements Callable<Integer> {

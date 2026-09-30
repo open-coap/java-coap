@@ -43,29 +43,29 @@ public class JdkProvider implements TransportProvider {
     }
 
     protected static SSLContext sslContextFromKeystore(KeyStore ks) throws GeneralSecurityException {
-            final KeyManagerFactory kmf;
-            kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(ks, secret());
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-            tmf.init(ks);
+        final KeyManagerFactory kmf;
+        kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, secret());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(ks);
 
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-            //print all certificates subject
-            Enumeration<String> aliases = ks.aliases();
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
-                String certCN = ((X509Certificate) ks.getCertificate(alias)).getSubjectDN().toString();
+        //print all certificates subject
+        Enumeration<String> aliases = ks.aliases();
+        while (aliases.hasMoreElements()) {
+            String alias = aliases.nextElement();
+            String certCN = ((X509Certificate) ks.getCertificate(alias)).getSubjectDN().toString();
 
-                if (ks.isKeyEntry(alias)) {
-                    LOGGER.info("Using certificate: " + certCN);
-                } else {
-                    LOGGER.info("Using trusted certificate: " + certCN);
-                }
+            if (ks.isKeyEntry(alias)) {
+                LOGGER.info("Using certificate: " + certCN);
+            } else {
+                LOGGER.info("Using trusted certificate: " + certCN);
             }
+        }
 
-            return sslContext;
+        return sslContext;
     }
 
 }

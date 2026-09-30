@@ -34,14 +34,14 @@ import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import opencoap.core.BlockSize;
-import opencoap.core.CoapBlockException;
 import opencoap.core.CoapBlockEntityTooLargeException;
+import opencoap.core.CoapBlockException;
 import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Opaque;
 import opencoap.core.Handler;
+import opencoap.core.Opaque;
 import opencoap.endpoint.Capabilities;
 import org.junit.jupiter.api.Test;
 

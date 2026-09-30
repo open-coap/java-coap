@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
-import opencoap.core.Opaque;
 import opencoap.core.Handler;
+import opencoap.core.Opaque;
 import org.junit.jupiter.api.Test;
 
 class ObserveRequestFilterTest {

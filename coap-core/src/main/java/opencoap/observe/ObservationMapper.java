@@ -19,9 +19,9 @@ import static opencoap.core.MessageType.Acknowledgement;
 import static opencoap.core.MessageType.Reset;
 import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
+import opencoap.core.Handler;
 import opencoap.core.MappingFilter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 
 public class ObservationMapper implements MappingFilter<CoapPacket, CoapPacket, SeparateResponse, Boolean> {
 

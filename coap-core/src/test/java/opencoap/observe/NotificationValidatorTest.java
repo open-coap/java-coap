@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_1_5683;
 import java.util.concurrent.CompletableFuture;
-import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
+import opencoap.core.SeparateResponse;
 import org.junit.jupiter.api.Test;
 
 class NotificationValidatorTest {

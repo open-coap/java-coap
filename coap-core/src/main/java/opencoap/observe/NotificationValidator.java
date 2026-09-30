@@ -18,8 +18,8 @@ package opencoap.observe;
 
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Filter;
-import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
+import opencoap.core.SeparateResponse;
 
 public class NotificationValidator implements Filter<SeparateResponse, Boolean> {
 

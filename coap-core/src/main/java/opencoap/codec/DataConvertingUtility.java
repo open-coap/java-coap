@@ -32,7 +32,9 @@ import opencoap.core.Opaque;
 public final class DataConvertingUtility {
 
     private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
-    /** RFC 3986 "sub-delims", without '&amp;' which separates Uri-Query options. */
+    /**
+     * RFC 3986 "sub-delims", without '&amp;' which separates Uri-Query options.
+     */
     private static final String QUERY_SUB_DELIMS = "!$'()*+,;=";
 
     private DataConvertingUtility() {

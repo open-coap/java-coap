@@ -23,8 +23,8 @@ import opencoap.core.CoapOptions;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Opaque;
 import opencoap.core.Handler;
+import opencoap.core.Opaque;
 
 public final class EtagGeneratorFilter implements Filter<CoapRequest, CoapResponse> {
 

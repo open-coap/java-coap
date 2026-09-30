@@ -1,6 +1,6 @@
 name: ci
 
-on: 
+on:
   push:
   schedule:
     - cron: '0 0 * * *'

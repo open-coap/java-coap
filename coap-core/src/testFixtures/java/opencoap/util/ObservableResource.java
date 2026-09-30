@@ -22,8 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
-import opencoap.core.Opaque;
 import opencoap.core.Handler;
+import opencoap.core.Opaque;
 import opencoap.observe.ObserversManager;
 
 public class ObservableResource implements Handler<CoapRequest, CoapResponse> {

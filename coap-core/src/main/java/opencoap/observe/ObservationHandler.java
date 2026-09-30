@@ -19,8 +19,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Code;
-import opencoap.core.SeparateResponse;
 import opencoap.core.Handler;
+import opencoap.core.SeparateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

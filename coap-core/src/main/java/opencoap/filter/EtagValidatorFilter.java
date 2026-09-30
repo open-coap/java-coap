@@ -20,9 +20,9 @@ import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
 import opencoap.core.Filter;
+import opencoap.core.Handler;
 import opencoap.core.Method;
 import opencoap.core.Opaque;
-import opencoap.core.Handler;
 
 public class EtagValidatorFilter implements Filter<CoapRequest, CoapResponse> {
 

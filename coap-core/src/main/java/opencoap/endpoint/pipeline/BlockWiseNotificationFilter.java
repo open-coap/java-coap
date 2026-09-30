@@ -18,9 +18,9 @@ package opencoap.endpoint.pipeline;
 
 import java.util.concurrent.CompletableFuture;
 import opencoap.core.Filter;
+import opencoap.core.Handler;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 import opencoap.endpoint.Capabilities;
 import opencoap.endpoint.CapabilitiesResolver;
 

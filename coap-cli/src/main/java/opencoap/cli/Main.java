@@ -16,8 +16,8 @@
 package opencoap.cli;
 
 import opencoap.core.BlockSize;
-import picocli.CommandLine.Command;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 @Command(name = "coap", subcommands = {SendCommand.class, DeviceEmulator.class})
 public class Main {

@@ -25,9 +25,9 @@ import opencoap.core.CoapException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
+import opencoap.core.Handler;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 
 @FunctionalInterface
 public interface NotificationsReceiver {

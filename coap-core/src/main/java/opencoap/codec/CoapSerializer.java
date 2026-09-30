@@ -186,6 +186,7 @@ public class CoapSerializer {
             throw new CoapException(ex);
         }
     }
+
     /**
      * Writes serialized CoAP header options to given OutputStream.
      *

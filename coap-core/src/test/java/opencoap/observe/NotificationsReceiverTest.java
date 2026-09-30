@@ -30,9 +30,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
+import opencoap.core.Handler;
 import opencoap.core.Opaque;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

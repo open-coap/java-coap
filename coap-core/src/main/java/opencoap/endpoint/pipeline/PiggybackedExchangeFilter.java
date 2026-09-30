@@ -21,9 +21,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import opencoap.codec.CoapPacket;
+import opencoap.core.Handler;
 import opencoap.core.MappingFilter;
 import opencoap.core.MessageType;
-import opencoap.core.Handler;
 
 public class PiggybackedExchangeFilter implements MappingFilter<CoapPacket, CoapPacket, CoapPacket, Boolean> {
 

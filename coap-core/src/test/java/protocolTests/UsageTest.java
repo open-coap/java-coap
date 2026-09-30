@@ -125,13 +125,13 @@ public class UsageTest {
                 )
                 // (optional) register observation listener to handle incoming observations
                 .observations(Observations.receiving((resourceUriPath, observation) -> {
-                            LOGGER.info("Observation: {}", observation);
-                            // in case of block transfer, call to retrieve rest of payload
-                            CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
-                            return true; // return false to terminate observation
-                        })
-                        // (optional) set custom observation relation store, for example one that will use external storage
-                        .withStore(new HashMapObservationsStore())
+                                    LOGGER.info("Observation: {}", observation);
+                                    // in case of block transfer, call to retrieve rest of payload
+                                    CompletableFuture<Opaque> payload = retrieveRemainingBlocks(resourceUriPath, observation, req -> client.send(req));
+                                    return true; // return false to terminate observation
+                                })
+                                // (optional) set custom observation relation store, for example one that will use external storage
+                                .withStore(new HashMapObservationsStore())
                 )
                 // (optional) set extra filters (interceptors) to outbound pipeline
                 .outboundFilter(

@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentMap;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Code;
+import opencoap.core.Handler;
 import opencoap.core.MappingFilter;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 
 public class TcpExchangeFilter implements MappingFilter<CoapRequest, CoapResponse, CoapRequest, Boolean> {
 

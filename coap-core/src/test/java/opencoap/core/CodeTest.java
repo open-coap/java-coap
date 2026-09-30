@@ -136,6 +136,5 @@ public class CodeTest {
         assertEquals(Code.C504_GATEWAY_TIMEOUT, fromHttp(504, GET));
 
 
-
     }
 }

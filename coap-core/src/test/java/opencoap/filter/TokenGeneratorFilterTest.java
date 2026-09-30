@@ -24,8 +24,8 @@ import java.util.function.Supplier;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
 import opencoap.core.Filter;
-import opencoap.core.Opaque;
 import opencoap.core.Handler;
+import opencoap.core.Opaque;
 import org.junit.jupiter.api.Test;
 
 class TokenGeneratorFilterTest {

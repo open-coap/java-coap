@@ -16,9 +16,9 @@
  */
 package opencoap.core;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static opencoap.core.CoapResponse.coapResponse;
 import static opencoap.core.Code.C205_CONTENT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.LOCAL_5683;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;

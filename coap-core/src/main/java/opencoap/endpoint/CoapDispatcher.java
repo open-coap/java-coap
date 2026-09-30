@@ -20,9 +20,9 @@ import static opencoap.util.FutureHelpers.logError;
 import static opencoap.util.FutureHelpers.logErrorIgnoreCancelled;
 import java.util.function.Function;
 import opencoap.codec.CoapPacket;
+import opencoap.core.Handler;
 import opencoap.core.MessageType;
 import opencoap.core.SeparateResponse;
-import opencoap.core.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

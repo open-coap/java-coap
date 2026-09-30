@@ -41,7 +41,9 @@ class CriticalOptionVerifierTest {
 
     @Test
     void shouldReturnNotBadOptionWhenCustomCriticalOption() {
-        final CriticalOptionVerifier filter = new CriticalOptionVerifier(new HashSet<Integer>() {{ add(1001); }});
+        final CriticalOptionVerifier filter = new CriticalOptionVerifier(new HashSet<>() {{
+            add(1001);
+        }});
 
         CoapRequest req = get("/test").options(o -> o.custom(1001, Opaque.of("foo"))).build();
 

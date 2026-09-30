@@ -149,7 +149,7 @@ public enum Code {
                         return C204_CHANGED;
                 }
 
-            // REDIRECT (3.xx)
+                // REDIRECT (3.xx)
             case 304:
                 return C203_VALID;
 
