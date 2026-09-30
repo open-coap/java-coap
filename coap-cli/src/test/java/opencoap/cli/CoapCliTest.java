@@ -52,7 +52,7 @@ class CoapCliTest {
     void beforeAll() throws IOException {
         stubServer = CoapServer.builder()
                 .transport(udp(0))
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .post("/rd", req -> {
                             String epName = req.options().getUriQueryMap().get("ep");
                             return coapResponse(Code.C201_CREATED).locationPath("/rd/" + epName).toFuture();

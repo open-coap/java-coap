@@ -75,8 +75,8 @@ public class NonConfirmableTransactionsTest {
 
         server = CoapServer.builder()
                 .transport(serverTransport)
-                .messageIdSupplier(mid::incrementAndGet)
-                .route(route)
+                .reliability(r -> r.withMessageIdSupplier(mid::incrementAndGet))
+                .handler(route)
                 .build();
 
         server.start();

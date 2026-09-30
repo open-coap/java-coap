@@ -37,6 +37,8 @@ import opencoap.core.Code;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.DuplicateDetection;
+import opencoap.endpoint.Observations;
 import opencoap.observe.NotificationsReceiver;
 import opencoap.routing.RoutingHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -76,11 +78,11 @@ public class DuplicateTest {
 
         server = CoapServer.builder()
                 .transport(serverTransport)
-                .notificationsReceiver(notifReceiver)
-                .duplicateMsgCacheSize(100)
-                .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
-                .messageIdSupplier(mid::incrementAndGet)
-                .route(route)
+                .reliability(r -> r
+                        .withMessageIdSupplier(mid::incrementAndGet)
+                        .withDuplicateDetection(DuplicateDetection.cache(100).onDuplicate(request -> duplicated.incrementAndGet())))
+                .observations(Observations.receiving(notifReceiver))
+                .handler(route)
                 .build();
 
         server.start();
@@ -141,9 +143,8 @@ public class DuplicateTest {
         MockCoapTransport noDuplicateCheckTransport = new MockCoapTransport();
         CoapServer noDuplicateCheckServer = CoapServer.builder()
                 .transport(noDuplicateCheckTransport)
-                .noDuplicateCheck()
-                .duplicatedCoapMessageCallback(request -> duplicated.incrementAndGet())
-                .route(req -> CoapResponse.ok("#" + requests.incrementAndGet()).toFuture())
+                .reliability(r -> r.withoutDuplicateDetection())
+                .handler(req -> CoapResponse.ok("#" + requests.incrementAndGet()).toFuture())
                 .build();
         noDuplicateCheckServer.start();
         MockCoapTransport.MockClient noDuplicateCheckClient = noDuplicateCheckTransport.client();

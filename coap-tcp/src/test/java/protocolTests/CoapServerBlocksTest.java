@@ -64,7 +64,7 @@ public class CoapServerBlocksTest {
     public void setUp() {
         MockCoapTcpTransport transport = new MockCoapTcpTransport();
 
-        server = TcpCoapServer.builder().transport(transport).maxIncomingBlockTransferSize(10000000).route(route).csmStorage(capabilities).build();
+        server = TcpCoapServer.builder().transport(transport).messaging(m -> m.withMaxIncomingBlockTransferSize(10000000)).handler(route).csmStorage(capabilities).build();
 
         client = transport.client();
     }
@@ -110,7 +110,7 @@ public class CoapServerBlocksTest {
         capabilities.put(LOCAL_5683, new Capabilities(5000, true));
 
         MockCoapTcpTransport transport = new MockCoapTcpTransport();
-        server = TcpCoapServer.builder().transport(transport).maxIncomingBlockTransferSize(10000).route(route).csmStorage(capabilities).build();
+        server = TcpCoapServer.builder().transport(transport).messaging(m -> m.withMaxIncomingBlockTransferSize(10000)).handler(route).csmStorage(capabilities).build();
         client = transport.client();
 
         server.start();

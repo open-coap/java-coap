@@ -64,7 +64,7 @@ public class ServerBenchmark {
 
         server = CoapServer.builder()
                 .transport(mockTransport)
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/path1/sub2/sub3", __ ->
                                 CoapResponse.ok("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890").maxAge((int) requestCounter++).toFuture()
                         )

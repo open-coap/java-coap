@@ -24,12 +24,11 @@ import static opencoap.util.Validations.require;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import opencoap.codec.CoapPacket;
 import opencoap.core.BlockSize;
@@ -53,7 +52,6 @@ import opencoap.filter.CongestionControlFilter;
 import opencoap.filter.EchoFilter;
 import opencoap.filter.ResponseTimeoutFilter;
 import opencoap.observe.NotificationValidator;
-import opencoap.observe.NotificationsReceiver;
 import opencoap.observe.ObservationHandler;
 import opencoap.observe.ObservationMapper;
 import opencoap.observe.ObservationsStore;
@@ -65,38 +63,18 @@ import opencoap.util.Scheduler;
 
 @SuppressWarnings("PMD.CouplingBetweenObjects") // it's a nature for a builder class to have many dependencies
 public final class CoapServerBuilder {
-    private static final long DELAYED_TRANSACTION_TIMEOUT_MS = 120000; //2 minutes
-
     private Supplier<CoapTransport> coapTransport;
-    private int duplicationMaxSize = 10000;
-    private PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectionCache;
     private ScheduledExecutorService scheduledExecutorService;
-    private MessageIdSupplier messageIdSupplier = new SequentialMessageIdSupplier();
-    private Duration responseTimeout = Duration.ofMillis(DELAYED_TRANSACTION_TIMEOUT_MS);
-    private DuplicatedCoapMessageCallback duplicatedCoapMessageCallback = DuplicatedCoapMessageCallback.NULL;
-    private RetransmissionBackOff retransmissionBackOff = RetransmissionBackOff.ofDefault();
-    private int maxIncomingBlockTransferSize = 10_000_000; //default to 10 MB
-    private BlockSize blockSize;
-    private int maxMessageSize = 1152; //default
-    private Handler<CoapRequest, CoapResponse> route = RoutingHandler.NOT_FOUND;
-    private int maxQueueSize = 100;
+    private Handler<CoapRequest, CoapResponse> handler = RoutingHandler.NOT_FOUND;
+    private Messaging messaging = Messaging.defaults();
+    private Reliability reliability = Reliability.defaults();
+    private Observations observations = Observations.none();
     private Filter<CoapRequest, CoapResponse> outboundFilter = Filter.identity();
     private Filter<CoapRequest, CoapResponse> routeFilter = Filter.identity();
-    private Filter<CoapRequest, CoapResponse> inboundRequestFilter = Filter.identity();
-    private NotificationsReceiver notificationsReceiver = NotificationsReceiver.REJECT_ALL;
-    private ObservationsStore observationStore = ObservationsStore.ALWAYS_EMPTY;
-    private RequestTagSupplier requestTagSupplier = RequestTagSupplier.sequential();
+    private Filter<CoapRequest, CoapResponse> inboundFilter = Filter.identity();
     private boolean isTransportLoggingEnabled = true;
-    private Collection<Integer> recognizedCustomOptions = Collections.emptySet();
 
     CoapServerBuilder() {
-    }
-
-    public CoapServerBuilder blockSize(BlockSize blockSize) {
-        require(blockSize == null || !blockSize.isBert(), "BlockSize with BERT support is defined only for CoAP over TCP");
-
-        this.blockSize = blockSize;
-        return this;
     }
 
     public CoapServerBuilder transport(CoapTransport coapTransport) {
@@ -109,123 +87,65 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    public CoapServerBuilder route(Handler<CoapRequest, CoapResponse> route) {
-        this.route = requireNonNull(route);
+    public CoapServerBuilder handler(Handler<CoapRequest, CoapResponse> handler) {
+        this.handler = requireNonNull(handler);
         return this;
     }
 
-    public CoapServerBuilder route(RoutingHandler.RouteBuilder routeBuilder) {
-        return route(routeBuilder.build());
+    public CoapServerBuilder handler(RoutingHandler.RouteBuilder routeBuilder) {
+        return handler(routeBuilder.build());
     }
 
-    public CoapServerBuilder routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
-        this.routeFilter = requireNonNull(routeFilter);
+    /**
+     * Sets message size, block-wise and queueing settings.
+     *
+     * @param messaging messaging settings
+     * @return this builder instance for method chaining
+     * @throws IllegalArgumentException if both block size and max message size are set, or block size is BERT
+     */
+    public CoapServerBuilder messaging(Messaging messaging) {
+        requireNonNull(messaging);
+        BlockSize blockSize = messaging.getBlockSize();
+        require(blockSize == null || !blockSize.isBert(), "BlockSize with BERT support is defined only for CoAP over TCP");
+        require(blockSize == null || !messaging.isMaxMessageSizeSet(), "On CoAP over UDP, maxMessageSize is derived from blockSize, set only one of them");
+
+        this.messaging = messaging;
         return this;
     }
 
-    public CoapServerBuilder inboundRequestFilter(Filter<CoapRequest, CoapResponse> inboundRequestFilter) {
-        this.inboundRequestFilter = requireNonNull(inboundRequestFilter);
+    /**
+     * Modifies current message size, block-wise and queueing settings.
+     *
+     * @param modifier function that receives current settings and returns modified ones
+     * @return this builder instance for method chaining
+     * @throws IllegalArgumentException if both block size and max message size are set, or block size is BERT
+     */
+    public CoapServerBuilder messaging(UnaryOperator<Messaging> modifier) {
+        return messaging(modifier.apply(messaging));
+    }
+
+    public CoapServerBuilder reliability(Reliability reliability) {
+        this.reliability = requireNonNull(reliability);
         return this;
     }
 
-    public CoapServerBuilder outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
-        this.outboundFilter = requireNonNull(outboundFilter);
+    /**
+     * Modifies current retransmission, response timeout, message id, request tag and duplicate detection settings.
+     *
+     * @param modifier function that receives current settings and returns modified ones
+     * @return this builder instance for method chaining
+     */
+    public CoapServerBuilder reliability(UnaryOperator<Reliability> modifier) {
+        return reliability(modifier.apply(reliability));
+    }
+
+    public CoapServerBuilder observations(Observations observations) {
+        this.observations = requireNonNull(observations);
         return this;
-    }
-
-    public CoapServerBuilder notificationsReceiver(NotificationsReceiver notificationsReceiver) {
-        this.notificationsReceiver = requireNonNull(notificationsReceiver);
-        if (observationStore.equals(ObservationsStore.ALWAYS_EMPTY)) {
-            return observationsStore(ObservationsStore.inMemory());
-        }
-        return this;
-    }
-
-    public CoapServerBuilder observationsStore(ObservationsStore observationsStore) {
-        this.observationStore = requireNonNull(observationsStore);
-        return this;
-    }
-
-    public CoapServerBuilder maxMessageSize(int maxMessageSize) {
-        this.maxMessageSize = maxMessageSize;
-        return this;
-    }
-
-    public CoapServerBuilder maxIncomingBlockTransferSize(int size) {
-        this.maxIncomingBlockTransferSize = size;
-        return this;
-    }
-
-    private PutOnlyMap<CoapMessageKey, CoapPacket> getOrCreateDuplicateDetectorCache(ScheduledExecutorService scheduledExecutorService) {
-        if (duplicateDetectionCache != null) {
-            return duplicateDetectionCache;
-        }
-        if (duplicationMaxSize < 0) {
-            return null;
-        }
-        return new DefaultDuplicateDetectorCache("Default cache", duplicationMaxSize, scheduledExecutorService);
-    }
-
-    private CapabilitiesResolver capabilities() {
-        Capabilities defaultCapability;
-        if (blockSize != null) {
-            defaultCapability = new Capabilities(blockSize.getSize() + 1, true, requestTagSupplier);
-        } else {
-            defaultCapability = new Capabilities(maxMessageSize, false, requestTagSupplier);
-        }
-
-        return __ -> defaultCapability;
     }
 
     public CoapServerBuilder executor(ScheduledExecutorService scheduledExecutorService) {
         this.scheduledExecutorService = scheduledExecutorService;
-        return this;
-    }
-
-    public CoapServerBuilder messageIdSupplier(MessageIdSupplier messageIdSupplier) {
-        this.messageIdSupplier = messageIdSupplier;
-        return this;
-    }
-
-    public CoapServerBuilder retransmission(RetransmissionBackOff retransmissionBackOff) {
-        this.retransmissionBackOff = retransmissionBackOff;
-        return this;
-    }
-
-    public CoapServerBuilder responseTimeout(Duration timeout) {
-        require(timeout.toMillis() > 0);
-        this.responseTimeout = timeout;
-        return this;
-    }
-
-    public CoapServerBuilder duplicatedCoapMessageCallback(DuplicatedCoapMessageCallback duplicatedCallback) {
-        this.duplicatedCoapMessageCallback = requireNonNull(duplicatedCallback);
-        return this;
-    }
-
-    public CoapServerBuilder queueMaxSize(int maxQueueSize) {
-        this.maxQueueSize = maxQueueSize;
-        return this;
-    }
-
-    public CoapServerBuilder duplicateMsgCacheSize(int duplicationMaxSize) {
-        require(duplicationMaxSize > 0);
-        this.duplicationMaxSize = duplicationMaxSize;
-        return this;
-    }
-
-    public CoapServerBuilder duplicateMessageDetectorCache(PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectionCache) {
-        this.duplicateDetectionCache = duplicateDetectionCache;
-        return this;
-    }
-
-    public CoapServerBuilder noDuplicateCheck() {
-        this.duplicationMaxSize = -1;
-        return this;
-    }
-
-    public CoapServerBuilder requestTagSupplier(RequestTagSupplier requestTagSupplier) {
-        this.requestTagSupplier = requireNonNull(requestTagSupplier);
         return this;
     }
 
@@ -234,15 +154,31 @@ public final class CoapServerBuilder {
         return this;
     }
 
-    /**
-     * Sets the collection of recognized custom critical CoAP option numbers.
-     *
-     * @param recognizedCustomOptions a collection of integer option numbers to be recognized as custom options
-     * @return this builder instance for method chaining
-     */
-    public CoapServerBuilder recognizedCustomOptions(Collection<Integer> recognizedCustomOptions) {
-        this.recognizedCustomOptions = requireNonNull(recognizedCustomOptions);
+    public CoapServerBuilder inboundFilter(Filter<CoapRequest, CoapResponse> inboundFilter) {
+        this.inboundFilter = requireNonNull(inboundFilter);
         return this;
+    }
+
+    public CoapServerBuilder routeFilter(Filter<CoapRequest, CoapResponse> routeFilter) {
+        this.routeFilter = requireNonNull(routeFilter);
+        return this;
+    }
+
+    public CoapServerBuilder outboundFilter(Filter<CoapRequest, CoapResponse> outboundFilter) {
+        this.outboundFilter = requireNonNull(outboundFilter);
+        return this;
+    }
+
+    private CapabilitiesResolver capabilities(RequestTagSupplier requestTagSupplier) {
+        BlockSize blockSize = messaging.getBlockSize();
+        Capabilities defaultCapability;
+        if (blockSize != null) {
+            defaultCapability = new Capabilities(blockSize.getSize() + 1, true, requestTagSupplier);
+        } else {
+            defaultCapability = new Capabilities(messaging.getMaxMessageSize(), false, requestTagSupplier);
+        }
+
+        return __ -> defaultCapability;
     }
 
     public CoapServer build() {
@@ -251,18 +187,22 @@ public final class CoapServerBuilder {
         final boolean stopExecutor = scheduledExecutorService == null;
         final ScheduledExecutorService effectiveExecutorService = scheduledExecutorService != null ? scheduledExecutorService : Executors.newSingleThreadScheduledExecutor();
         Scheduler scheduler = toScheduler(effectiveExecutorService);
+        MessageIdSupplier messageIdSupplier = reliability.resolveMessageIdSupplier();
+        CapabilitiesResolver capabilities = capabilities(reliability.resolveRequestTagSupplier());
+        Duration responseTimeout = reliability.getResponseTimeout();
+        ObservationsStore observationStore = observations.createStore();
 
         Handler<CoapPacket, Boolean> sender = coapTransport::sendPacket;
 
         // OUTBOUND
         ExchangeFilter exchangeFilter = new ExchangeFilter();
-        RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(scheduler, retransmissionBackOff, CoapPacket::isConfirmable);
+        RetransmissionFilter<CoapPacket, CoapPacket> retransmissionFilter = new RetransmissionFilter<>(scheduler, reliability.getRetransmission(), CoapPacket::isConfirmable);
         PiggybackedExchangeFilter piggybackedExchangeFilter = new PiggybackedExchangeFilter();
 
         Handler<CoapRequest, CoapResponse> outboundHandler = outboundFilter
                 .andThen(new ObserveRequestFilter(observationStore::add))
-                .andThen(new CongestionControlFilter<>(maxQueueSize, CoapRequest::getPeerAddress))
-                .andThen(new BlockWiseOutgoingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(new CongestionControlFilter<>(messaging.getQueueMaxSize(), CoapRequest::getPeerAddress))
+                .andThen(new BlockWiseOutgoingFilter(capabilities, messaging.getMaxIncomingBlockTransferSize()))
                 .andThen(new EchoFilter())
                 .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(exchangeFilter)
@@ -275,7 +215,7 @@ public final class CoapServerBuilder {
 
         // OBSERVATION
         Handler<SeparateResponse, Boolean> sendNotification = new NotificationValidator()
-                .andThen(new BlockWiseNotificationFilter(capabilities()))
+                .andThen(new BlockWiseNotificationFilter(capabilities))
                 .andThen(new ResponseTimeoutFilter<>(scheduler, req -> req.getAttribute(RESPONSE_TIMEOUT, responseTimeout)))
                 .andThen(MappingFilter.of(CoapPacket::from, CoapPacket::isAck))
                 .andThenMap(messageIdSupplier::update)
@@ -284,23 +224,26 @@ public final class CoapServerBuilder {
                 .then(sender);
 
         // INBOUND
-        PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectorCache = getOrCreateDuplicateDetectorCache(effectiveExecutorService);
+        DuplicateDetection duplicateDetection = reliability.getDuplicateDetection();
+        PutOnlyMap<CoapMessageKey, CoapPacket> duplicateDetectorCache = duplicateDetection.isEnabled()
+                ? duplicateDetection.createCache(effectiveExecutorService)
+                : null;
         Filter<CoapPacket, CoapPacket> duplicateDetector = duplicateDetectorCache != null
-                ? new DuplicateDetector(duplicateDetectorCache, duplicatedCoapMessageCallback)
+                ? new DuplicateDetector(duplicateDetectorCache, duplicateDetection.getCallback())
                 : Filter.identity();
         Handler<CoapPacket, CoapPacket> inboundService = duplicateDetector
                 .andThen(new CoapRequestConverter(messageIdSupplier))
-                .andThen(inboundRequestFilter)
+                .andThen(inboundFilter)
                 .andThen(new RescueFilter())
-                .andThen(new CriticalOptionVerifier(recognizedCustomOptions))
-                .andThen(new BlockWiseIncomingFilter(capabilities(), maxIncomingBlockTransferSize))
+                .andThen(new CriticalOptionVerifier(messaging.getRecognizedCustomOptions()))
+                .andThen(new BlockWiseIncomingFilter(capabilities, messaging.getMaxIncomingBlockTransferSize()))
                 .andThen(routeFilter)
-                .then(route);
+                .then(handler);
 
 
         Handler<CoapPacket, CoapPacket> inboundObservation = duplicateDetector
                 .andThen(new ObservationMapper())
-                .then(new ObservationHandler(notificationsReceiver, observationStore));
+                .then(new ObservationHandler(observations.getReceiver(), observationStore));
 
         CoapDispatcher dispatcher = new CoapDispatcher(sender, inboundObservation, inboundService,
                 piggybackedExchangeFilter::handleResponse, exchangeFilter::handleResponse

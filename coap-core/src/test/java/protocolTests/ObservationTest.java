@@ -21,7 +21,6 @@ import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.observe;
 import static opencoap.core.Opaque.EMPTY;
 import static opencoap.core.Opaque.of;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static opencoap.observe.NotificationsReceiver.REJECT_ALL;
 import static opencoap.transport.DatagramSocketTransport.udp;
 import static org.awaitility.Awaitility.await;
@@ -33,6 +32,7 @@ import opencoap.core.Code;
 import opencoap.core.Opaque;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.Observations;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
 import opencoap.util.ObservableResource;
@@ -54,13 +54,12 @@ public class ObservationTest {
     public void setUpClass() throws Exception {
         obsResource = new ObservableResource(RES_OBS_PATH1, CoapResponse.ok(EMPTY), observersManager);
         server = CoapServer.builder().transport(udp())
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/path1", __ -> CoapResponse.ok("content1").toFuture())
                         .get(RES_OBS_PATH1, obsResource)
                 )
-                .retransmission(ofFixed(ofMillis(500)))
-                .responseTimeout(ofMillis(600))
-                .blockSize(BlockSize.S_128).build();
+                .messaging(m -> m.withBlockSize(BlockSize.S_128))
+                .reliability(r -> r.withFixedRetransmission(ofMillis(500)).withResponseTimeout(ofMillis(600))).build();
 
         observersManager.init(server);
         server.start();
@@ -75,7 +74,7 @@ public class ObservationTest {
     @Test
     public void observationTest() throws Exception {
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
@@ -114,7 +113,7 @@ public class ObservationTest {
     @Test
     public void terminateObservationByServerWithErrorCode() throws Exception {
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         client.sendSync(observe(RES_OBS_PATH1).token(token1001));
 
@@ -132,7 +131,7 @@ public class ObservationTest {
     @Test
     public void terminateObservationByServerTimeout() throws Exception {
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         client.sendSync(observe(RES_OBS_PATH1).token(token1001));
         client.close();
@@ -147,7 +146,7 @@ public class ObservationTest {
     @Test
     public void dontTerminateObservationIfNoObs() throws Exception {
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         //register observation
         client.sendSync(observe(RES_OBS_PATH1).token(token1001));
@@ -167,7 +166,7 @@ public class ObservationTest {
 
     @Test
     public void terminateObservationByClientWithRst() throws Exception {
-        CoapClient client = CoapServer.builder().transport(udp()).notificationsReceiver(REJECT_ALL).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).observations(Observations.receiving(REJECT_ALL)).buildClient(SERVER_ADDRESS);
 
         //register observation
         client.sendSync(observe(RES_OBS_PATH1).token(token1001));
@@ -188,7 +187,7 @@ public class ObservationTest {
         obsResource.putPayload(ClientServerWithBlocksTest.BIG_RESOURCE);
 
         StubNotificationsReceiver notifReceiver = new StubNotificationsReceiver();
-        CoapClient client = CoapServer.builder().transport(udp()).blockSize(BlockSize.S_128).notificationsReceiver(notifReceiver).buildClient(SERVER_ADDRESS);
+        CoapClient client = CoapServer.builder().transport(udp()).messaging(m -> m.withBlockSize(BlockSize.S_128)).observations(Observations.receiving(notifReceiver)).buildClient(SERVER_ADDRESS);
 
         //register observation
         CoapResponse msg = client.sendSync(observe(RES_OBS_PATH1));

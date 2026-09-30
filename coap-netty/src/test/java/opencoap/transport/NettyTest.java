@@ -53,7 +53,7 @@ public class NettyTest {
         server = CoapServer.builder()
                 .transport(new NettyCoapTransport(createBootstrap(0), EMPTY_RESOLVER))
                 .executor(eventLoopGroup)
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/test", __ -> ok("OK").toFuture())
                         .post("/echo", req -> ok(req.getPayload()).toFuture())
                 )

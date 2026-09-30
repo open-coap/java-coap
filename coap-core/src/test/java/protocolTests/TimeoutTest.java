@@ -18,7 +18,6 @@ package protocolTests;
 
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
@@ -38,7 +37,7 @@ public class TimeoutTest {
     public void testTimeout() throws IOException, CoapException {
         CoapClient client = CoapServer.builder()
                 .transport(InMemoryCoapTransport.create())
-                .retransmission(ofFixed(ofMillis(100)))
+                .reliability(r -> r.withFixedRetransmission(ofMillis(100)))
                 .buildClient(InMemoryCoapTransport.createAddress(0));
 
         assertThrows(CoapTimeoutException.class, () ->
@@ -49,7 +48,7 @@ public class TimeoutTest {
 
     @Test
     public void timeoutTest() throws Exception {
-        CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).retransmission(ofFixed(ofMillis(100))).build();
+        CoapServer cnn = CoapServer.builder().transport(InMemoryCoapTransport.create()).reliability(r -> r.withFixedRetransmission(ofMillis(100))).build();
         cnn.start();
 
         CoapRequest request = get("/test/1").from(InMemoryCoapTransport.createAddress(0));

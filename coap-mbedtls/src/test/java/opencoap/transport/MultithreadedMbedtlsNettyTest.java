@@ -86,7 +86,7 @@ public class MultithreadedMbedtlsNettyTest {
         Set<String> usedThreads = new HashSet<>();
         CoapServerGroup server = CoapServer.builder()
                 .transport(() -> new NettyCoapTransport(serverBootstrap, EMPTY_RESOLVER))
-                .route(RoutingHandler.builder()
+                .handler(RoutingHandler.builder()
                         .get("/currentThread", req -> supplyAsync(() -> ok(currentThread().getName()).build(), eventLoopGroup))
                 )
                 .buildGroup(threads)

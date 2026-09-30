@@ -52,7 +52,7 @@ public class RegistrationManagerTest {
 
         deviceSrv = CoapServer.builder()
                 .transport(trnsport)
-                .messageIdSupplier(MessageIdSupplier.sequential(0))
+                .reliability(r -> r.withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .build().start();
     }
 

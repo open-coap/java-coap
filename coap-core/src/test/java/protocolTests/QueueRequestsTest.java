@@ -18,7 +18,6 @@ package protocolTests;
 
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,11 +48,11 @@ public class QueueRequestsTest {
         MockCoapTransport transport = new MockCoapTransport();
 
         client = CoapServer.builder().transport(transport)
-                .messageIdSupplier(MessageIdSupplier.sequential(0))
-                .blockSize(BlockSize.S_32)
-                .noDuplicateCheck()
-                .queueMaxSize(2)
-                .retransmission(ofFixed(ofMillis(500)))
+                .messaging(m -> m.withBlockSize(BlockSize.S_32).withQueueMaxSize(2))
+                .reliability(r -> r
+                        .withFixedRetransmission(ofMillis(500))
+                        .withMessageIdSupplier(MessageIdSupplier.sequential(0))
+                        .withoutDuplicateDetection())
                 .buildClient(SERVER_ADDRESS);
 
         server = transport.client();

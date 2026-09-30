@@ -19,7 +19,6 @@ package protocolTests;
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
 import static opencoap.core.CoapRequest.put;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
 import java.net.InetSocketAddress;
@@ -29,6 +28,7 @@ import opencoap.core.ContentFormat;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.Observations;
 import opencoap.endpoint.RequestTagSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,11 +50,12 @@ public class BlockTest {
 
         client = CoapServer.builder()
                 .transport(transport)
-                .messageIdSupplier(MessageIdSupplier.sequential(0))
-                .blockSize(BlockSize.S_32)
-                .notificationsReceiver(notifReceiver)
-                .retransmission(ofFixed(ofMillis(500)))
-                .requestTagSupplier(RequestTagSupplier.sequential(100))
+                .messaging(m -> m.withBlockSize(BlockSize.S_32))
+                .reliability(r -> r
+                        .withFixedRetransmission(ofMillis(500))
+                        .withMessageIdSupplier(MessageIdSupplier.sequential(0))
+                        .withRequestTagSupplier(RequestTagSupplier.sequential(100)))
+                .observations(Observations.receiving(notifReceiver))
                 .buildClient(SERVER_ADDRESS);
     }
 

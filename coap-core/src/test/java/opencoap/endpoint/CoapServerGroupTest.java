@@ -29,7 +29,7 @@ class CoapServerGroupTest {
     private int port = 10_000;
     private final CoapServerBuilder builder = CoapServer.builder()
             .transport(() -> InMemoryCoapTransport.create(port++))
-            .route(RoutingHandler.builder()
+            .handler(RoutingHandler.builder()
                     .get("/test", (req) -> CoapResponse.ok("test").toFuture())
             );
 

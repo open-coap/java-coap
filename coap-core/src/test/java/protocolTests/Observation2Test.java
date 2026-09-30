@@ -24,6 +24,7 @@ import opencoap.core.Code;
 import opencoap.endpoint.CoapClient;
 import opencoap.endpoint.CoapServer;
 import opencoap.endpoint.MessageIdSupplier;
+import opencoap.endpoint.Observations;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,8 +45,9 @@ public class Observation2Test {
 
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).messageIdSupplier(MessageIdSupplier.sequential(0))
-                .notificationsReceiver(notifReceiver)
+        client = CoapServer.builder().transport(transport)
+                .reliability(r -> r.withMessageIdSupplier(MessageIdSupplier.sequential(0)))
+                .observations(Observations.receiving(notifReceiver))
                 .buildClient(SERVER_ADDRESS);
 
         //establish observation relation

@@ -25,8 +25,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import opencoap.core.CoapRequest;
 import opencoap.core.CoapResponse;
+import opencoap.core.Filter;
 import opencoap.core.Handler;
 import opencoap.endpoint.CoapServer;
+import opencoap.endpoint.Messaging;
 import opencoap.linkformat.RegistrationManager;
 import opencoap.observe.ObserversManager;
 import opencoap.routing.RoutingHandler;
@@ -54,10 +56,7 @@ public class DeviceEmulator implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        emulatorServer = transportOptions.create(uri,
-                udpBuilder -> udpBuilder.route(createRouting()).build(),
-                tcpBuilder -> tcpBuilder.route(createRouting()).build()
-        );
+        emulatorServer = transportOptions.create(uri, Messaging.defaults(), Filter.identity(), createRouting());
         obsManager.init(emulatorServer);
         emulatorServer.start();
 

@@ -18,7 +18,6 @@ package protocolTests;
 
 import static java.time.Duration.ofMillis;
 import static opencoap.core.CoapRequest.get;
-import static opencoap.endpoint.RetransmissionBackOff.ofFixed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static protocolTests.utils.CoapPacketBuilder.newCoapPacket;
@@ -49,9 +48,13 @@ public class Block2TransferMaxSizeTest {
     public void setUp() throws Exception {
         transport = new TransportConnectorMock();
 
-        client = CoapServer.builder().transport(transport).messageIdSupplier(MessageIdSupplier.sequential(0)).blockSize(BlockSize.S_32)
-                .retransmission(ofFixed(ofMillis(500)))
-                .maxIncomingBlockTransferSize(MAX_TRANSFER_SIZE)
+        client = CoapServer.builder().transport(transport)
+                .messaging(m -> m
+                        .withBlockSize(BlockSize.S_32)
+                        .withMaxIncomingBlockTransferSize(MAX_TRANSFER_SIZE))
+                .reliability(r -> r
+                        .withFixedRetransmission(ofMillis(500))
+                        .withMessageIdSupplier(MessageIdSupplier.sequential(0)))
                 .buildClient(SERVER_ADDRESS);
     }
 
