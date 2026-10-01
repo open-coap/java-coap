@@ -123,8 +123,8 @@ subprojects {
     }
 
     dependencies {
-        pmd("net.sourceforge.pmd:pmd-ant:7.27.0")
-        pmd("net.sourceforge.pmd:pmd-java:7.27.0")
+        pmd("net.sourceforge.pmd:pmd-ant:7.28.0")
+        pmd("net.sourceforge.pmd:pmd-java:7.28.0")
         spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0")
     }
 
