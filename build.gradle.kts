@@ -9,7 +9,7 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
     id("io.github.ben-manes.versions") version "0.64.0"
     id("pmd")
-    id("com.github.spotbugs") version "6.5.11"
+    id("com.github.spotbugs") version "6.5.12"
     id("org.gradle.signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
