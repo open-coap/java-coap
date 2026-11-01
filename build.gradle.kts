@@ -7,7 +7,7 @@ plugins {
     id("maven-publish")
     id("pl.allegro.tech.build.axion-release") version "1.21.4"
     id("se.patrikerdes.use-latest-versions") version "0.2.19"
-    id("io.github.ben-manes.versions") version "0.64.0"
+    id("io.github.ben-manes.versions") version "0.66.0"
     id("pmd")
     id("com.github.spotbugs") version "6.5.12"
     id("org.gradle.signing")
