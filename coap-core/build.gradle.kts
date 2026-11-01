@@ -13,7 +13,7 @@ dependencies {
     testFixturesApi("org.assertj:assertj-core:3.27.7")
     testFixturesApi("org.awaitility:awaitility:4.3.0")
 
-    testImplementation("ch.qos.logback:logback-classic:1.6.4")
+    testImplementation("ch.qos.logback:logback-classic:1.6.6")
     testImplementation("org.mockito:mockito-core:5.24.0")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:4.5.2")
     testImplementation("io.github.artsok:rerunner-jupiter:2.1.6")
