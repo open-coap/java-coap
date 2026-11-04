@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":coap-tcp"))
     implementation(project(":coap-mbedtls"))
     implementation("org.slf4j:slf4j-api:2.0.20")
-    implementation("ch.qos.logback:logback-classic:1.6.4")
+    implementation("ch.qos.logback:logback-classic:1.6.6")
     implementation("info.picocli:picocli:4.7.7")
 
     testImplementation("org.mockito:mockito-core:5.24.0")
