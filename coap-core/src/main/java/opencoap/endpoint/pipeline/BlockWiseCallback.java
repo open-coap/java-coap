@@ -168,7 +168,7 @@ final class BlockWiseCallback {
             return completedFuture(response);
         } else {
             //isCompleted = false;
-            //CoapPacket request = new CoapPacket(Method.GET, MessageType.Confirmable, requestUri, destination);
+            //CoapPacket request = new CoapPacket(Method.GET, MessageType.CON, requestUri, destination);
 
             int receivedBlocksCount = blResponse.getPayload().size() / respBlockOption.getBlockSize().getSize();
 

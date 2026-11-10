@@ -33,6 +33,7 @@ This document outlines breaking changes and migration steps between versions of 
   - `BasicHeaderOptions` / `HeaderOptions` &rarr; `CoapOptions`
   - `SignallingHeaderOptions` &rarr; `SignalingCoapOptions`
   - `Method.iPATCH` &rarr; `Method.IPATCH`
+  - `MessageType` constants: `Confirmable`, `NonConfirmable`, `Acknowledgement`, `Reset` &rarr; `CON`, `NON`, `ACK`, `RST`
   - `CoapRequestEntityIncomplete` &rarr; `CoapRequestEntityIncompleteException`
   - `CoapRequestEntityTooLarge` &rarr; `CoapRequestEntityTooLargeException`
   - `CoapBlockTooLargeEntityException` &rarr; `CoapBlockEntityTooLargeException`
@@ -331,9 +332,21 @@ Implementation classes have been renamed to describe their concrete structure ra
 
 #### Enum Constant Rename
 
+`MessageType` constants are renamed to uppercase using standard RFC 7252 abbreviations, and `MessageType.getCode()` is added to return the wire transaction type code (0–3), replacing `ordinal()` for serialization:
+
+| 6.x | 7.0 | Wire code (`getCode()`) |
+|---|---|---|
+| `MessageType.Confirmable` | `MessageType.CON` | `0` |
+| `MessageType.NonConfirmable` | `MessageType.NON` | `1` |
+| `MessageType.Acknowledgement` | `MessageType.ACK` | `2` |
+| `MessageType.Reset` | `MessageType.RST` | `3` |
+
 ```diff
 -Method method = Method.iPATCH;
 +Method method = Method.IPATCH;
+
+-MessageType type = MessageType.Confirmable;
++MessageType type = MessageType.CON;
 ```
 
 #### Wire Code Decoding

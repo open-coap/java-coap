@@ -96,14 +96,14 @@ public class Block1Size1LimitTest {
     }
 
     private CoapPacket probe(int messageId) {
-        CoapPacket packet = new CoapPacket(Method.GET, MessageType.Confirmable, "/test/1", serverAddress);
+        CoapPacket packet = new CoapPacket(Method.GET, MessageType.CON, "/test/1", serverAddress);
         packet.setMessageId(messageId);
         packet.setToken(Opaque.decodeHex("0102"));
         return packet;
     }
 
     private CoapPacket firstBlock(int messageId, int size1) {
-        CoapPacket packet = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test/1", serverAddress);
+        CoapPacket packet = new CoapPacket(Method.PUT, MessageType.CON, "/test/1", serverAddress);
         packet.setMessageId(messageId);
         packet.setToken(Opaque.decodeHex("aabb"));
         packet.options().setSize1(size1);

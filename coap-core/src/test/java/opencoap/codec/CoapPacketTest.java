@@ -135,12 +135,12 @@ public class CoapPacketTest {
 
         assertNull(cp.getCode());
         assertNull(cp.getMethod());
-        assertEquals(MessageType.Acknowledgement, cp.getMessageType());
+        assertEquals(MessageType.ACK, cp.getMessageType());
     }
 
     @Test
     public void shouldDeserializeControlCharactersInOpaqueOptionAndPayload() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.CON, "/test", null);
         cp.options().setEtag(Opaque.ofBytes(0x00, 0x0d, 0x0a));
         cp.setPayload("first\r\nsecond");
 
@@ -152,21 +152,21 @@ public class CoapPacketTest {
     }
 
     private static byte[] rawPacketWithOption(int optionNumber, String value) {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, null, null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, null, null);
         cp.options().put(optionNumber, Opaque.of(value));
         return serialize(cp);
     }
 
     @Test
     public void deserializeAfterSerializeGivesBackACoapPacketWithSameData() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setMessageId(14);
         byte[] rawCp = serialize(cp);
         CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(rawCp));
 
         assertArrayEquals(rawCp, serialize(cp2));
         assertEquals(Method.GET, cp2.getMethod());
-        assertEquals(MessageType.Confirmable, cp2.getMessageType());
+        assertEquals(MessageType.CON, cp2.getMessageType());
         assertEquals("/test", cp2.options().getUriPath());
         assertNull(cp2.getCode());
         assertNull(cp2.getPayloadString());
@@ -175,7 +175,7 @@ public class CoapPacketTest {
     @Test
     public void readSerializedGiveBackSimilarCoapPacket() throws CoapException {
         InetSocketAddress addr = InetSocketAddress.createUnresolved("some.host", 1234);
-        CoapPacket cp = new CoapPacket(Code.C205_CONTENT, MessageType.Acknowledgement, addr);
+        CoapPacket cp = new CoapPacket(Code.C205_CONTENT, MessageType.ACK, addr);
         cp.setPayload("TEST");
         cp.setMessageId(13);
 
@@ -188,7 +188,7 @@ public class CoapPacketTest {
 
     @Test
     public void coapPacketTest3() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Confirmable, "", null);
+        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.CON, "", null);
         cp.setMessageId(1234);
         cp.options().setUriPath("/test2");
         cp.options().setLocationPath("");
@@ -200,13 +200,13 @@ public class CoapPacketTest {
         System.out.println(cp2);
         assertArrayEquals(rawCp, serialize(cp2));
         assertEquals(Method.PUT, cp2.getMethod());
-        assertEquals(MessageType.Confirmable, cp2.getMessageType());
+        assertEquals(MessageType.CON, cp2.getMessageType());
         assertEquals("/test2", cp2.options().getUriPath());
     }
 
     @Test
     public void coapPacketTestWithHightNumberBlock() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.Reset, "", null);
+        CoapPacket cp = new CoapPacket(Method.PUT, MessageType.RST, "", null);
         cp.options().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
         cp.setMessageId(0xFFFF);
 
@@ -220,7 +220,7 @@ public class CoapPacketTest {
 
     @Test
     public void coapPacketTestWithPathAndQuery() throws CoapException, ParseException {
-        CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
+        CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NON, null, null);
         cp.options().setUriPath("/test/path/1");
         cp.options().setUriQueryList("par1=1", "par2=201");
         cp.options().setLocationPath("/loc/path/2");
@@ -249,7 +249,7 @@ public class CoapPacketTest {
     @Test
     public void shouldRoundTripUint16ContentFormat() throws CoapException {
         for (int contentFormat : new int[]{0, 1, 255, 256, 32767, 32768, 65000, 65535}) {
-            CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", LOCAL_5683);
+            CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", LOCAL_5683);
             cp.options().setContentFormat(contentFormat);
 
             CoapPacket cp2 = deserialize(null, new ByteArrayInputStream(serialize(cp)));
@@ -268,7 +268,7 @@ public class CoapPacketTest {
 
     @Test
     public void coapPacketTestWithHeaders() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NonConfirmable, null, null);
+        CoapPacket cp = new CoapPacket(Method.DELETE, MessageType.NON, null, null);
         cp.options().setAccept(432);
         cp.options().setIfMatch(new Opaque[]{Opaque.variableUInt(0x9853)});
         cp.options().setIfNoneMatch(Boolean.TRUE);
@@ -293,7 +293,7 @@ public class CoapPacketTest {
 
     @Test
     public void coapPacketTestWithEmptyLocHeader() throws CoapException {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Reset, "", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.RST, "", null);
         cp.options().setBlock2Res(new BlockOption(0, BlockSize.S_16, true));
         cp.options().setLocationQuery("");
         cp.setMessageId(0);
@@ -307,7 +307,7 @@ public class CoapPacketTest {
         System.out.println(Arrays.toString(serialize(cp2)));
 
         assertEquals(Method.GET, cp2.getMethod());
-        assertEquals(MessageType.Reset, cp2.getMessageType());
+        assertEquals(MessageType.RST, cp2.getMessageType());
         assertEquals(cp.options().getBlock2Res(), cp2.options().getBlock2Res());
         assertEquals(null, cp2.options().getUriPath());
         assertNull(cp2.getCode());
@@ -358,7 +358,7 @@ public class CoapPacketTest {
 
     @Test
     public void messageIdTooBig() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         assertThrows(IllegalArgumentException.class, () ->
                 cp.setMessageId(65536)
         );
@@ -366,21 +366,21 @@ public class CoapPacketTest {
 
     @Test
     public void messageIdMaxLimit() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setMessageId(65535);
         assertEquals(65535, cp.getMessageId());
     }
 
     @Test
     public void messageIdMinLimit() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setMessageId(0);
         assertEquals(0, cp.getMessageId());
     }
 
     @Test
     public void messageIdNegative() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         assertThrows(IllegalArgumentException.class, () ->
                 cp.setMessageId(-1)
         );
@@ -498,7 +498,7 @@ public class CoapPacketTest {
     void toCoapRequest() {
         InetSocketAddress addr = new InetSocketAddress("localhost", 5683);
 
-        CoapPacket coap = new CoapPacket(Method.PUT, MessageType.Confirmable, "/test", addr);
+        CoapPacket coap = new CoapPacket(Method.PUT, MessageType.CON, "/test", addr);
         assertEquals(put("/test").to(addr), coap.toCoapRequest());
 
         coap.setToken(Opaque.ofBytes(123));
@@ -508,7 +508,7 @@ public class CoapPacketTest {
 
     @Test
     void ConCoapRequest() {
-        CoapPacket packet = new CoapPacket(Method.GET, MessageType.Confirmable, "/12", null);
+        CoapPacket packet = new CoapPacket(Method.GET, MessageType.CON, "/12", null);
 
         assertTrue(packet.isRequest());
         assertFalse(packet.isResponse());
@@ -518,7 +518,7 @@ public class CoapPacketTest {
 
     @Test
     void NonCoapRequest() {
-        CoapPacket packet = new CoapPacket(Method.GET, MessageType.NonConfirmable, "/12", null);
+        CoapPacket packet = new CoapPacket(Method.GET, MessageType.NON, "/12", null);
 
         assertTrue(packet.isRequest());
         assertFalse(packet.isResponse());
@@ -528,7 +528,7 @@ public class CoapPacketTest {
 
     @Test
     void ackCoapResponse() {
-        CoapPacket packet = new CoapPacket(Code.C205_CONTENT, MessageType.Acknowledgement, null);
+        CoapPacket packet = new CoapPacket(Code.C205_CONTENT, MessageType.ACK, null);
 
         assertTrue(packet.isResponse());
         assertFalse(packet.isSeparateResponse());
@@ -538,7 +538,7 @@ public class CoapPacketTest {
 
     @Test
     void separateCoapResponse() {
-        CoapPacket packet = new CoapPacket(Code.C205_CONTENT, MessageType.Confirmable, null);
+        CoapPacket packet = new CoapPacket(Code.C205_CONTENT, MessageType.CON, null);
 
         assertTrue(packet.isResponse());
         assertTrue(packet.isSeparateResponse());
@@ -552,7 +552,7 @@ public class CoapPacketTest {
 
         CoapPacket packet = CoapPacket.from(response);
 
-        CoapPacket expected = new CoapPacket(Code.C205_CONTENT, MessageType.Confirmable, LOCAL_1_5683);
+        CoapPacket expected = new CoapPacket(Code.C205_CONTENT, MessageType.CON, LOCAL_1_5683);
         expected.setToken(Opaque.of("100"));
         expected.setPayload("<dupa>");
         expected.options().setContentFormat(ContentFormat.APPLICATION_XML);

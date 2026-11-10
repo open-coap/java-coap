@@ -26,7 +26,7 @@ public class CoapPacketToStringTest {
 
     @Test
     public void testToString_withShortPayload() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setPayload("short");
         cp.setMessageId(0);
 
@@ -59,7 +59,7 @@ public class CoapPacketToStringTest {
 
     @Test
     public void testToString_withLongPayload() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setPayload("long payload long payload long payload long payload");
         cp.setMessageId(0);
 
@@ -78,7 +78,7 @@ public class CoapPacketToStringTest {
 
     @Test
     public void testToString_full_withLongPayload() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
         cp.setPayload("long payload long payload long payload long payload");
         cp.setMessageId(0);
 
@@ -97,7 +97,7 @@ public class CoapPacketToStringTest {
 
     @Test
     public void shouldNotIncludeMID_whenNotSet() {
-        CoapPacket cp = new CoapPacket(Method.GET, MessageType.Confirmable, "/test", null);
+        CoapPacket cp = new CoapPacket(Method.GET, MessageType.CON, "/test", null);
 
         assertEquals("CON GET MID:0 URI:/test", cp.toString());
     }

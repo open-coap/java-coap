@@ -56,7 +56,7 @@ public class CoapPacketBuilder {
 
     public CoapPacket emptyAck(int mid) {
         coapPacket.setMessageId(mid);
-        coapPacket.setMessageType(MessageType.Acknowledgement);
+        coapPacket.setMessageType(MessageType.ACK);
         coapPacket.setCode(null);
         return build();
     }
@@ -82,7 +82,7 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder ack(Code code) {
-        coapPacket.setMessageType(MessageType.Acknowledgement);
+        coapPacket.setMessageType(MessageType.ACK);
         coapPacket.setCode(code);
         return this;
     }
@@ -175,29 +175,29 @@ public class CoapPacketBuilder {
     }
 
     public CoapPacketBuilder con(Code code) {
-        coapPacket.setMessageType(MessageType.Confirmable);
+        coapPacket.setMessageType(MessageType.CON);
         coapPacket.setCode(code);
         return this;
     }
 
     public CoapPacketBuilder con() {
-        coapPacket.setMessageType(MessageType.Confirmable);
+        coapPacket.setMessageType(MessageType.CON);
         return this;
     }
 
     public CoapPacketBuilder non() {
-        coapPacket.setMessageType(MessageType.NonConfirmable);
+        coapPacket.setMessageType(MessageType.NON);
         return this;
     }
 
     public CoapPacketBuilder non(Code code) {
-        coapPacket.setMessageType(MessageType.NonConfirmable);
+        coapPacket.setMessageType(MessageType.NON);
         coapPacket.setCode(code);
         return this;
     }
 
     public CoapPacketBuilder reset() {
-        coapPacket.setMessageType(MessageType.Reset);
+        coapPacket.setMessageType(MessageType.RST);
         return this;
     }
 

@@ -69,74 +69,74 @@ public class DuplicateErrorsTest {
 
     @Test
     public void testNotFoundResourceCon_get() throws IOException, CoapException, InterruptedException {
-        testIt(Method.GET, MessageType.Confirmable, 11, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
-        testIt(Method.GET, MessageType.Confirmable, 13, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
+        testIt(Method.GET, MessageType.CON, 11, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
+        testIt(Method.GET, MessageType.CON, 13, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
     }
 
     @Test
     public void testNotFoundResourceCon_put() throws IOException, CoapException, InterruptedException {
-        testIt(Method.PUT, MessageType.Confirmable, 22, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
-        testIt(Method.PUT, MessageType.Confirmable, 25, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
+        testIt(Method.PUT, MessageType.CON, 22, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
+        testIt(Method.PUT, MessageType.CON, 25, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
     }
 
     @Test
     public void testNotFoundResourceCon_post() throws IOException, CoapException, InterruptedException {
-        testIt(Method.POST, MessageType.Confirmable, 33, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
-        testIt(Method.POST, MessageType.Confirmable, 36, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
+        testIt(Method.POST, MessageType.CON, 33, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
+        testIt(Method.POST, MessageType.CON, 36, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
     }
 
     @Test
     public void testNotFoundResourceCon_delete() throws IOException, CoapException, InterruptedException {
-        testIt(Method.DELETE, MessageType.Confirmable, 44, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
-        testIt(Method.DELETE, MessageType.Confirmable, 47, "/test", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
+        testIt(Method.DELETE, MessageType.CON, 44, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
+        testIt(Method.DELETE, MessageType.CON, 47, "/test", Code.C404_NOT_FOUND, MessageType.ACK, true);
     }
 
     @Test
     public void testNotFoundResourceNon_get() throws IOException, CoapException, InterruptedException {
-        testIt(Method.GET, MessageType.NonConfirmable, 55, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
-        testIt(Method.GET, MessageType.NonConfirmable, 58, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
+        testIt(Method.GET, MessageType.NON, 55, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
+        testIt(Method.GET, MessageType.NON, 58, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
     }
 
     @Test
     public void testNotFoundResourceNon_put() throws IOException, CoapException, InterruptedException {
-        testIt(Method.PUT, MessageType.NonConfirmable, 66, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
-        testIt(Method.PUT, MessageType.NonConfirmable, 69, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
+        testIt(Method.PUT, MessageType.NON, 66, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
+        testIt(Method.PUT, MessageType.NON, 69, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
     }
 
     @Test
     public void testNotFoundResourceNon_post() throws IOException, CoapException, InterruptedException {
-        testIt(Method.POST, MessageType.NonConfirmable, 77, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
-        testIt(Method.POST, MessageType.NonConfirmable, 70, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
+        testIt(Method.POST, MessageType.NON, 77, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
+        testIt(Method.POST, MessageType.NON, 70, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
     }
 
     @Test
     public void testNotFoundResourceNon_delete() throws IOException, CoapException, InterruptedException {
-        testIt(Method.DELETE, MessageType.NonConfirmable, 88, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
-        testIt(Method.DELETE, MessageType.NonConfirmable, 81, "/test", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
+        testIt(Method.DELETE, MessageType.NON, 88, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
+        testIt(Method.DELETE, MessageType.NON, 81, "/test", Code.C404_NOT_FOUND, MessageType.NON, false);
     }
 
     @Test
     public void testFailedResourceCon_get() throws InterruptedException, CoapException, IOException {
-        testIt(Method.GET, MessageType.Confirmable, 110, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.Acknowledgement, true);
-        testIt(Method.GET, MessageType.Confirmable, 114, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.Acknowledgement, true);
+        testIt(Method.GET, MessageType.CON, 110, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.ACK, true);
+        testIt(Method.GET, MessageType.CON, 114, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.ACK, true);
     }
 
     @Test
     public void testFailedResourceNon_get() throws InterruptedException, CoapException, IOException {
-        testIt(Method.GET, MessageType.NonConfirmable, 150, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.NonConfirmable, false);
-        testIt(Method.GET, MessageType.NonConfirmable, 154, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.NonConfirmable, false);
+        testIt(Method.GET, MessageType.NON, 150, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.NON, false);
+        testIt(Method.GET, MessageType.NON, 154, "/failed", Code.C500_INTERNAL_SERVER_ERROR, MessageType.NON, false);
     }
 
     @Test
     public void testNoMethodResourceCon_get() throws InterruptedException, CoapException, IOException {
-        testIt(Method.POST, MessageType.Confirmable, 110, "/failed", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
-        testIt(Method.PUT, MessageType.Confirmable, 114, "/failed", Code.C404_NOT_FOUND, MessageType.Acknowledgement, true);
+        testIt(Method.POST, MessageType.CON, 110, "/failed", Code.C404_NOT_FOUND, MessageType.ACK, true);
+        testIt(Method.PUT, MessageType.CON, 114, "/failed", Code.C404_NOT_FOUND, MessageType.ACK, true);
     }
 
     @Test
     public void testNoMethodResourceNon_get() throws InterruptedException, CoapException, IOException {
-        testIt(Method.POST, MessageType.NonConfirmable, 150, "/failed", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
-        testIt(Method.PUT, MessageType.NonConfirmable, 154, "/failed", Code.C404_NOT_FOUND, MessageType.NonConfirmable, false);
+        testIt(Method.POST, MessageType.NON, 150, "/failed", Code.C404_NOT_FOUND, MessageType.NON, false);
+        testIt(Method.PUT, MessageType.NON, 154, "/failed", Code.C404_NOT_FOUND, MessageType.NON, false);
     }
 
     private void testIt(Method reqMethod, MessageType reqType, int reqMsgId, String reqUri, Code expectedRespCode, MessageType expectedRespType, boolean reqAndRespMsgIdMatch) throws IOException, CoapException, InterruptedException {

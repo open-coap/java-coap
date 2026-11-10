@@ -39,7 +39,7 @@ public class CoapRequestConverter implements MappingFilter<CoapPacket, CoapPacke
                 .thenApply(coapResponse -> {
                     CoapPacket responsePacket = packet.createResponseFrom(coapResponse);
 
-                    if (responsePacket.getMessageType() == MessageType.NonConfirmable) {
+                    if (responsePacket.getMessageType() == MessageType.NON) {
                         //Non-confirmable messages must also use mid for deduplication purpose
                         midSupplier.update(responsePacket);
                     }

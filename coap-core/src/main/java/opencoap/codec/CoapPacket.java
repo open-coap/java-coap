@@ -35,7 +35,7 @@ import opencoap.core.SeparateResponse;
  */
 public class CoapPacket {
 
-    private MessageType messageType = MessageType.Confirmable;
+    private MessageType messageType = MessageType.CON;
     private int messageId;
     private Code code;
     private Method method;
@@ -84,7 +84,7 @@ public class CoapPacket {
 
     public static CoapPacket from(CoapRequest req) {
         CoapPacket packet = new CoapPacket(Objects.requireNonNull(req.getPeerAddress()));
-        packet.setMessageType(req.getAttribute(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable);
+        packet.setMessageType(req.getAttribute(NON_CONFIRMABLE) ? MessageType.NON : MessageType.CON);
         packet.setMethod(req.getMethod());
         packet.setAttributes(req.getAttributes());
         packet.setToken(req.getToken());
@@ -95,7 +95,7 @@ public class CoapPacket {
     }
 
     public static CoapPacket from(SeparateResponse resp) {
-        MessageType messageType = resp.getAttribute(NON_CONFIRMABLE) ? MessageType.NonConfirmable : MessageType.Confirmable;
+        MessageType messageType = resp.getAttribute(NON_CONFIRMABLE) ? MessageType.NON : MessageType.CON;
         CoapPacket packet = new CoapPacket(resp.getCode(), messageType, resp.getPeerAddress());
         packet.setAttributes(resp.getAttributes());
         packet.setToken(resp.getToken());
@@ -159,17 +159,17 @@ public class CoapPacket {
      * @return response CoapPacket object
      */
     public CoapPacket createResponse(Code responseCode) {
-        if (messageType == MessageType.NonConfirmable) {
+        if (messageType == MessageType.NON) {
             CoapPacket response = new CoapPacket(this.getRemoteAddress());
-            response.setMessageType(MessageType.NonConfirmable);
+            response.setMessageType(MessageType.NON);
             response.setCode(responseCode);
             response.setToken(getToken());
             return response;
         }
-        if (messageType == MessageType.Confirmable) {
+        if (messageType == MessageType.CON) {
             CoapPacket response = new CoapPacket(this.getRemoteAddress());
             response.setMessageId(this.messageId);
-            response.setMessageType(MessageType.Acknowledgement);
+            response.setMessageType(MessageType.ACK);
             response.setCode(responseCode);
             if (responseCode != null) {
                 response.setToken(getToken());
@@ -196,11 +196,11 @@ public class CoapPacket {
         response.setPayload(coapResponse.getPayload());
         response.setOptions(coapResponse.options().duplicate());
 
-        if (messageType == MessageType.NonConfirmable) {
-            response.setMessageType(MessageType.NonConfirmable);
-        } else if (messageType == MessageType.Confirmable) {
+        if (messageType == MessageType.NON) {
+            response.setMessageType(MessageType.NON);
+        } else if (messageType == MessageType.CON) {
             response.setMessageId(this.messageId);
-            response.setMessageType(MessageType.Acknowledgement);
+            response.setMessageType(MessageType.ACK);
         } else if (messageType == null && method != null) {
             response.setMessageId(this.messageId);
         }
@@ -208,7 +208,7 @@ public class CoapPacket {
     }
 
     public CoapRequest toCoapRequest() {
-        MessageAttributes requestAttributes = (messageType == MessageType.NonConfirmable) ? attributes.with(NON_CONFIRMABLE, true) : attributes;
+        MessageAttributes requestAttributes = (messageType == MessageType.NON) ? attributes.with(NON_CONFIRMABLE, true) : attributes;
 
         return new CoapRequest(method, token, options, payload, remoteAddress, requestAttributes);
     }
@@ -347,7 +347,7 @@ public class CoapPacket {
      * @return true if this message must be acknowledged
      */
     public boolean isConfirmable() {
-        return this.messageType == MessageType.Confirmable;
+        return this.messageType == MessageType.CON;
     }
 
     @Override
@@ -436,7 +436,7 @@ public class CoapPacket {
     }
 
     public boolean isEmptyAck() {
-        return messageType == MessageType.Acknowledgement && method == null && code == null && payload.isEmpty() && token.isEmpty();
+        return messageType == MessageType.ACK && method == null && code == null && payload.isEmpty() && token.isEmpty();
     }
 
     boolean isRequest() {
@@ -448,11 +448,11 @@ public class CoapPacket {
     }
 
     public boolean isAck() {
-        return messageType == MessageType.Acknowledgement;
+        return messageType == MessageType.ACK;
     }
 
     public boolean isSeparateResponse() {
-        return isResponse() && (messageType == null || messageType == MessageType.Confirmable || messageType == MessageType.NonConfirmable);
+        return isResponse() && (messageType == null || messageType == MessageType.CON || messageType == MessageType.NON);
     }
 
     public void setAttributes(MessageAttributes attributes) {

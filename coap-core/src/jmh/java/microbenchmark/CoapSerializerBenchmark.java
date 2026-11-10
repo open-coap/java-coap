@@ -54,7 +54,7 @@ public class CoapSerializerBenchmark {
     public static CoapPacket createCoapPacket() {
         // ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.ERROR);
 
-        CoapPacket packet = new CoapPacket(Method.GET, MessageType.Confirmable, "/path-pppppppppppppppppp1/path-dddddddddd-2/dfdshffsdkjfhsdks3/444444444444444444444444444444444444444/55555555555555555555555555555555555555555555555", null);
+        CoapPacket packet = new CoapPacket(Method.GET, MessageType.CON, "/path-pppppppppppppppppp1/path-dddddddddd-2/dfdshffsdkjfhsdks3/444444444444444444444444444444444444444/55555555555555555555555555555555555555555555555", null);
         packet.setMessageId(1234);
         packet.setToken(Opaque.variableUInt(0x0102030405L));
         packet.options().setMaxAge(4321L);
