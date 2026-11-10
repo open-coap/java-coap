@@ -18,26 +18,31 @@ package opencoap.core;
 
 public enum MessageType {
 
-    Confirmable, NonConfirmable, Acknowledgement, Reset;
+    CON(0), NON(1), ACK(2), RST(3);
+
+    private final int code;
+
+    MessageType(int code) {
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
+    }
 
     public static MessageType fromCode(int transactionMessage) throws CoapException {
         switch (transactionMessage) {
             case 0:
-                return Confirmable;
+                return CON;
             case 1:
-                return NonConfirmable;
+                return NON;
             case 2:
-                return Acknowledgement;
+                return ACK;
             case 3:
-                return Reset;
+                return RST;
             default:
                 throw new CoapException("Wrong transaction message code");
         }
-    }
-
-    @Override
-    public String toString() {
-        return super.toString().substring(0, 3).toUpperCase();
     }
 
 }

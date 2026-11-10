@@ -57,7 +57,7 @@ public class ServerBenchmark {
     public void setup() throws CoapException, IOException {
         ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.ERROR);
 
-        coapReq = new CoapPacket(Method.GET, MessageType.Confirmable, "/path1/sub2/sub3", null);
+        coapReq = new CoapPacket(Method.GET, MessageType.CON, "/path1/sub2/sub3", null);
         coapReq.setMessageId(1234);
         coapReq.setToken(Opaque.variableUInt(0x0102030405L));
         coapReq.options().setMaxAge(4321L);

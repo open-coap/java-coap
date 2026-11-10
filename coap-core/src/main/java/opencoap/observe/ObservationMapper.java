@@ -15,8 +15,8 @@
  */
 package opencoap.observe;
 
-import static opencoap.core.MessageType.Acknowledgement;
-import static opencoap.core.MessageType.Reset;
+import static opencoap.core.MessageType.ACK;
+import static opencoap.core.MessageType.RST;
 import java.util.concurrent.CompletableFuture;
 import opencoap.codec.CoapPacket;
 import opencoap.core.Handler;
@@ -32,7 +32,7 @@ public class ObservationMapper implements MappingFilter<CoapPacket, CoapPacket, 
         return service.apply(obs).thenApply(ack -> {
             if (obsPacket.isConfirmable()) {
                 CoapPacket coapAck = new CoapPacket(obsPacket.getRemoteAddress());
-                coapAck.setMessageType(ack ? Acknowledgement : Reset);
+                coapAck.setMessageType(ack ? ACK : RST);
                 coapAck.setMessageId(obsPacket.getMessageId());
                 return coapAck;
             } else {

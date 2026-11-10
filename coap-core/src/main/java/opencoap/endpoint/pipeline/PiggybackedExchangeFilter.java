@@ -31,10 +31,10 @@ public class PiggybackedExchangeFilter implements MappingFilter<CoapPacket, Coap
 
     @Override
     public CompletableFuture<CoapPacket> apply(CoapPacket packet, Handler<CoapPacket, Boolean> service) {
-        if (packet.getMessageType() == MessageType.NonConfirmable) {
+        if (packet.getMessageType() == MessageType.NON) {
             return service.apply(packet).thenCompose(__ -> new CompletableFuture<>());
         }
-        require(packet.getMessageType() == MessageType.Confirmable);
+        require(packet.getMessageType() == MessageType.CON);
 
         PiggybackedCorrelation transactionId = new PiggybackedCorrelation(packet);
         CompletableFuture<CoapPacket> newPromise = new CompletableFuture<>();
@@ -51,8 +51,8 @@ public class PiggybackedExchangeFilter implements MappingFilter<CoapPacket, Coap
 
     public boolean handleResponse(CoapPacket packet) {
         switch (packet.getMessageType()) {
-            case Acknowledgement:
-            case Reset:
+            case ACK:
+            case RST:
                 CompletableFuture<CoapPacket> promise = promises.remove(new PiggybackedCorrelation(packet));
                 if (promise == null) {
                     return false;

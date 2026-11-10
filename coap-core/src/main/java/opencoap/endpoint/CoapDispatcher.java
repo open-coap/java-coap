@@ -52,7 +52,7 @@ final class CoapDispatcher {
             return;
         }
 
-        if (packet.getMethod() != null && packet.getMessageType() != MessageType.Acknowledgement) {
+        if (packet.getMethod() != null && packet.getMessageType() != MessageType.ACK) {
             handleRequest(packet);
             return;
         } else {
@@ -70,10 +70,10 @@ final class CoapDispatcher {
     }
 
     private boolean handlePing(CoapPacket packet) {
-        if (packet.getCode() == null && packet.getMethod() == null && packet.getMessageType() == MessageType.Confirmable) {
+        if (packet.getCode() == null && packet.getMethod() == null && packet.getMessageType() == MessageType.CON) {
             LOGGER.debug("CoAP ping received.");
             CoapPacket resp = packet.createResponse(null);
-            resp.setMessageType(MessageType.Reset);
+            resp.setMessageType(MessageType.RST);
             sender.apply(resp);
             return true;
         }
@@ -105,14 +105,14 @@ final class CoapDispatcher {
 
     private void handleNotProcessedMessage(CoapPacket packet) {
         switch (packet.getMessageType()) {
-            case Confirmable:
-            case NonConfirmable:
+            case CON:
+            case NON:
                 CoapPacket resp = new CoapPacket(packet.getRemoteAddress());
-                resp.setMessageType(MessageType.Reset);
+                resp.setMessageType(MessageType.RST);
                 resp.setMessageId(packet.getMessageId());
                 sender.apply(resp);
                 break;
-            case Acknowledgement:
+            case ACK:
                 LOGGER.debug("Discarding extra ACK: {}", packet);
                 break;
             default:

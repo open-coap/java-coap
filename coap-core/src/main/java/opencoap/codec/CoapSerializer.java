@@ -59,7 +59,7 @@ public class CoapSerializer {
             int tempByte;
 
             tempByte = (0x3 & 1) << 6;                                 // Version
-            tempByte |= (0x3 & coap.getMessageType().ordinal()) << 4;  // Transaction Message Type
+            tempByte |= (0x3 & coap.getMessageType().getCode()) << 4;  // Transaction Message Type
             tempByte |= coap.getToken().size() & 0xF;                  // Token length
 
             outputStream.write(tempByte);
